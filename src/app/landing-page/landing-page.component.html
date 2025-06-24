@@ -1,0 +1,86 @@
+<div
+  class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col"
+>
+  <!-- Header -->
+  <header
+    class="flex flex-col sm:flex-row justify-between items-center p-4 sm:p-6 bg-white shadow-md gap-4"
+  >
+    <h1
+      class="text-xl sm:text-2xl font-bold text-blue-700 text-center sm:text-left"
+    >
+      Kitengela Boys High School
+    </h1>
+    <div
+      class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto justify-center"
+    >
+      <button
+        class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition duration-300"
+        (click)="goToLogin()"
+      >
+        Login
+      </button>
+      <button
+        class="w-full sm:w-auto px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 rounded-xl shadow-md transition duration-300"
+        (click)="goToSignup()"
+      >
+        Sign Up
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main
+    class="flex flex-1 flex-col-reverse lg:flex-row items-center justify-center text-center lg:text-left px-4 sm:px-6 py-12 sm:py-16 gap-10"
+  >
+    <!-- Text Content -->
+    <div class="max-w-xl">
+      <h2
+        class="text-3xl sm:text-4xl md:text-5xl font-bold text-blue-800 leading-tight"
+      >
+        Welcome to <br class="sm:hidden" />
+        Kitengela Boys High School
+      </h2>
+      <p class="mt-4 sm:mt-6 text-base sm:text-lg text-gray-700">
+        A modern school management system to simplify administration, student
+        performance tracking, and communication.
+      </p>
+
+      <div
+        class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center"
+      >
+        <button
+          class="w-full sm:w-auto px-6 py-3 bg-white border border-blue-600 text-blue-600 text-lg rounded-full shadow-md hover:bg-blue-50 transition duration-300"
+          (click)="goToSignup()"
+        >
+          Sign Up
+        </button>
+      </div>
+
+      <p class="mt-4 text-sm text-gray-700">
+        Already have an account?
+        <button
+          class="text-blue-600 underline hover:text-blue-800 ml-1"
+          (click)="goToLogin()"
+        >
+          Login
+        </button>
+      </p>
+    </div>
+
+    <!-- Optional: Illustration (mobile-optimized) -->
+    <!--
+    <div class="max-w-sm w-full">
+      <img
+        src="https://illustrations.popsy.co/gray/student-life.svg"
+        alt="School illustration"
+        class="w-full"
+      />
+    </div>
+    -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-600 py-6 px-4">
+    &copy; 2025 Kitengela Boys High School. All rights reserved.
+  </footer>
+</div>

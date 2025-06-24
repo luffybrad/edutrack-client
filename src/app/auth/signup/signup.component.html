@@ -1,0 +1,131 @@
+<div
+  class="min-h-screen bg-gradient-to-tr from-blue-100 to-blue-200 flex items-center justify-center px-4 py-10 relative"
+>
+  <!-- 🔙 Back to Home -->
+  <button
+    class="absolute top-4 right-4 text-sm text-blue-700 hover:underline font-medium"
+    (click)="goHome()"
+  >
+    ← Back to Home
+  </button>
+
+  <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+    <h2 class="text-3xl font-extrabold text-blue-700 mb-8 text-center">
+      Create an Account
+    </h2>
+
+    <!-- 👥 Role Tabs -->
+    <div
+      class="flex justify-between mb-6 bg-blue-100 rounded-lg overflow-hidden"
+    >
+      <button
+        *ngFor="let r of [RoleType.Admin, RoleType.Teacher, RoleType.Guardian]"
+        (click)="role = r"
+        class="flex-1 text-sm font-semibold py-2 transition text-center"
+        [ngClass]="{
+          'bg-blue-600 text-white': role === r,
+          'text-blue-700 hover:bg-blue-200': role !== r,
+          capitalize: r
+        }"
+      >
+        {{ r }}
+      </button>
+    </div>
+
+    <!-- 📧 Email -->
+    <input
+      [(ngModel)]="form.email"
+      type="email"
+      placeholder="Email address"
+      class="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+
+    <!-- 🔒 Password + Toggle -->
+    <div class="relative mb-4">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        [(ngModel)]="form.password"
+        placeholder="Password"
+        class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <i
+        class="fa absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+        [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+        (click)="showPassword = !showPassword"
+      ></i>
+    </div>
+
+    <!-- 👩‍💼 Admin Fields -->
+    <div *ngIf="role === RoleType.Admin">
+      <input
+        [(ngModel)]="form.name"
+        placeholder="Full Name"
+        class="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        [(ngModel)]="form.phone"
+        placeholder="Phone Number"
+        class="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    <!-- 🧑‍🏫 Teacher: Class Dropdown -->
+    <div *ngIf="role === RoleType.Teacher" class="mb-4">
+      <label class="block text-sm font-semibold text-gray-700 mb-1">
+        Select Class
+      </label>
+      <select
+        [(ngModel)]="form.classId"
+        class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option [ngValue]="null">-- Choose a class --</option>
+        <option *ngFor="let cls of classes" [ngValue]="cls.id">
+          {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
+        </option>
+      </select>
+    </div>
+
+    <!-- 👨‍👧 Guardian: Student Dropdown -->
+    <div *ngIf="role === RoleType.Guardian" class="mb-4">
+      <label class="block text-sm font-semibold text-gray-700 mb-1">
+        Select Student
+      </label>
+      <select
+        [(ngModel)]="form.admNo"
+        class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option [ngValue]="null">-- Choose a student --</option>
+        <option *ngFor="let student of students" [ngValue]="student.admNo">
+          {{ student.admNo }} - {{ student.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- ✅ Sign Up Button -->
+    <button
+      (click)="submitSignup()"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition shadow-md"
+    >
+      Sign Up
+    </button>
+
+    <!-- 🔁 Login & Forgot Password -->
+    <div class="text-center text-sm my-4">
+      Already have an account?
+      <a
+        class="text-blue-600 hover:underline cursor-pointer font-medium"
+        (click)="goToLogin()"
+      >
+        Login here
+      </a>
+    </div>
+    <div class="text-center text-sm mt-2">
+      <a
+        class="text-blue-600 hover:underline cursor-pointer font-medium"
+        (click)="goToForgotPassword()"
+      >
+        Forgot password?
+      </a>
+    </div>
+  </div>
+</div>
