@@ -1,3 +1,4 @@
+// src/app/auth/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthEndpoints, RoleType } from './auth.routes';
@@ -9,16 +10,48 @@ import { catchError, tap } from 'rxjs/operators';
 export class AuthService {
   private currentRole: RoleType | null = null;
   private loggedIn$ = new BehaviorSubject<boolean>(false);
+  private profile$ = new BehaviorSubject<any>(null);
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) {
+    this.restoreFromStorage();
+  }
+
+  // Persist profile & role to localStorage
+  private persistSession(profile: any) {
+    this.currentRole = profile.role;
+    localStorage.setItem('user_role', profile.role);
+    localStorage.setItem('user_profile', JSON.stringify(profile));
+    this.profile$.next(profile);
+  }
+
+  // Load from localStorage
+  private restoreFromStorage() {
+    const role = localStorage.getItem('user_role') as RoleType;
+    const profile = localStorage.getItem('user_profile');
+    if (role) this.currentRole = role;
+    if (profile) this.profile$.next(JSON.parse(profile));
+  }
+
+  // Clear everything on logout
+  private clearSession() {
+    this.currentRole = null;
+    this.loggedIn$.next(false);
+    this.profile$.next(null);
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_profile');
+  }
 
   login(role: RoleType, data: any) {
     this.currentRole = role;
     return this.http
       .post(AuthEndpoints.login[role], data, {
-        withCredentials: true,
+        withCredentials: true, // ✅ Send/receive HttpOnly cookies
       })
-      .pipe(tap(() => this.loggedIn$.next(true)));
+      .pipe(
+        tap(() => {
+          this.loggedIn$.next(true); // 🔐 optimistic
+        })
+      );
   }
 
   signup(role: RoleType, data: any) {
@@ -45,11 +78,24 @@ export class AuthService {
 
   getProfile() {
     return this.http
-      .get(AuthEndpoints.profile, {
+      .get<{
+        success: boolean;
+        data: {
+          id: string;
+          name: string;
+          email: string;
+          phone: string;
+          role: RoleType;
+        };
+      }>(AuthEndpoints.profile, {
         withCredentials: true,
       })
       .pipe(
-        tap(() => this.loggedIn$.next(true)),
+        tap((res) => {
+          const profile = res?.data;
+          this.loggedIn$.next(true);
+          this.currentRole = profile?.role ?? null;
+        }),
         catchError((err) => {
           this.loggedIn$.next(false);
           return of(null);
@@ -65,21 +111,14 @@ export class AuthService {
 
   logout() {
     this.http
-      .post(
-        AuthEndpoints.logout,
-        {},
-        {
-          withCredentials: true,
-        }
-      )
+      .post(AuthEndpoints.logout, {}, { withCredentials: true })
       .subscribe({
         next: () => {
-          this.currentRole = null;
-          this.loggedIn$.next(false);
+          this.clearSession();
           this.router.navigate(['/login']);
         },
-        error: (err) => {
-          console.error('Logout failed:', err);
+        error: () => {
+          this.clearSession();
           this.router.navigate(['/login']);
         },
       });
@@ -87,10 +126,19 @@ export class AuthService {
 
   setRole(role: RoleType) {
     this.currentRole = role;
+    localStorage.setItem('user_role', role);
   }
 
   getRole(): RoleType | null {
-    return this.currentRole;
+    return this.currentRole || (localStorage.getItem('user_role') as RoleType);
+  }
+
+  getProfileSync() {
+    return this.profile$.value;
+  }
+
+  getProfile$(): Observable<any> {
+    return this.profile$.asObservable();
   }
 
   isLoggedIn(): Observable<boolean> {

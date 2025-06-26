@@ -95,15 +95,35 @@ export class LoginComponent {
     });
   }
 
+  feedbackMessage: string = ''; // 👈 New: visible feedback message
+  feedbackType: 'success' | 'error' = 'success'; // 👈 New: used to style
+
+  // Replace toast.* calls in submitLogin()
   submitLogin() {
+    this.feedbackMessage = ''; // Clear previous
+    if (!this.email || !this.password) {
+      this.feedbackType = 'error';
+      this.feedbackMessage = 'Please enter both email and password';
+      return;
+    }
+
     const body: any = { email: this.email, password: this.password };
     if (this.role !== RoleType.Admin) {
       body.uniqueId = this.uniqueId;
     }
 
     this.auth.login(this.role, body).subscribe({
-      next: (res) => console.log('✅ Login success:', res),
-      error: (err) => console.error('❌ Login error:', err),
+      next: () => {
+        this.feedbackType = 'success';
+        this.feedbackMessage = 'Login successful';
+
+        this.router.navigate(['/dashboard/redirect']);
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Login failed';
+        this.feedbackType = 'error';
+        this.feedbackMessage = msg;
+      },
     });
   }
 

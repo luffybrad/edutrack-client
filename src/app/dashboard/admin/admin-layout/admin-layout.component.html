@@ -1,0 +1,61 @@
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-blue-800 text-white p-4">
+    <h2 class="text-2xl font-bold mb-6">KBHS Admin</h2>
+    <nav class="space-y-2">
+      <a
+        routerLink="/admin/overview"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Overview</a
+      >
+      <a
+        routerLink="/admin/students"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Students</a
+      >
+      <a
+        routerLink="/admin/teachers"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Teachers</a
+      >
+      <a
+        routerLink="/admin/guardians"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Guardians</a
+      >
+      <a
+        routerLink="/admin/classes"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Classes</a
+      >
+      <a
+        routerLink="/admin/subjects"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Subjects</a
+      >
+      <a
+        routerLink="/admin/exams"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Exams</a
+      >
+      <a
+        routerLink="/admin/results"
+        routerLinkActive="bg-blue-900"
+        class="block py-2 px-4 rounded hover:bg-blue-700"
+        >Results</a
+      >
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 bg-gray-50 p-6 overflow-y-auto">
+    <router-outlet></router-outlet>
+  </main>
+</div>

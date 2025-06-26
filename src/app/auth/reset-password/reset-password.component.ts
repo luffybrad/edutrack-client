@@ -14,12 +14,8 @@ export class ResetPasswordComponent {
   newPassword = '';
   token = '';
   showPassword = false;
-
-  // public router: Router;
-
-  // constructor(router: Router) {
-  //   this.router = router;
-  // }
+  feedbackMessage: string = '';
+  feedbackType: 'success' | 'error' = 'success';
 
   navigateToLogin(): void {
     this.router.navigate(['/login']);
@@ -36,12 +32,24 @@ export class ResetPasswordComponent {
   }
 
   submitReset() {
+    this.feedbackMessage = '';
+
     this.auth.resetPassword(this.token, this.newPassword).subscribe({
       next: () => {
-        alert('✅ Password reset! Please login.');
-        this.router.navigate(['/login']);
+        this.feedbackType = 'success';
+        this.feedbackMessage = '✅ Password reset! Redirecting to login...';
+
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000); // ⏳ Delay to let user see the message
       },
-      error: (err) => console.error('❌ Error:', err),
+      error: (err) => {
+        const msg =
+          err?.error?.message ||
+          (typeof err === 'string' ? err : 'Failed to reset password');
+        this.feedbackType = 'error';
+        this.feedbackMessage = msg;
+      },
     });
   }
 }

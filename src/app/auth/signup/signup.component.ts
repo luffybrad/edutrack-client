@@ -28,6 +28,9 @@ export class SignupComponent {
   classes: any[] = [];
   students: any[] = [];
 
+  feedbackMessage: string = '';
+  feedbackType: 'success' | 'error' = 'success';
+
   showPassword: boolean = false; // 👁️ Eye icon toggle
 
   constructor(
@@ -51,17 +54,33 @@ export class SignupComponent {
   }
 
   submitSignup() {
+    this.feedbackMessage = ''; // clear previous
+
     const body: any = { email: this.form.email, password: this.form.password };
+
     if (this.role === RoleType.Admin) {
       body.name = this.form.name;
       body.phone = this.form.phone;
     }
-    if (this.role === RoleType.Guardian) body.admNo = this.form.admNo;
-    if (this.role === RoleType.Teacher) body.classId = this.form.classId;
+    if (this.role === RoleType.Guardian) {
+      body.admNo = this.form.admNo;
+    }
+    if (this.role === RoleType.Teacher) {
+      body.classId = this.form.classId;
+    }
 
     this.auth.signup(this.role, body).subscribe({
-      next: (res) => console.log('✅ Signup success:', res),
-      error: (err) => console.error('❌ Signup error:', err),
+      next: (res) => {
+        this.feedbackType = 'success';
+        this.feedbackMessage = 'Signup successful. You can now login.';
+      },
+      error: (err) => {
+        const msg =
+          err?.error?.message ||
+          (typeof err === 'string' ? err : 'Signup failed');
+        this.feedbackType = 'error';
+        this.feedbackMessage = msg;
+      },
     });
   }
 

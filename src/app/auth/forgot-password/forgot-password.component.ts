@@ -16,6 +16,9 @@ export class ForgotPasswordComponent {
   role: RoleType = RoleType.Admin;
   RoleType = RoleType;
 
+  feedbackMessage: string = '';
+  feedbackType: 'success' | 'error' = 'success';
+
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -27,9 +30,20 @@ export class ForgotPasswordComponent {
   }
 
   submitRequest() {
+    this.feedbackMessage = '';
+
     this.auth.forgotPassword(this.email, this.role).subscribe({
-      next: () => alert('✅ Reset link sent. Check your email.'),
-      error: (err) => console.error('❌ Error:', err),
+      next: () => {
+        this.feedbackType = 'success';
+        this.feedbackMessage = '✅ Reset link sent. Check your email.';
+      },
+      error: (err) => {
+        const msg =
+          err?.error?.message ||
+          (typeof err === 'string' ? err : 'Failed to send reset link');
+        this.feedbackType = 'error';
+        this.feedbackMessage = msg;
+      },
     });
   }
 
