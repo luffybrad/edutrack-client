@@ -1,5 +1,5 @@
 // src/environments/environment.prod.ts
 export const environment = {
   production: true,
-  apiUrl: '',
+  apiUrl: 'https://1498-197-248-103-242.ngrok-free.app/api',
 };
