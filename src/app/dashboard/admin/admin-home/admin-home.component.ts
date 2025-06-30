@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TeacherService } from '../../../services/teacher.service';
 import { StudentService } from '../../../services/student.service';
-import { GuardianService } from '../../../services/guardian.server';
+import { GuardianService } from '../../../services/guardian.service';
 import { SubjectService } from '../../../services/subject.service';
 import { ClassService } from '../../../services/class.service';
 import { ExamService } from '../../../services/exam.service';

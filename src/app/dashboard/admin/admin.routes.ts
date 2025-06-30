@@ -7,6 +7,8 @@ import { ClassListComponent } from '../../shared/entities/class/class-list/class
 import { ClassAddComponent } from '../../shared/entities/class/class-add/class-add.component';
 import { TeacherListComponent } from '../../shared/entities/teacher/teacher-list/teacher-list.component';
 import { TeacherAddComponent } from '../../shared/entities/teacher/teacher-add/teacher-add.component';
+import { GuardianListComponent } from '../../shared/entities/guardian/guardian-list/guardian-list.component';
+import { GuardianAddComponent } from '../../shared/entities/guardian/guardian-add/guardian-add.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -20,6 +22,8 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'classes/add', component: ClassAddComponent },
       { path: 'teachers', component: TeacherListComponent },
       { path: 'teachers/add', component: TeacherAddComponent },
+      { path: 'guardians', component: GuardianListComponent },
+      { path: 'guardians/add', component: GuardianAddComponent },
       // Add more admin pages here like 'students', 'results', etc.
     ],
   },

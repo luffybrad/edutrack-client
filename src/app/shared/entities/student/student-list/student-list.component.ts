@@ -13,7 +13,7 @@ import { LoadingOverlayComponent } from '../../../components/loading-overlay/loa
 import {
   Guardian,
   GuardianService,
-} from '../../../../services/guardian.server';
+} from '../../../../services/guardian.service';
 import { RouterModule } from '@angular/router';
 
 @Component({

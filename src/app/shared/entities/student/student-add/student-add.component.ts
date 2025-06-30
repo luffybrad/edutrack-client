@@ -7,14 +7,14 @@ import {
   Validators,
 } from '@angular/forms';
 import { ClassService } from '../../../../services/class.service';
-import { GuardianService } from '../../../../services/guardian.server';
+import { GuardianService } from '../../../../services/guardian.service';
 import { StudentService } from '../../../../services/student.service';
 import { ToastService } from '../../../utils/toast.service';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
 import { Class } from '../../../../services/class.service';
-import { Guardian } from '../../../../services/guardian.server';
+import { Guardian } from '../../../../services/guardian.service';
 @Component({
   standalone: true,
   selector: 'app-student-add',
