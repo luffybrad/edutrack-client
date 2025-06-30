@@ -6,6 +6,7 @@ import { RoleType } from '../auth.routes';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../shared/utils/toast.service';
 
 @Component({
   selector: 'app-signup',
@@ -28,16 +29,14 @@ export class SignupComponent {
   classes: any[] = [];
   students: any[] = [];
 
-  feedbackMessage: string = '';
-  feedbackType: 'success' | 'error' = 'success';
-
   showPassword: boolean = false; // 👁️ Eye icon toggle
 
   constructor(
     private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private http: HttpClient
+    private http: HttpClient,
+    private toast: ToastService
   ) {
     this.route.queryParams.subscribe((params) => {
       if (params['role']) this.role = params['role'];
@@ -54,8 +53,6 @@ export class SignupComponent {
   }
 
   submitSignup() {
-    this.feedbackMessage = ''; // clear previous
-
     const body: any = { email: this.form.email, password: this.form.password };
 
     if (this.role === RoleType.Admin) {
@@ -71,15 +68,13 @@ export class SignupComponent {
 
     this.auth.signup(this.role, body).subscribe({
       next: (res) => {
-        this.feedbackType = 'success';
-        this.feedbackMessage = 'Signup successful. You can now login.';
+        this.toast.success('Signup successful', 'You can now login.');
       },
       error: (err) => {
         const msg =
           err?.error?.message ||
-          (typeof err === 'string' ? err : 'Signup failed');
-        this.feedbackType = 'error';
-        this.feedbackMessage = msg;
+          (typeof err === 'string' ? err : 'Signup failed.');
+        this.toast.error('Signup failed', msg);
       },
     });
   }

@@ -6,6 +6,7 @@ import { AuthService } from '../auth.service';
 import { RoleType } from '../auth.routes';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../../shared/utils/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -37,7 +38,8 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private toast: ToastService
   ) {
     this.fetchDropdownData();
 
@@ -95,15 +97,12 @@ export class LoginComponent {
     });
   }
 
-  feedbackMessage: string = ''; // 👈 New: visible feedback message
-  feedbackType: 'success' | 'error' = 'success'; // 👈 New: used to style
-
-  // Replace toast.* calls in submitLogin()
   submitLogin() {
-    this.feedbackMessage = ''; // Clear previous
     if (!this.email || !this.password) {
-      this.feedbackType = 'error';
-      this.feedbackMessage = 'Please enter both email and password';
+      this.toast.error(
+        'Validation Error',
+        'Please enter both email and password.'
+      );
       return;
     }
 
@@ -114,15 +113,12 @@ export class LoginComponent {
 
     this.auth.login(this.role, body).subscribe({
       next: () => {
-        this.feedbackType = 'success';
-        this.feedbackMessage = 'Login successful';
-
+        this.toast.success('Login successful', 'Redirecting to dashboard...');
         this.router.navigate(['/dashboard/redirect']);
       },
       error: (err) => {
         const msg = err?.error?.message || 'Login failed';
-        this.feedbackType = 'error';
-        this.feedbackMessage = msg;
+        this.toast.error('Login failed', msg);
       },
     });
   }

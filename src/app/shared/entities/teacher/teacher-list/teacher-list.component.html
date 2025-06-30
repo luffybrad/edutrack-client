@@ -1,0 +1,206 @@
+<app-loading-overlay [show]="loading"></app-loading-overlay>
+
+<!-- ✅ Page header -->
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+    Teachers
+  </h2>
+
+  <!-- Desktop Add Button -->
+  <a
+    *ngIf="(role$ | async) === RoleType.Admin"
+    routerLink="add"
+    class="hidden md:inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+  >
+    <i class="fas fa-plus"></i>
+    Add New Teacher
+  </a>
+</div>
+
+<!-- ✅ Mobile FAB -->
+<a
+  *ngIf="(role$ | async) === RoleType.Admin"
+  routerLink="add"
+  class="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700"
+>
+  <i class="fas fa-plus text-xl"></i>
+</a>
+
+<!-- 🔍 Search -->
+<div class="mb-6 w-full block relative">
+  <i
+    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+  ></i>
+  <input
+    type="text"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="triggerSearch()"
+    placeholder="Search by Name or Email"
+    class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <button
+    *ngIf="searchTerm"
+    (click)="clearSearch()"
+    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500"
+  >
+    <i class="fas fa-times-circle"></i>
+  </button>
+</div>
+
+<!-- 📋 Table -->
+<div class="overflow-x-auto bg-white rounded shadow">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+          Name
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+          Email
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+          Phone
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+          Class
+        </th>
+        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+          Actions
+        </th>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <tr
+        *ngFor="let teacher of filteredTeachers"
+        class="hover:bg-gray-50 transition"
+      >
+        <td class="px-4 py-3">{{ teacher.name }}</td>
+        <td class="px-4 py-3">{{ teacher.email }}</td>
+        <td class="px-4 py-3">{{ teacher.phone }}</td>
+        <td class="px-4 py-3">
+          <span *ngIf="teacher.class; else noClass">
+            {{ teacher.class.form }}{{ teacher.class.stream }} -
+            {{ teacher.class.year }}
+          </span>
+          <ng-template #noClass>—</ng-template>
+        </td>
+        <td class="px-4 py-3 flex gap-3">
+          <button
+            (click)="openModal(teacher, 'view')"
+            class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+          <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+            <button
+              (click)="openModal(teacher, 'edit')"
+              class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              (click)="deleteTeacher(teacher.id!)"
+              class="text-red-600 hover:text-red-800 flex items-center gap-1"
+            >
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ✅ View/Edit Modal -->
+<div
+  *ngIf="modalMode"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+    <h3 class="text-2xl font-bold mb-4">
+      {{
+        modalMode === "view"
+          ? "Teacher " + selectedTeacher?.name
+          : "Edit Teacher"
+      }}
+    </h3>
+
+    <div *ngIf="selectedTeacher">
+      <!-- Name -->
+      <label class="block mb-4">
+        <span class="text-sm text-gray-700">Name</span>
+        <input
+          [(ngModel)]="selectedTeacher.name"
+          [readonly]="modalMode === 'view'"
+          class="border border-gray-300 rounded px-3 py-2 w-full"
+        />
+      </label>
+
+      <!-- Email -->
+      <label class="block mb-4">
+        <span class="text-sm text-gray-700">Email</span>
+        <input
+          [(ngModel)]="selectedTeacher.email"
+          [readonly]="modalMode === 'view'"
+          class="border border-gray-300 rounded px-3 py-2 w-full"
+        />
+      </label>
+
+      <!-- Phone -->
+      <!-- Phone -->
+      <label class="block mb-4">
+        <span class="text-sm text-gray-700">Phone</span>
+        <input
+          [(ngModel)]="selectedTeacher.phone"
+          [readonly]="modalMode === 'view'"
+          class="border border-gray-300 rounded px-3 py-2 w-full"
+          mask="0000 000 000"
+          placeholder="07XX XXX XXX"
+        />
+      </label>
+
+      <!-- Class Display -->
+      <!-- ✅ Class Field -->
+      <label class="block mb-4">
+        <span class="text-sm text-gray-700">Class</span>
+
+        <!-- VIEW MODE: readonly input -->
+        <input
+          *ngIf="modalMode === 'view'"
+          type="text"
+          [value]="teacherClassDisplay(selectedTeacher!)"
+          readonly
+          class="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100"
+        />
+
+        <!-- EDIT MODE: select dropdown -->
+        <select
+          *ngIf="modalMode === 'edit'"
+          [(ngModel)]="selectedTeacher!.classId"
+          class="border border-gray-300 rounded px-3 py-2 w-full"
+        >
+          <option value="" disabled selected>Select a class</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">
+            Form {{ cls.form }} {{ cls.stream }} ({{ cls.year }})
+          </option>
+        </select>
+      </label>
+
+      <div class="flex justify-end gap-2">
+        <button
+          (click)="closeModal()"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Close
+        </button>
+        <button
+          *ngIf="modalMode === 'edit'"
+          (click)="saveChanges()"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

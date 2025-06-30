@@ -1,0 +1,71 @@
+<app-loading-overlay [show]="loading"></app-loading-overlay>
+
+<div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">Add Teacher</h2>
+    <button
+      type="button"
+      (click)="goBack()"
+      class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+    >
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Teachers</span>
+    </button>
+  </div>
+
+  <!-- Name -->
+  <label class="block mb-4">
+    <span class="text-sm text-gray-700">Name</span>
+    <input
+      [(ngModel)]="newTeacher.name"
+      type="text"
+      placeholder="Full Name"
+      class="border border-gray-300 rounded px-3 py-2 w-full"
+    />
+  </label>
+
+  <!-- Email -->
+  <label class="block mb-4">
+    <span class="text-sm text-gray-700">Email</span>
+    <input
+      [(ngModel)]="newTeacher.email"
+      type="email"
+      placeholder="e.g. example@gmail.com"
+      class="border border-gray-300 rounded px-3 py-2 w-full"
+    />
+  </label>
+
+  <!-- Phone -->
+  <label class="block mb-4">
+    <span class="text-sm text-gray-700">Phone</span>
+    <input
+      [(ngModel)]="newTeacher.phone"
+      type="tel"
+      mask="0000 000 000"
+      placeholder="07XX XXX XXX"
+      class="border border-gray-300 rounded px-3 py-2 w-full"
+    />
+  </label>
+
+  <!-- Class Select -->
+  <label class="block mb-6">
+    <span class="text-sm text-gray-700">Class</span>
+    <select
+      [(ngModel)]="newTeacher.classId"
+      class="border border-gray-300 rounded px-3 py-2 w-full"
+    >
+      <option value="" disabled selected>Select a Class</option>
+      <option *ngFor="let cls of classes" [value]="cls.id">
+        Form {{ cls.form }} {{ cls.stream }} ({{ cls.year }})
+      </option>
+    </select>
+  </label>
+
+  <!-- Actions -->
+  <button
+    (click)="submit()"
+    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+  >
+    Save Teacher
+  </button>
+</div>

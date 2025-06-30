@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { RoleType } from '../auth.routes';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastService } from '../../shared/utils/toast.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -16,13 +17,11 @@ export class ForgotPasswordComponent {
   role: RoleType = RoleType.Admin;
   RoleType = RoleType;
 
-  feedbackMessage: string = '';
-  feedbackType: 'success' | 'error' = 'success';
-
   constructor(
     private auth: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toast: ToastService
   ) {
     this.route.queryParams.subscribe((params) => {
       if (params['role']) this.role = params['role'];
@@ -30,19 +29,23 @@ export class ForgotPasswordComponent {
   }
 
   submitRequest() {
-    this.feedbackMessage = '';
+    if (!this.email) {
+      this.toast.error('Validation Error', 'Please enter your email.');
+      return;
+    }
 
     this.auth.forgotPassword(this.email, this.role).subscribe({
       next: () => {
-        this.feedbackType = 'success';
-        this.feedbackMessage = '✅ Reset link sent. Check your email.';
+        this.toast.success(
+          'Reset link sent',
+          'Check your email for instructions.'
+        );
       },
       error: (err) => {
         const msg =
           err?.error?.message ||
           (typeof err === 'string' ? err : 'Failed to send reset link');
-        this.feedbackType = 'error';
-        this.feedbackMessage = msg;
+        this.toast.error('Request failed', msg);
       },
     });
   }

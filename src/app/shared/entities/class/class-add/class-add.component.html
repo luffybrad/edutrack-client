@@ -1,0 +1,77 @@
+<app-loading-overlay [show]="loading"></app-loading-overlay>
+
+<div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">Add Class</h2>
+    <button
+      type="button"
+      (click)="goBack()"
+      class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+    >
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Classes</span>
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label class="block mb-4">
+      <span class="text-sm text-gray-700">Form</span>
+      <input
+        type="number"
+        max="4"
+        min="1"
+        formControlName="form"
+        class="w-full border border-gray-300 rounded px-3 py-2"
+        placeholder="1-4"
+      />
+      <span
+        *ngIf="form.controls['form'].invalid && form.controls['form'].touched"
+        class="text-red-500 text-xs"
+      >
+        Required (1–4)
+      </span>
+    </label>
+
+    <label class="block mb-4">
+      <span class="text-sm text-gray-700">Stream</span>
+      <input
+        type="text"
+        formControlName="stream"
+        class="w-full border border-gray-300 rounded px-3 py-2"
+        placeholder="e.g. North, A"
+        (input)="transformStreamToUppercase()"
+      />
+      <span
+        *ngIf="
+          form.controls['stream'].invalid && form.controls['stream'].touched
+        "
+        class="text-red-500 text-xs"
+      >
+        Required
+      </span>
+    </label>
+
+    <label class="block mb-4">
+      <span class="text-sm text-gray-700">Year</span>
+      <input
+        type="number"
+        formControlName="year"
+        class="w-full border border-gray-300 rounded px-3 py-2"
+        placeholder="e.g. 2025"
+      />
+      <span
+        *ngIf="form.controls['year'].invalid && form.controls['year'].touched"
+        class="text-red-500 text-xs"
+      >
+        Required
+      </span>
+    </label>
+
+    <button
+      type="submit"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Save Class
+    </button>
+  </form>
+</div>

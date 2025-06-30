@@ -1,0 +1,13 @@
+<div
+  *ngIf="show"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div class="flex flex-col items-center justify-center space-y-4">
+    <!-- Spinner -->
+    <div
+      class="w-16 h-16 border-4 border-dashed border-white border-t-transparent rounded-full animate-spin"
+    ></div>
+
+    <p class="text-white text-lg font-semibold">Loading...</p>
+  </div>
+</div>

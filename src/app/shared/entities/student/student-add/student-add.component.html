@@ -1,0 +1,122 @@
+<div class="max-w-lg mx-auto bg-white p-6 rounded-xl shadow-md relative">
+  <!-- Back Button -->
+
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-3xl font-bold text-gray-800">Add Student</h2>
+
+    <a
+      (click)="goBack()"
+      class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
+    >
+      <i class="fas fa-arrow-left"></i>
+      Back to Student List
+    </a>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+    <!-- Admission No -->
+    <div>
+      <label class="block mb-1 text-sm font-medium text-gray-700"
+        >Admission No</label
+      >
+      <input
+        type="text"
+        formControlName="admNo"
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="e.g. KBHS1234"
+      />
+      <small
+        *ngIf="form.get('admNo')?.invalid && form.get('admNo')?.touched"
+        class="text-red-600"
+      >
+        Admission No is required.
+      </small>
+    </div>
+
+    <!-- Name -->
+    <div>
+      <label class="block mb-1 text-sm font-medium text-gray-700">Name</label>
+      <input
+        type="text"
+        formControlName="name"
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="e.g. John Doe"
+      />
+      <small
+        *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
+        class="text-red-600"
+      >
+        Name is required.
+      </small>
+    </div>
+
+    <!-- Class Dropdown -->
+    <div>
+      <label class="block mb-1 text-sm font-medium text-gray-700">Class</label>
+      <select
+        formControlName="classId"
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="" disabled selected>Select a class</option>
+        <option *ngFor="let cls of classes" [value]="cls.id">
+          Form {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
+        </option>
+      </select>
+      <small
+        *ngIf="form.get('classId')?.invalid && form.get('classId')?.touched"
+        class="text-red-600"
+      >
+        Class is required.
+      </small>
+    </div>
+
+    <!-- Guardian Dropdown -->
+    <!-- Guardian Typeahead -->
+    <div class="relative">
+      <label class="block mb-1 text-sm font-medium text-gray-700"
+        >Guardian (Optional)</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="guardianSearch"
+        [ngModelOptions]="{ standalone: true }"
+        (input)="filterGuardians()"
+        placeholder="Search Guardian by name or phone"
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        autocomplete="off"
+      />
+      <!-- Dropdown List -->
+      <ul
+        *ngIf="filteredGuardians.length > 0 && guardianSearch"
+        class="absolute z-10 bg-white border border-gray-300 rounded-lg shadow-md w-full max-h-60 overflow-y-auto mt-1"
+      >
+        <li
+          *ngFor="let g of filteredGuardians"
+          (click)="selectGuardian(g)"
+          class="px-4 py-2 cursor-pointer hover:bg-blue-50"
+        >
+          {{ g.name }} ({{ g.phone }})
+        </li>
+      </ul>
+      <small
+        *ngIf="!guardianSearch && form.get('guardianId')?.value"
+        class="block mt-1 text-sm text-green-600"
+      >
+        Selected: {{ selectedGuardianName }}
+      </small>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      [disabled]="loading"
+      class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-50"
+    >
+      <i class="fas fa-plus"></i>
+      Add Student
+    </button>
+  </form>
+
+  <!-- Loading Overlay -->
+  <app-loading-overlay [show]="loading"></app-loading-overlay>
+</div>

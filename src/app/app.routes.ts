@@ -54,5 +54,5 @@ export const routes: Routes = [
   { path: 'unauthorized', component: DashboardUnauthorizedComponent },
 
   // fallback
-  { path: '**', redirectTo: '' },
+  { path: '**', redirectTo: 'redirect' },
 ];

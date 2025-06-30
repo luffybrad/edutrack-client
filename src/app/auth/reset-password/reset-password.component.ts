@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastService } from '../../shared/utils/toast.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -14,8 +15,6 @@ export class ResetPasswordComponent {
   newPassword = '';
   token = '';
   showPassword = false;
-  feedbackMessage: string = '';
-  feedbackType: 'success' | 'error' = 'success';
 
   navigateToLogin(): void {
     this.router.navigate(['/login']);
@@ -24,7 +23,8 @@ export class ResetPasswordComponent {
   constructor(
     public auth: AuthService,
     public route: ActivatedRoute,
-    public router: Router
+    public router: Router,
+    private toast: ToastService
   ) {
     this.route.queryParams.subscribe((params) => {
       this.token = params['token'] || '';
@@ -32,23 +32,24 @@ export class ResetPasswordComponent {
   }
 
   submitReset() {
-    this.feedbackMessage = '';
+    if (!this.newPassword) {
+      this.toast.error('Validation Error', 'Please enter a new password.');
+      return;
+    }
 
     this.auth.resetPassword(this.token, this.newPassword).subscribe({
       next: () => {
-        this.feedbackType = 'success';
-        this.feedbackMessage = '✅ Password reset! Redirecting to login...';
+        this.toast.success('Password reset!', 'Redirecting to login...');
 
         setTimeout(() => {
           this.router.navigate(['/login']);
-        }, 2000); // ⏳ Delay to let user see the message
+        }, 2000);
       },
       error: (err) => {
         const msg =
           err?.error?.message ||
           (typeof err === 'string' ? err : 'Failed to reset password');
-        this.feedbackType = 'error';
-        this.feedbackMessage = msg;
+        this.toast.error('Reset failed', msg);
       },
     });
   }

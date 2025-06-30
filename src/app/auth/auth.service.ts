@@ -94,6 +94,8 @@ export class AuthService {
         tap((res) => {
           const profile = res?.data;
           this.loggedIn$.next(true);
+          this.persistSession(profile); // ✅ Save to localStorage + update BehaviorSubject!
+
           this.currentRole = profile?.role ?? null;
         }),
         catchError((err) => {
