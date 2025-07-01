@@ -32,7 +32,7 @@ export class DashboardRedirectComponent implements OnInit {
         }
       },
       error: () => {
-        this.router.navigate(['/login']);
+        this.router.navigate(['/unauthorized']);
       },
     });
   }
