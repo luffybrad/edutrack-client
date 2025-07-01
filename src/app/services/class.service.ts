@@ -33,6 +33,7 @@ export interface Class {
   updatedAt?: Date;
   students?: Student[];
   teacher?: Teacher;
+  studentsCount: number; // ✅ This comes from backend now
 }
 
 @Injectable({ providedIn: 'root' })
