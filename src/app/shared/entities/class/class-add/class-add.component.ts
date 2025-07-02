@@ -74,12 +74,10 @@ export class ClassAddComponent implements OnInit {
         this.router.navigate(['/dashboard/admin/classes']); // go back to class list
       },
       error: (err) => {
-        this.toast.error(
-          'Failed to create class',
-          err.error?.message || 'Please check your input.'
-        );
+        this.toast.apiError('Failed to create class', err);
         this.loading = false;
       },
+
       complete: () => (this.loading = false),
     });
   }

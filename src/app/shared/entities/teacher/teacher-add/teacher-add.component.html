@@ -13,59 +13,104 @@
     </button>
   </div>
 
-  <!-- Name -->
-  <label class="block mb-4">
-    <span class="text-sm text-gray-700">Name</span>
-    <input
-      [(ngModel)]="newTeacher.name"
-      type="text"
-      placeholder="Full Name"
-      class="border border-gray-300 rounded px-3 py-2 w-full"
-    />
-  </label>
+  <form [formGroup]="teacherForm" (ngSubmit)="submit()">
+    <!-- Name -->
+    <label class="block mb-4">
+      <span class="text-sm text-gray-700">Name</span>
+      <input
+        type="text"
+        placeholder="Full Name"
+        formControlName="name"
+        class="border border-gray-300 rounded px-3 py-2 w-full"
+      />
+      <span
+        class="text-red-500 text-sm"
+        *ngIf="
+          teacherForm.get('name')?.touched && teacherForm.get('name')?.invalid
+        "
+      >
+        Name is required.
+      </span>
+    </label>
 
-  <!-- Email -->
-  <label class="block mb-4">
-    <span class="text-sm text-gray-700">Email</span>
-    <input
-      [(ngModel)]="newTeacher.email"
-      type="email"
-      placeholder="e.g. example@gmail.com"
-      class="border border-gray-300 rounded px-3 py-2 w-full"
-    />
-  </label>
+    <!-- Email -->
+    <label class="block mb-4">
+      <span class="text-sm text-gray-700">Email</span>
+      <input
+        type="email"
+        placeholder="e.g. example@gmail.com"
+        formControlName="email"
+        class="border border-gray-300 rounded px-3 py-2 w-full"
+      />
+      <span
+        class="text-red-500 text-sm"
+        *ngIf="
+          teacherForm.get('email')?.touched &&
+          teacherForm.get('email')?.errors?.['required']
+        "
+      >
+        Email is required.
+      </span>
+      <span
+        class="text-red-500 text-sm"
+        *ngIf="
+          teacherForm.get('email')?.touched &&
+          teacherForm.get('email')?.errors?.['email']
+        "
+      >
+        Enter a valid email.
+      </span>
+    </label>
 
-  <!-- Phone -->
-  <label class="block mb-4">
-    <span class="text-sm text-gray-700">Phone</span>
-    <input
-      [(ngModel)]="newTeacher.phone"
-      type="tel"
-      mask="0000 000 000"
-      placeholder="07XX XXX XXX"
-      class="border border-gray-300 rounded px-3 py-2 w-full"
-    />
-  </label>
+    <!-- Phone -->
+    <label class="block mb-4">
+      <span class="text-sm text-gray-700">Phone</span>
+      <input
+        type="tel"
+        mask="0000 000 000"
+        placeholder="07XX XXX XXX"
+        formControlName="phone"
+        class="border border-gray-300 rounded px-3 py-2 w-full"
+      />
+      <span
+        class="text-red-500 text-sm"
+        *ngIf="
+          teacherForm.get('phone')?.touched && teacherForm.get('phone')?.invalid
+        "
+      >
+        Phone is required.
+      </span>
+    </label>
 
-  <!-- Class Select -->
-  <label class="block mb-6">
-    <span class="text-sm text-gray-700">Class</span>
-    <select
-      [(ngModel)]="newTeacher.classId"
-      class="border border-gray-300 rounded px-3 py-2 w-full"
+    <!-- Class Select -->
+    <label class="block mb-6">
+      <span class="text-sm text-gray-700">Class</span>
+      <select
+        formControlName="classId"
+        class="border border-gray-300 rounded px-3 py-2 w-full"
+      >
+        <option value="" disabled>Select a Class</option>
+        <option *ngFor="let cls of classes" [value]="cls.id">
+          Form {{ cls.form }} {{ cls.stream }} ({{ cls.year }})
+        </option>
+      </select>
+      <span
+        class="text-red-500 text-sm"
+        *ngIf="
+          teacherForm.get('classId')?.touched &&
+          teacherForm.get('classId')?.invalid
+        "
+      >
+        Class is required.
+      </span>
+    </label>
+
+    <!-- Actions -->
+    <button
+      type="submit"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
     >
-      <option value="" disabled selected>Select a Class</option>
-      <option *ngFor="let cls of classes" [value]="cls.id">
-        Form {{ cls.form }} {{ cls.stream }} ({{ cls.year }})
-      </option>
-    </select>
-  </label>
-
-  <!-- Actions -->
-  <button
-    (click)="submit()"
-    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-  >
-    Save Teacher
-  </button>
+      Save Teacher
+    </button>
+  </form>
 </div>

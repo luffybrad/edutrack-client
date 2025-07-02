@@ -117,8 +117,7 @@ export class LoginComponent {
         this.router.navigate(['/dashboard/redirect']);
       },
       error: (err) => {
-        const msg = err?.error?.message || 'Login failed';
-        this.toast.error('Login failed', msg);
+        this.toast.apiError('Login failed', err);
       },
     });
   }

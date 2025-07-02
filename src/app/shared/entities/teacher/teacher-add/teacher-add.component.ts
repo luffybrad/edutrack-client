@@ -1,10 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { TeacherService, Teacher } from '../../../../services/teacher.service';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
+import { TeacherService } from '../../../../services/teacher.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { ToastService } from '../../../utils/toast.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
@@ -15,38 +21,37 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     LoadingOverlayComponent,
     NgxMaskDirective,
   ],
   providers: [provideNgxMask()],
 })
 export class TeacherAddComponent implements OnInit {
-  newTeacher: Teacher = {
-    name: '',
-    email: '',
-    phone: '',
-    classId: '',
-  };
-
+  teacherForm: FormGroup;
   classes: Class[] = [];
   loading = false;
 
   constructor(
+    private fb: FormBuilder,
     private teacherService: TeacherService,
     private classService: ClassService,
     private toast: ToastService,
     private router: Router
-  ) {}
+  ) {
+    this.teacherForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+      classId: ['', Validators.required],
+    });
+  }
 
   ngOnInit(): void {
     this.fetchClasses();
   }
 
-  goBack() {
-    this.router.navigate(['/dashboard/admin/teachers']);
-  }
-
-  fetchClasses() {
+  fetchClasses(): void {
     this.classService.getAll().subscribe({
       next: (res) => {
         this.classes = res.data;
@@ -55,29 +60,31 @@ export class TeacherAddComponent implements OnInit {
     });
   }
 
-  submit() {
-    if (
-      !this.newTeacher.name ||
-      !this.newTeacher.email ||
-      !this.newTeacher.phone ||
-      !this.newTeacher.classId
-    ) {
-      this.toast.error('Please fill in all fields');
+  goBack(): void {
+    this.router.navigate(['/dashboard/admin/teachers']);
+  }
+
+  submit(): void {
+    if (this.teacherForm.invalid) {
+      this.teacherForm.markAllAsTouched();
+      this.toast.error('Please fill in all required fields');
       return;
     }
 
     this.loading = true;
 
-    this.teacherService.create(this.newTeacher).subscribe({
+    this.teacherService.create(this.teacherForm.value).subscribe({
       next: () => {
-        this.toast.success('Teacher created');
+        this.toast.success('Teacher created successfully!');
         this.router.navigate(['/dashboard/admin/teachers']);
       },
       error: (err) => {
-        this.toast.error('Failed to create teacher', err.error?.message);
+        this.toast.apiError('Failed to create teacher', err);
         this.loading = false;
       },
-      complete: () => (this.loading = false),
+      complete: () => {
+        this.loading = false;
+      },
     });
   }
 }

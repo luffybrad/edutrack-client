@@ -207,8 +207,22 @@
           {{ selectedStudent.class?.year }}
         </p>
       </div>
+      <!-- 📚 Class -->
+      <div *ngIf="modalMode === 'edit'" class="block mb-4">
+        <label class="block mb-1 text-sm text-gray-700">Class</label>
+        <select
+          [(ngModel)]="selectedStudent.classId"
+          class="border border-gray-300 rounded px-3 py-2 w-full"
+        >
+          <option value="" disabled>-- Select Class --</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">
+            {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
+          </option>
+        </select>
+      </div>
+
       <!-- 👪 Guardian Info -->
-      <div *ngIf="guardian" class="block mb-4">
+      <div *ngIf="guardian && modalMode === 'view'" class="block mb-4">
         <span class="text-sm text-gray-700">Guardian</span>
         <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2">
           {{ guardian.name }}

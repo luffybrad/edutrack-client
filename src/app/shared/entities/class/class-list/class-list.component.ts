@@ -9,6 +9,8 @@ import { LoadingOverlayComponent } from '../../../components/loading-overlay/loa
 import { map, Subject, debounceTime, Observable } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { Teacher } from '../../../../services/teacher.service';
+import { formatApiErrors } from '../../../utils/formatApiError';
+import { extractErrorMessage } from '../../../utils/extractErrorMessage';
 
 @Component({
   standalone: true,
@@ -117,8 +119,10 @@ export class ClassListComponent implements OnInit {
           this.fetchClasses();
           this.closeModal();
         },
-        error: (err) =>
-          this.toast.error('Failed to update class', err.error?.message),
+        error: (err) => {
+          // ✅ Use your improved formatter, always returns string
+          this.toast.apiError('Failed to update class', err);
+        },
       });
   }
 
@@ -129,8 +133,7 @@ export class ClassListComponent implements OnInit {
         this.toast.success('Class deleted');
         this.fetchClasses();
       },
-      error: (err) =>
-        this.toast.error('Failed to delete class', err.error?.message),
+      error: (err) => this.toast.apiError('Failed to delete class', err),
     });
   }
 }

@@ -37,7 +37,7 @@ export class TeacherListComponent implements OnInit {
   role$!: Observable<RoleType | null>;
   RoleType = RoleType;
 
-  private searchSubject = new Subject<string>(); // ✅ Subject for debounce
+  private searchSubject = new Subject<string>();
 
   constructor(
     private teacherService: TeacherService,
@@ -53,7 +53,6 @@ export class TeacherListComponent implements OnInit {
       .getProfile$()
       .pipe(map((p) => p?.role ?? null));
 
-    // ✅ Setup debounce
     this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
       this.applySearchFilter();
     });
@@ -66,7 +65,7 @@ export class TeacherListComponent implements OnInit {
         this.teachers = res.data;
         this.filteredTeachers = [...this.teachers];
       },
-      error: () => this.toast.error('Failed to load teachers'),
+      error: (err) => this.toast.apiError('Failed to load teachers', err),
       complete: () => (this.loading = false),
     });
   }
@@ -76,7 +75,7 @@ export class TeacherListComponent implements OnInit {
       next: (res) => {
         this.classes = res.data;
       },
-      error: () => this.toast.error('Failed to load classes'),
+      error: (err) => this.toast.apiError('Failed to load classes', err),
     });
   }
 
@@ -125,8 +124,7 @@ export class TeacherListComponent implements OnInit {
           this.fetchTeachers();
           this.closeModal();
         },
-        error: (err) =>
-          this.toast.error('Failed to update teacher', err.error?.message),
+        error: (err) => this.toast.apiError('Failed to update teacher', err),
       });
   }
 
@@ -138,8 +136,7 @@ export class TeacherListComponent implements OnInit {
         this.toast.success('Teacher deleted');
         this.fetchTeachers();
       },
-      error: (err) =>
-        this.toast.error('Failed to delete teacher', err.error?.message),
+      error: (err) => this.toast.apiError('Failed to delete teacher', err),
     });
   }
 }

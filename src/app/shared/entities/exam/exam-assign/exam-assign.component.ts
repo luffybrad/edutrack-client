@@ -1,28 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import { SubjectService, Subject } from '../../../../services/subject.service';
-import { ClassService, Class } from '../../../../services/class.service';
-import { ToastService } from '../../../utils/toast.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+
+import { ExamService, Exam } from '../../../../services/exam.service';
+import { ClassService, Class } from '../../../../services/class.service';
+import { ToastService } from '../../../utils/toast.service';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
 
 @Component({
-  selector: 'app-subject-assign',
+  selector: 'app-exam-assign',
   standalone: true,
   imports: [FormsModule, CommonModule, RouterModule, LoadingOverlayComponent],
-  templateUrl: './subject-assign.component.html',
-  styleUrls: ['./subject-assign.component.css'],
+  templateUrl: './exam-assign.component.html',
+  styleUrls: ['./exam-assign.component.css'],
 })
-export class SubjectAssignComponent implements OnInit {
-  subject: Subject | null = null;
+export class ExamAssignComponent implements OnInit {
+  exam: Exam | null = null;
   classes: (Class & { selected: boolean })[] = [];
   selectedClassIds: string[] = [];
   classSearchTerm = '';
   loading = false;
 
   constructor(
-    private subjectService: SubjectService,
+    private examService: ExamService,
     private classService: ClassService,
     private toast: ToastService,
     private route: ActivatedRoute,
@@ -32,22 +33,18 @@ export class SubjectAssignComponent implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.toast.error('No subject ID provided.');
+      this.toast.error('No exam ID provided.');
       return;
     }
 
     this.loading = true;
 
-    this.subjectService.getById(id).subscribe({
+    this.examService.getById(id).subscribe({
       next: (res) => {
-        this.subject = res.data;
-
+        this.exam = res.data;
         const assignedClassIds =
-          (res.data.assignedClasses
-            ?.map((c) => c.id)
-            .filter(Boolean) as string[]) || [];
-        this.selectedClassIds = assignedClassIds;
-
+          (res.data.classes?.map((c) => c.id).filter(Boolean) as string[]) ||
+          [];
         this.selectedClassIds = assignedClassIds;
 
         this.classService.getAll().subscribe({
@@ -62,26 +59,25 @@ export class SubjectAssignComponent implements OnInit {
         });
       },
       error: (err) => {
-        this.toast.apiError('Failed to load subject.', err);
+        this.toast.apiError('Failed to load exam', err);
         this.loading = false;
       },
     });
   }
 
-  filteredClasses(): (Class & { selected: boolean })[] {
+  filteredClasses() {
     const term = this.classSearchTerm.trim().toLowerCase();
-    return term
-      ? this.classes.filter((cls) =>
-          `${cls.form} ${cls.stream} ${cls.year}`.toLowerCase().includes(term)
-        )
-      : this.classes;
+    if (!term) return this.classes;
+    return this.classes.filter((cls) =>
+      `${cls.form} ${cls.stream} ${cls.year}`.toLowerCase().includes(term)
+    );
   }
 
-  backToSubjects(): void {
-    this.router.navigate(['/dashboard/admin/subjects']);
+  backToExams() {
+    this.router.navigate(['/dashboard/admin/exams']);
   }
 
-  toggleClass(classItem: Class & { selected: boolean }, event?: Event): void {
+  toggleClass(classItem: Class & { selected: boolean }, event?: Event) {
     classItem.selected = !classItem.selected;
 
     if (classItem.selected) {
@@ -94,29 +90,30 @@ export class SubjectAssignComponent implements OnInit {
       );
     }
 
-    event?.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+    }
   }
 
-  updateSubjectClasses(): void {
-    if (!this.subject?.id) {
-      this.toast.error('No subject selected.');
+  updateExamClasses() {
+    if (!this.exam?.id) {
+      this.toast.error('No exam selected.');
       return;
     }
 
     this.loading = true;
-
-    this.subjectService
+    this.examService
       .updateClasses({
-        subjectId: this.subject.id,
+        examId: this.exam.id,
         classIds: this.selectedClassIds,
       })
       .subscribe({
         next: () => {
-          this.toast.success('Subject classes updated successfully.');
-          this.router.navigate(['/dashboard/admin/subjects']);
+          this.toast.success('Exam classes updated successfully.');
+          this.router.navigate(['/dashboard/admin/exams']);
         },
         error: (err) => {
-          this.toast.apiError('Failed to update classes.', err);
+          this.toast.apiError('Failed to update exam classes', err);
           this.loading = false;
         },
         complete: () => {

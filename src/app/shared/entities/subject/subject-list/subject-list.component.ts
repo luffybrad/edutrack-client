@@ -27,7 +27,6 @@ export class SubjectListComponent implements OnInit {
   })[] = [];
 
   selectedSubject: Subject | null = null;
-
   modalMode: 'add' | 'edit' | null = null;
 
   loading = false;
@@ -38,19 +37,13 @@ export class SubjectListComponent implements OnInit {
   searchTerm = '';
   private searchSubject = new RxSubject<string>();
 
-  private sanitizeName(rawName: string): string {
-    return rawName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-  }
-
   constructor(
     private subjectService: SubjectService,
     private auth: AuthService,
     private toast: ToastService,
     private router: Router
   ) {
-    this.role$ = this.auth
-      .getProfile$()
-      .pipe(map((profile) => profile?.role ?? null));
+    this.role$ = this.auth.getProfile$().pipe(map((p) => p?.role ?? null));
   }
 
   ngOnInit(): void {
@@ -62,7 +55,6 @@ export class SubjectListComponent implements OnInit {
     });
   }
 
-  // 📦 Fetch all
   fetchSubjects(): void {
     this.loading = true;
     this.subjectService.getAll().subscribe({
@@ -71,8 +63,7 @@ export class SubjectListComponent implements OnInit {
         this.applySearch();
       },
       error: (err) => {
-        console.error(err);
-        this.toast.error('Failed to fetch subjects', err.error?.message || '');
+        this.toast.apiError('Failed to fetch subjects', err);
       },
       complete: () => {
         this.loading = false;
@@ -81,39 +72,35 @@ export class SubjectListComponent implements OnInit {
   }
 
   getTotalStudents(subject: Subject & { assignedClasses?: Class[] }): number {
-    if (!subject.assignedClasses) return 0;
-
-    // Now use the studentsCount property directly:
-    return subject.assignedClasses.reduce(
-      (sum, cls) => sum + (cls.studentsCount || 0),
-      0
+    return (
+      subject.assignedClasses?.reduce(
+        (sum, cls) => sum + (cls.studentsCount || 0),
+        0
+      ) || 0
     );
   }
 
   assignClasses(subject: Subject): void {
-    // ✅ Navigate to /subjects/{id}/assign or your preferred path
-    this.router.navigate(['/dashboard/admin/subjects/', subject.id, 'assign']);
+    this.router.navigate([
+      '/dashboard/admin/subjects',
+      subject.id,
+      'assign-classes',
+    ]);
   }
 
-  // 🔍 Search logic
   triggerSearch(): void {
     this.searchSubject.next(this.searchTerm);
   }
 
   applySearch(): void {
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm.trim().toLowerCase();
     this.filteredSubjects = this.subjects.filter((s) =>
       s.name.toLowerCase().includes(term)
     );
   }
 
   allowLettersOnly(event: KeyboardEvent): void {
-    const inputChar = event.key;
-
-    // Regex: allow only letters A-Z, a-z
-    const regex = /^[a-zA-Z]$/;
-
-    if (!regex.test(inputChar)) {
+    if (!/^[a-zA-Z]$/.test(event.key)) {
       event.preventDefault();
     }
   }
@@ -123,7 +110,6 @@ export class SubjectListComponent implements OnInit {
     this.applySearch();
   }
 
-  // 🔄 Modal Handling
   openModal(mode: 'add' | 'edit', subject?: Subject): void {
     this.modalMode = mode;
     this.selectedSubject =
@@ -135,60 +121,41 @@ export class SubjectListComponent implements OnInit {
     this.selectedSubject = null;
   }
 
+  private sanitizeName(raw: string): string {
+    return raw.replace(/[^a-zA-Z]/g, '').toLowerCase();
+  }
+
   saveSubject(): void {
     if (!this.selectedSubject?.name?.trim()) {
       this.toast.error('Subject name is required');
       return;
     }
 
-    // Sanitize for backend
     const sanitizedName = this.sanitizeName(this.selectedSubject.name);
-
     if (!sanitizedName) {
       this.toast.error('Subject name must contain letters.');
       return;
     }
 
-    // Sanitize final value: no symbols, no spaces, all lowercase
-    this.selectedSubject.name = this.selectedSubject.name
-      .toLowerCase()
-      .replace(/[^a-z]/g, '');
-
-    // We keep the original for display, but only send the sanitized
-    const payload: Subject = {
-      ...this.selectedSubject,
-      name: sanitizedName,
-    };
+    const payload: Subject = { ...this.selectedSubject, name: sanitizedName };
 
     if (this.modalMode === 'add') {
       this.subjectService.create(payload).subscribe({
         next: () => {
-          this.toast.success('Subject created successfully!');
+          this.toast.success('Subject created!');
           this.fetchSubjects();
           this.closeModal();
         },
-        error: (err) => {
-          console.error(err);
-          this.toast.error(
-            'Failed to create subject',
-            err.error?.message || ''
-          );
-        },
+        error: (err) => this.toast.apiError('Failed to create subject', err),
       });
-    } else if (this.modalMode === 'edit' && this.selectedSubject?.id) {
+    } else if (this.modalMode === 'edit' && this.selectedSubject.id) {
       this.subjectService.update(this.selectedSubject.id, payload).subscribe({
         next: () => {
-          this.toast.success('Subject updated successfully!');
+          this.toast.success('Subject updated!');
           this.fetchSubjects();
           this.closeModal();
         },
-        error: (err) => {
-          console.error(err);
-          this.toast.error(
-            'Failed to update subject',
-            err.error?.message || ''
-          );
-        },
+        error: (err) => this.toast.apiError('Failed to update subject', err),
       });
     }
   }
@@ -201,14 +168,10 @@ export class SubjectListComponent implements OnInit {
         this.toast.success('Subject deleted.');
         this.fetchSubjects();
       },
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Failed to delete subject', err.error?.message || '');
-      },
+      error: (err) => this.toast.apiError('Failed to delete subject', err),
     });
   }
 
-  // ✅ Future bulk selection logic
   get selectedIds(): string[] {
     return this.subjects.filter((s) => s.selected).map((s) => s.id!);
   }
@@ -217,37 +180,26 @@ export class SubjectListComponent implements OnInit {
     return this.subjects.length > 0 && this.subjects.every((s) => s.selected);
   }
 
+  toggleSelectAll(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.subjects.forEach((s) => (s.selected = checked));
+  }
+
   bulkDeleteSelected(): void {
     const ids = this.selectedIds;
     if (ids.length === 0) return;
-
     if (!confirm(`Delete ${ids.length} subjects?`)) return;
 
     let completed = 0;
     ids.forEach((id) => {
       this.subjectService.delete(id).subscribe({
-        next: () => {
-          this.toast.success('Subject deleted.');
-        },
-        error: (err) => {
-          console.error(err);
-          this.toast.error(
-            'Failed to delete subject',
-            err.error?.message || ''
-          );
-        },
+        next: () => this.toast.success('Subject deleted.'),
+        error: (err) => this.toast.apiError('Failed to delete subject', err),
         complete: () => {
           completed++;
-          if (completed === ids.length) {
-            this.fetchSubjects();
-          }
+          if (completed === ids.length) this.fetchSubjects();
         },
       });
     });
-  }
-
-  toggleSelectAll(event: any): void {
-    const checked = event.target.checked;
-    this.subjects.forEach((s) => (s.selected = checked));
   }
 }

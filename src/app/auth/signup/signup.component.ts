@@ -7,11 +7,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ToastService } from '../../shared/utils/toast.service';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgxMaskDirective],
+  providers: [NgxMaskDirective],
   templateUrl: './signup.component.html',
 })
 export class SignupComponent {
@@ -67,14 +69,11 @@ export class SignupComponent {
     }
 
     this.auth.signup(this.role, body).subscribe({
-      next: (res) => {
+      next: () => {
         this.toast.success('Signup successful', 'You can now login.');
       },
       error: (err) => {
-        const msg =
-          err?.error?.message ||
-          (typeof err === 'string' ? err : 'Signup failed.');
-        this.toast.error('Signup failed', msg);
+        this.toast.apiError('Signup failed', err);
       },
     });
   }

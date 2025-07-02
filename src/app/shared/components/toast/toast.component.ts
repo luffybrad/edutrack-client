@@ -11,4 +11,8 @@ import { Component } from '@angular/core';
 })
 export class ToastComponent {
   constructor(public toastService: ToastService) {}
+
+  isArray(value: any): boolean {
+    return Array.isArray(value);
+  }
 }

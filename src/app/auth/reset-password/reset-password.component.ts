@@ -40,16 +40,12 @@ export class ResetPasswordComponent {
     this.auth.resetPassword(this.token, this.newPassword).subscribe({
       next: () => {
         this.toast.success('Password reset!', 'Redirecting to login...');
-
         setTimeout(() => {
           this.router.navigate(['/login']);
         }, 2000);
       },
       error: (err) => {
-        const msg =
-          err?.error?.message ||
-          (typeof err === 'string' ? err : 'Failed to reset password');
-        this.toast.error('Reset failed', msg);
+        this.toast.apiError('Reset failed', err);
       },
     });
   }

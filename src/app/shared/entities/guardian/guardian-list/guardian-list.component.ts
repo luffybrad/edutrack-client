@@ -39,7 +39,7 @@ export class GuardianListComponent implements OnInit {
   RoleType = RoleType;
 
   students: Student[] = [];
-  studentSearch = ''; // 🔍 bound to raw student search
+  studentSearch = '';
   private searchSubject = new Subject<string>();
 
   constructor(
@@ -52,9 +52,11 @@ export class GuardianListComponent implements OnInit {
   ngOnInit(): void {
     this.fetchGuardians();
     this.fetchStudents();
+
     this.role$ = this.authService
       .getProfile$()
       .pipe(map((p) => p?.role ?? null));
+
     this.searchSubject
       .pipe(debounceTime(300))
       .subscribe(() => this.applyFilters());
@@ -67,7 +69,7 @@ export class GuardianListComponent implements OnInit {
         this.guardians = res.data;
         this.filteredGuardians = [...this.guardians];
       },
-      error: () => this.toast.error('Failed to load guardians'),
+      error: (err) => this.toast.apiError('Failed to load guardians', err),
       complete: () => (this.loading = false),
     });
   }
@@ -77,7 +79,7 @@ export class GuardianListComponent implements OnInit {
       next: (res) => {
         this.students = res.data;
       },
-      error: () => this.toast.error('Failed to load students'),
+      error: (err) => this.toast.apiError('Failed to load students', err),
     });
   }
 
@@ -102,15 +104,11 @@ export class GuardianListComponent implements OnInit {
 
   openModal(guardian: Guardian, mode: 'view' | 'edit'): void {
     this.modalMode = mode;
-
-    // Copy the guardian object so edits don’t mutate the list directly
     this.selectedGuardian = {
       ...guardian,
       studentIds: guardian.students?.map((s) => s.id!) ?? [],
     };
-
     this.studentSearch = '';
-    this.filteredStudents;
   }
 
   closeModal(): void {
@@ -125,7 +123,7 @@ export class GuardianListComponent implements OnInit {
     this.guardianService
       .update(this.selectedGuardian.id!, {
         ...this.selectedGuardian,
-        studentIds: this.selectedGuardian.studentIds || [],
+        studentIds: this.selectedGuardian.studentIds ?? [],
       })
       .subscribe({
         next: () => {
@@ -133,8 +131,7 @@ export class GuardianListComponent implements OnInit {
           this.fetchGuardians();
           this.closeModal();
         },
-        error: (err) =>
-          this.toast.error('Failed to update guardian', err.error?.message),
+        error: (err) => this.toast.apiError('Failed to update guardian', err),
       });
   }
 
@@ -146,14 +143,12 @@ export class GuardianListComponent implements OnInit {
         this.toast.success('Guardian deleted');
         this.fetchGuardians();
       },
-      error: (err) =>
-        this.toast.error('Failed to delete guardian', err.error?.message),
+      error: (err) => this.toast.apiError('Failed to delete guardian', err),
     });
   }
 
-  // ✅ Dynamically filtered student list for chip select
   get filteredStudents(): Student[] {
-    const term = this.studentSearch.toLowerCase();
+    const term = this.studentSearch.trim().toLowerCase();
     return this.students.filter(
       (s) =>
         s.name.toLowerCase().includes(term) ||
@@ -161,7 +156,6 @@ export class GuardianListComponent implements OnInit {
     );
   }
 
-  // ✅ Add/remove studentId to local selectedGuardian studentIds
   toggleStudent(studentId: string): void {
     if (!this.selectedGuardian) return;
 

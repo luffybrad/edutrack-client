@@ -1,6 +1,6 @@
-// src/app/shared/utils/toast.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { extractErrorMessage } from './extractErrorMessage'; // 👈 import your helper!
 
 export interface ToastMessage {
   text: string; // Title
@@ -19,7 +19,7 @@ export class ToastService {
     clearTimeout(this.timeout);
     this.timeout = setTimeout(() => {
       this.toast$.next(null);
-    }, 4000);
+    }, 5000);
   }
 
   success(text: string, description?: string) {
@@ -32,6 +32,10 @@ export class ToastService {
 
   info(text: string, description?: string) {
     this.show({ text, type: 'info', description });
+  }
+
+  apiError(title: string, error: unknown) {
+    this.error(title, extractErrorMessage(error));
   }
 
   clear() {

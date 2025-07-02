@@ -11,6 +11,8 @@ import { GuardianListComponent } from '../../shared/entities/guardian/guardian-l
 import { GuardianAddComponent } from '../../shared/entities/guardian/guardian-add/guardian-add.component';
 import { SubjectListComponent } from '../../shared/entities/subject/subject-list/subject-list.component';
 import { SubjectAssignComponent } from '../../shared/entities/subject/subject-assign/subject-assign.component';
+import { ExamListComponent } from '../../shared/entities/exam/exam-list/exam-list.component';
+import { ExamAssignComponent } from '../../shared/entities/exam/exam-assign/exam-assign.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -27,7 +29,12 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'guardians', component: GuardianListComponent },
       { path: 'guardians/add', component: GuardianAddComponent },
       { path: 'subjects', component: SubjectListComponent },
-      { path: 'subjects/:id/assign', component: SubjectAssignComponent },
+      {
+        path: 'subjects/:id/assign-classes',
+        component: SubjectAssignComponent,
+      },
+      { path: 'exams', component: ExamListComponent },
+      { path: 'exams/:id/assign-classes', component: ExamAssignComponent },
       // Add more admin pages here like 'students', 'results', etc.
     ],
   },

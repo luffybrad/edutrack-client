@@ -45,7 +45,7 @@ export class ForgotPasswordComponent {
         const msg =
           err?.error?.message ||
           (typeof err === 'string' ? err : 'Failed to send reset link');
-        this.toast.error('Request failed', msg);
+        this.toast.apiError('Request failed', err);
       },
     });
   }

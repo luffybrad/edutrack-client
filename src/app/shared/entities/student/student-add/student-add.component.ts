@@ -7,14 +7,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { ClassService } from '../../../../services/class.service';
-import { GuardianService } from '../../../../services/guardian.service';
 import { StudentService } from '../../../../services/student.service';
 import { ToastService } from '../../../utils/toast.service';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
 import { Class } from '../../../../services/class.service';
-import { Guardian } from '../../../../services/guardian.service';
+
 @Component({
   standalone: true,
   selector: 'app-student-add',
@@ -30,32 +29,11 @@ import { Guardian } from '../../../../services/guardian.service';
 export class StudentAddComponent implements OnInit {
   form: FormGroup;
   classes: Class[] = [];
-  guardians: Guardian[] = [];
   loading = false;
-  guardianSearch = '';
-  filteredGuardians: Guardian[] = [];
-  selectedGuardianName = '';
-
-  filterGuardians() {
-    const term = this.guardianSearch.toLowerCase();
-    this.filteredGuardians = this.guardians.filter(
-      (g) =>
-        g.name.toLowerCase().includes(term) ||
-        g.phone.toLowerCase().includes(term)
-    );
-  }
-
-  selectGuardian(g: Guardian) {
-    this.form.patchValue({ guardianId: g.id });
-    this.guardianSearch = '';
-    this.filteredGuardians = [];
-    this.selectedGuardianName = `${g.name} (${g.phone})`;
-  }
 
   constructor(
     private fb: FormBuilder,
     private classService: ClassService,
-    private guardianService: GuardianService,
     private studentService: StudentService,
     private toast: ToastService,
     private router: Router
@@ -64,21 +42,19 @@ export class StudentAddComponent implements OnInit {
       admNo: ['', Validators.required],
       name: ['', Validators.required],
       classId: ['', Validators.required],
-      guardianId: [''],
     });
   }
 
   ngOnInit(): void {
     this.loadClasses();
-    this.loadGuardians();
   }
 
-  loadClasses() {
+  loadClasses(): void {
     this.classService.getAll().subscribe({
       next: (res) => {
         this.classes = res.data;
       },
-      error: () => this.toast.error('Failed to load classes'),
+      error: (err) => this.toast.apiError('Failed to load classes', err),
     });
   }
 
@@ -86,16 +62,7 @@ export class StudentAddComponent implements OnInit {
     this.router.navigate(['/dashboard/admin/students']);
   }
 
-  loadGuardians() {
-    this.guardianService.getAll().subscribe({
-      next: (res) => {
-        this.guardians = res.data;
-      },
-      error: () => this.toast.error('Failed to load guardians'),
-    });
-  }
-
-  submit() {
+  submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -106,10 +73,11 @@ export class StudentAddComponent implements OnInit {
     this.studentService.create(this.form.value).subscribe({
       next: () => {
         this.toast.success('Student added successfully!');
-        this.router.navigate(['/dashboard/admin/students']); // back to list
+        this.router.navigate(['/dashboard/admin/students']);
       },
       error: (err) => {
-        this.toast.error('Failed to add student', err.error?.message || '');
+        this.toast.apiError('Failed to add student', err);
+        this.loading = false;
       },
       complete: () => (this.loading = false),
     });

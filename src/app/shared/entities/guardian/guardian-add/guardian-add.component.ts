@@ -37,7 +37,7 @@ export class GuardianAddComponent implements OnInit {
   fetchStudents(): void {
     this.studentService.getAll().subscribe({
       next: (res) => (this.students = res.data),
-      error: () => this.toast.error('Failed to load students'),
+      error: (err) => this.toast.apiError('Failed to load students', err),
     });
   }
 
@@ -81,8 +81,7 @@ export class GuardianAddComponent implements OnInit {
           this.toast.success('Guardian created');
           this.router.navigate(['dashboard/admin/guardians']); // adjust your route
         },
-        error: (err) =>
-          this.toast.error('Failed to create guardian', err.error?.message),
+        error: (err) => this.toast.apiError('Failed to create guardian', err),
       });
   }
 }
