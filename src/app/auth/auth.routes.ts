@@ -1,3 +1,5 @@
+import { environment } from '../../environments/environment';
+
 // src/app/auth/auth.routes.ts
 export enum RoleType {
   Admin = 'admin',
@@ -5,7 +7,7 @@ export enum RoleType {
   Teacher = 'teacher',
 }
 
-const BASE = 'http://localhost:3000/api/auth';
+const BASE = environment.apiUrl + '/auth';
 
 export const AuthEndpoints = {
   login: {
