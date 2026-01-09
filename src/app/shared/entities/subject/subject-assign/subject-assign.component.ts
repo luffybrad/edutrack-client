@@ -1,28 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { SubjectService, Subject } from '../../../../services/subject.service';
+import { StudentService, Student } from '../../../../services/student.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { ToastService } from '../../../utils/toast.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-subject-assign',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterModule, LoadingOverlayComponent],
+  imports: [FormsModule, CommonModule, LoadingOverlayComponent],
   templateUrl: './subject-assign.component.html',
-  styleUrls: ['./subject-assign.component.css'],
 })
 export class SubjectAssignComponent implements OnInit {
-  subject: Subject | null = null;
-  classes: (Class & { selected: boolean })[] = [];
-  selectedClassIds: string[] = [];
-  classSearchTerm = '';
+  subject!: Subject;
+  classes: Class[] = [];
+  students: Student[] = [];
+  assignedStudentIds = new Set<string>();
   loading = false;
 
   constructor(
     private subjectService: SubjectService,
+    private studentService: StudentService,
     private classService: ClassService,
     private toast: ToastService,
     private route: ActivatedRoute,
@@ -30,98 +31,94 @@ export class SubjectAssignComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
+    const subjectId = this.route.snapshot.paramMap.get('id');
+    if (!subjectId) {
       this.toast.error('No subject ID provided.');
       return;
     }
 
     this.loading = true;
 
-    this.subjectService.getById(id).subscribe({
-      next: (res) => {
-        this.subject = res.data;
+    Promise.all([
+      this.subjectService.getById(subjectId).toPromise(),
+      this.classService.getAll().toPromise(),
+      this.studentService.getAll().toPromise(),
+    ])
+      .then(([subjectRes, classRes, studentRes]) => {
+        this.subject = subjectRes!.data;
+        this.classes = classRes!.data;
+        this.students = studentRes!.data;
 
-        const assignedClassIds =
-          (res.data.assignedClasses
-            ?.map((c) => c.id)
-            .filter(Boolean) as string[]) || [];
-        this.selectedClassIds = assignedClassIds;
+        // Track assigned students
+        this.assignedStudentIds = new Set(
+          (this.subject.students ?? [])
+            .map(s => s.id)
+            .filter((id): id is string => !!id)
+        );
+      })
+      .catch(err => this.toast.apiError('Failed to load data', err))
+      .finally(() => (this.loading = false));
+  }
 
-        this.selectedClassIds = assignedClassIds;
+  /** Students in a class */
+// Make classId access safe everywhere
+getStudentsForClass(classId?: string): Student[] {
+  return classId ? this.students.filter(s => s.classId === classId) : [];
+}
 
-        this.classService.getAll().subscribe({
-          next: (res) => {
-            this.classes = res.data.map((cls) => ({
-              ...cls,
-              selected: assignedClassIds.includes(cls.id ?? ''),
-            }));
-          },
-          error: (err) => this.toast.apiError('Failed to fetch classes', err),
-          complete: () => (this.loading = false),
-        });
-      },
-      error: (err) => {
-        this.toast.apiError('Failed to load subject.', err);
-        this.loading = false;
-      },
+
+  /** Student checkbox state */
+  isAssigned(student: Student): boolean {
+    return !!student.id && this.assignedStudentIds.has(student.id);
+  }
+
+  /** Class checkbox state */
+  isClassFullyAssigned(cls: Class): boolean {
+    const classStudents = this.getStudentsForClass(cls.id!);
+    return classStudents.length > 0 && classStudents.every(s => !!s.id && this.assignedStudentIds.has(s.id));
+  }
+
+  /** Toggle all students in a class */
+  toggleClass(cls: Class, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.getStudentsForClass(cls.id!).forEach(student => {
+      if (!student.id) return;
+      checked
+        ? this.assignedStudentIds.add(student.id)
+        : this.assignedStudentIds.delete(student.id);
     });
   }
 
-  filteredClasses(): (Class & { selected: boolean })[] {
-    const term = this.classSearchTerm.trim().toLowerCase();
-    return term
-      ? this.classes.filter((cls) =>
-          `${cls.form} ${cls.stream} ${cls.year}`.toLowerCase().includes(term)
-        )
-      : this.classes;
+  /** Toggle single student */
+  toggleStudent(student: Student, event: Event): void {
+    if (!student.id) return;
+    const checked = (event.target as HTMLInputElement).checked;
+    checked
+      ? this.assignedStudentIds.add(student.id)
+      : this.assignedStudentIds.delete(student.id);
   }
 
-  backToSubjects(): void {
-    this.router.navigate(['/dashboard/admin/subjects']);
-  }
-
-  toggleClass(classItem: Class & { selected: boolean }, event?: Event): void {
-    classItem.selected = !classItem.selected;
-
-    if (classItem.selected) {
-      if (classItem.id && !this.selectedClassIds.includes(classItem.id)) {
-        this.selectedClassIds.push(classItem.id);
-      }
-    } else {
-      this.selectedClassIds = this.selectedClassIds.filter(
-        (id) => id !== classItem.id
-      );
-    }
-
-    event?.stopPropagation();
-  }
-
-  updateSubjectClasses(): void {
-    if (!this.subject?.id) {
-      this.toast.error('No subject selected.');
-      return;
-    }
+  /** Save assignments to backend */
+  save(): void {
+    if (!this.subject?.id) return;
 
     this.loading = true;
-
-    this.subjectService
-      .updateClasses({
-        subjectId: this.subject.id,
-        classIds: this.selectedClassIds,
-      })
+    this.subjectService.updateSubjectStudents(this.subject.id, Array.from(this.assignedStudentIds))
       .subscribe({
         next: () => {
-          this.toast.success('Subject classes updated successfully.');
+          this.toast.success('Subject students updated successfully.');
           this.router.navigate(['/dashboard/admin/subjects']);
         },
-        error: (err) => {
-          this.toast.apiError('Failed to update classes.', err);
+        error: err => {
+          this.toast.apiError('Failed to update subject students', err);
           this.loading = false;
         },
-        complete: () => {
-          this.loading = false;
-        },
+        complete: () => (this.loading = false),
       });
+  }
+
+  /** Total students currently assigned */
+  getTotalAssigned(): number {
+    return this.assignedStudentIds.size;
   }
 }

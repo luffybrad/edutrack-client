@@ -1,14 +1,16 @@
+//src/app/services/subject.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../shared/utils/api-response';
-import { Class } from './class.service';
+import { Student } from './student.service';
 
 export interface Subject {
   id?: string;
   name: string;
-  assignedClasses?: Class[];
+  totalStudents?: number;
+  students?: Student[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -47,14 +49,15 @@ export class SubjectService {
     });
   }
 
-  /** ✅ REPLACEMENT: Replace the assigned classes for a subject (adds new, removes missing) */
-  updateClasses(payload: {
-    subjectId: string;
-    classIds: string[];
-  }): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(
-      `${this.baseUrl}/update-classes`,
-      payload,
+
+  // 🔹 Sync students assigned to a subject
+  updateSubjectStudents(
+    subjectId: string,
+    studentIds: string[]
+  ): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(
+      `${this.baseUrl}/${subjectId}/students`,
+      { studentIds },
       { withCredentials: true }
     );
   }

@@ -71,6 +71,7 @@ export class SignupComponent {
     this.auth.signup(this.role, body).subscribe({
       next: () => {
         this.toast.success('Signup successful', 'You can now login.');
+        this.goToLogin();
       },
       error: (err) => {
         this.toast.apiError('Signup failed', err);

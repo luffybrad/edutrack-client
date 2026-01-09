@@ -1,6 +1,5 @@
-import { RoleType } from '../../../../auth/auth.routes';
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { debounceTime, Subject as RxSubject, Observable } from 'rxjs';
@@ -9,7 +8,7 @@ import { SubjectService, Subject } from '../../../../services/subject.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { ToastService } from '../../../utils/toast.service';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
-import { Class } from '../../../../services/class.service';
+import { RoleType } from '../../../../auth/auth.routes';
 
 @Component({
   standalone: true,
@@ -19,18 +18,13 @@ import { Class } from '../../../../services/class.service';
   styleUrls: ['./subject-list.component.css'],
 })
 export class SubjectListComponent implements OnInit {
-  subjects: (Subject & { selected?: boolean; assignedClasses?: Class[] })[] =
-    [];
-  filteredSubjects: (Subject & {
-    selected?: boolean;
-    assignedClasses?: Class[];
-  })[] = [];
+  subjects: (Subject & { selected?: boolean })[] = [];
+  filteredSubjects: (Subject & { selected?: boolean })[] = [];
 
   selectedSubject: Subject | null = null;
   modalMode: 'add' | 'edit' | null = null;
 
   loading = false;
-
   RoleType = RoleType;
   role$: Observable<RoleType | null>;
 
@@ -59,33 +53,13 @@ export class SubjectListComponent implements OnInit {
     this.loading = true;
     this.subjectService.getAll().subscribe({
       next: (res) => {
+        // subjects now contain totalStudents property
         this.subjects = res.data.map((s) => ({ ...s, selected: false }));
         this.applySearch();
       },
-      error: (err) => {
-        this.toast.apiError('Failed to fetch subjects', err);
-      },
-      complete: () => {
-        this.loading = false;
-      },
+      error: (err) => this.toast.apiError('Failed to fetch subjects', err),
+      complete: () => (this.loading = false),
     });
-  }
-
-  getTotalStudents(subject: Subject & { assignedClasses?: Class[] }): number {
-    return (
-      subject.assignedClasses?.reduce(
-        (sum, cls) => sum + (cls.studentsCount || 0),
-        0
-      ) || 0
-    );
-  }
-
-  assignClasses(subject: Subject): void {
-    this.router.navigate([
-      '/dashboard/admin/subjects',
-      subject.id,
-      'assign-classes',
-    ]);
   }
 
   triggerSearch(): void {
@@ -99,16 +73,23 @@ export class SubjectListComponent implements OnInit {
     );
   }
 
-  allowLettersOnly(event: KeyboardEvent): void {
-    if (!/^[a-zA-Z]$/.test(event.key)) {
-      event.preventDefault();
-    }
-  }
-
   clearSearch(): void {
     this.searchTerm = '';
     this.applySearch();
   }
+
+  allowLettersOnly(event: KeyboardEvent): void {
+  if (!/^[a-zA-Z]$/.test(event.key)) {
+    event.preventDefault();
+  }
+}
+
+assignClasses(subject: Subject): void {
+  // Navigate to the assign-classes page for this subject
+  this.router.navigate(['/dashboard/admin/subjects', subject.id, 'assign-classes']);
+}
+
+
 
   openModal(mode: 'add' | 'edit', subject?: Subject): void {
     this.modalMode = mode;
