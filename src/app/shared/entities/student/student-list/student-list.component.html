@@ -4,71 +4,43 @@
   <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
     Students
   </h2>
-  <a
-    *ngIf="(role$ | async) === RoleType.Admin"
-    routerLink="add"
-    class="hidden md:inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-  >
+  <a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
+    class="hidden md:inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
     <i class="fas fa-plus"></i>
     Add New Student
   </a>
 </div>
 <!-- fab mobile button -->
-<a
-  *ngIf="(role$ | async) === RoleType.Admin"
-  routerLink="add"
-  class="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700"
->
+<a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
+  class="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700">
   <i class="fas fa-plus text-xl"></i>
 </a>
 
 <!-- 🔍 Search UI -->
 <div class="mb-6 w-full block relative">
-  <i
-    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-  ></i>
-  <input
-    type="text"
-    [(ngModel)]="searchTerm"
-    (ngModelChange)="applyFilters()"
-    placeholder="Search by name or Adm No"
-    class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-  <button
-    *ngIf="searchTerm"
-    (click)="clearSearch()"
-    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500"
-  >
+  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+  <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Search by name or Adm No"
+    class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+  <button *ngIf="searchTerm" (click)="clearSearch()"
+    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500">
     <i class="fas fa-times-circle"></i>
   </button>
 </div>
 <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
   <!-- Form Filter -->
-  <select
-    [(ngModel)]="filterForm"
-    (change)="applyFilters()"
-    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-  >
+  <select [(ngModel)]="filterForm" (change)="applyFilters()"
+    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
     <option value="">All Forms</option>
     <option *ngFor="let f of [1, 2, 3, 4]" [value]="f">Form {{ f }}</option>
   </select>
 
   <!-- Stream Filter -->
-  <input
-    [(ngModel)]="filterStream"
-    (ngModelChange)="applyFilters()"
-    placeholder="Stream"
-    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
+  <input [(ngModel)]="filterStream" (ngModelChange)="applyFilters()" placeholder="Stream"
+    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
 
   <!-- Year Filter -->
-  <input
-    type="number"
-    [(ngModel)]="filterYear"
-    (ngModelChange)="applyFilters()"
-    placeholder="Year"
-    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
+  <input type="number" [(ngModel)]="filterYear" (ngModelChange)="applyFilters()" placeholder="Year"
+    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
 </div>
 
 <!-- 📋 Table -->
@@ -77,12 +49,8 @@
     <thead class="bg-gray-50">
       <tr>
         <th class="px-4 py-3">
-          <input
-            type="checkbox"
-            [checked]="allSelected"
-            (change)="toggleSelectAll($event)"
-            class="form-checkbox h-4 w-4 text-blue-600"
-          />
+          <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)"
+            class="form-checkbox h-4 w-4 text-blue-600" />
         </th>
         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
           Adm No
@@ -100,16 +68,9 @@
       </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
-      <tr
-        *ngFor="let student of filteredStudents"
-        class="hover:bg-gray-50 transition"
-      >
+      <tr *ngFor="let student of filteredStudents" class="hover:bg-gray-50 transition">
         <td class="px-4 py-3">
-          <input
-            type="checkbox"
-            [(ngModel)]="student.selected"
-            class="form-checkbox h-4 w-4 text-blue-600"
-          />
+          <input type="checkbox" [(ngModel)]="student.selected" class="form-checkbox h-4 w-4 text-blue-600" />
         </td>
         <td class="px-4 py-3">{{ student.admNo }}</td>
         <td class="px-4 py-3">{{ student.name }}</td>
@@ -120,29 +81,21 @@
 
         <td class="px-4 py-3 flex gap-3">
           <!-- 👁 View -->
-          <button
-            (click)="openModal(student, 'view')"
-            class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-          >
+          <button (click)="openModal(student, 'view')"
+            class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
             <i class="fas fa-eye"></i>
           </button>
 
           <ng-container *ngIf="role$ | async as role">
             <!-- ✏️ Edit -->
-            <button
-              *ngIf="role === RoleType.Admin"
-              (click)="openModal(student, 'edit')"
-              class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1"
-            >
+            <button *ngIf="role === RoleType.Admin" (click)="openModal(student, 'edit')"
+              class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1">
               <i class="fas fa-edit"></i>
             </button>
 
             <!-- 🗑 Delete -->
-            <button
-              *ngIf="role === RoleType.Admin"
-              (click)="deleteStudent(student.id!)"
-              class="text-red-600 hover:text-red-800 flex items-center gap-1"
-            >
+            <button *ngIf="role === RoleType.Admin" (click)="deleteStudent(student.id!)"
+              class="text-red-600 hover:text-red-800 flex items-center gap-1">
               <i class="fas fa-trash-alt"></i>
             </button>
           </ng-container>
@@ -154,27 +107,21 @@
 
 <!-- 🗑 Bulk Delete -->
 <ng-container *ngIf="role$ | async as role">
-  <button
-    *ngIf="role === RoleType.Admin && selectedIds.length > 0"
-    (click)="bulkDeleteSelected()"
-    class="mt-4 inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
-  >
+  <button *ngIf="role === RoleType.Admin && selectedIds.length > 0" (click)="bulkDeleteSelected()"
+    class="mt-4 inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">
     <i class="fas fa-trash"></i>
     Delete ({{ selectedIds.length }})
   </button>
 </ng-container>
 
 <!-- 🔍 View / Edit Modal -->
-<div
-  *ngIf="modalMode"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
->
+<div *ngIf="modalMode" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
     <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
       {{
-        modalMode === "view"
-          ? "Student: " + selectedStudent?.admNo || "—"
-          : "Edit Student"
+      modalMode === "view"
+      ? "Student: " + selectedStudent?.admNo || "—"
+      : "Edit Student"
       }}
     </h3>
 
@@ -182,21 +129,15 @@
       <!-- Adm No -->
       <label class="block mb-4">
         <span class="text-sm text-gray-700">Adm No</span>
-        <input
-          class="border border-gray-300 rounded px-3 py-2 w-full"
-          [(ngModel)]="selectedStudent.admNo"
-          [readonly]="modalMode === 'view'"
-        />
+        <input class="border border-gray-300 rounded px-3 py-2 w-full" [(ngModel)]="selectedStudent.admNo"
+          [readonly]="modalMode === 'view'" />
       </label>
 
       <!-- Name -->
       <label class="block mb-4">
         <span class="text-sm text-gray-700">Name</span>
-        <input
-          class="border border-gray-300 rounded px-3 py-2 w-full"
-          [(ngModel)]="selectedStudent.name"
-          [readonly]="modalMode === 'view'"
-        />
+        <input class="border border-gray-300 rounded px-3 py-2 w-full" [(ngModel)]="selectedStudent.name"
+          [readonly]="modalMode === 'view'" />
       </label>
 
       <!-- 📚 Class Details (View Mode Only) -->
@@ -210,10 +151,7 @@
       <!-- 📚 Class -->
       <div *ngIf="modalMode === 'edit'" class="block mb-4">
         <label class="block mb-1 text-sm text-gray-700">Class</label>
-        <select
-          [(ngModel)]="selectedStudent.classId"
-          class="border border-gray-300 rounded px-3 py-2 w-full"
-        >
+        <select [(ngModel)]="selectedStudent.classId" class="border border-gray-300 rounded px-3 py-2 w-full">
           <option value="" disabled>-- Select Class --</option>
           <option *ngFor="let cls of classes" [value]="cls.id">
             {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
@@ -221,33 +159,31 @@
         </select>
       </div>
 
-      <!-- 👪 Guardian Info -->
-      <div *ngIf="guardian && modalMode === 'view'" class="block mb-4">
-        <span class="text-sm text-gray-700">Guardian</span>
-        <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2">
-          {{ guardian.name }}
-        </p>
-        <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2">
-          {{ guardian.phone }}
-        </p>
-        <p class="border border-gray-300 rounded px-3 py-2 w-full">
-          {{ guardian.email }}
+      <!-- 👪 Subject Info -->
+      <div *ngIf="subjectsDisplay && modalMode === 'view'" class="block mb-4">
+        <span class="text-sm text-gray-700">Subjects</span>
+        <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2 capitalize">
+          {{ subjectsDisplay }}
         </p>
       </div>
 
+
+
+      <!-- 👪 Guardian Info -->
+      <div *ngIf="guardian && modalMode === 'view'" class="block mb-4">
+        <span class="text-sm text-gray-700">Guardian</span>
+        <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2 capitalize">
+          {{ guardian.name }} - {{ guardian.phone}}
+      </div>
+
       <div class="flex justify-end gap-2">
-        <button
-          (click)="closeModal()"
-          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 inline-flex items-center gap-1"
-        >
+        <button (click)="closeModal()"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 inline-flex items-center gap-1">
           <i class="fas fa-times"></i>
           Close
         </button>
-        <button
-          *ngIf="modalMode === 'edit'"
-          (click)="saveChanges()"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center gap-1"
-        >
+        <button *ngIf="modalMode === 'edit'" (click)="saveChanges()"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center gap-1">
           <i class="fas fa-save"></i>
           Save
         </button>

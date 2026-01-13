@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExamAssignComponent } from './exam-assign.component';
+import { TimetableListComponent } from './timetable-list.component';
 
-describe('ExamAssignComponent', () => {
-  let component: ExamAssignComponent;
-  let fixture: ComponentFixture<ExamAssignComponent>;
+describe('TimetableListComponent', () => {
+  let component: TimetableListComponent;
+  let fixture: ComponentFixture<TimetableListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExamAssignComponent]
+      imports: [TimetableListComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ExamAssignComponent);
+    fixture = TestBed.createComponent(TimetableListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

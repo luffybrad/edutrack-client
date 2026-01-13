@@ -1,0 +1,117 @@
+<div class="p-6 bg-slate-50 min-h-screen">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800">Student Analysis</h1>
+        <p class="text-slate-500 mt-1">Comprehensive performance review and progression tracking</p>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!loading" class="animate-fade-in space-y-8">
+      
+      <!-- Performance Overview -->
+      <section *ngIf="comparison$ | async as results" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-100">
+          <h2 class="text-xl font-semibold text-slate-800">Performance History</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-medium">
+              <tr>
+                <th class="px-6 py-4">Exam</th>
+                <th class="px-6 py-4">Total Score</th>
+                <th class="px-6 py-4">Mean Score</th>
+                <th class="px-6 py-4">Grade</th>
+                <th class="px-6 py-4">Date</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let res of results" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-slate-900">{{ res.examName }}</td>
+                <td class="px-6 py-4 text-slate-600">{{ res.totalScore }}</td>
+                <td class="px-6 py-4 text-slate-600">{{ res.meanScore }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': ['A', 'A-'].includes(res.grade),
+                      'bg-blue-100 text-blue-800': ['B+', 'B', 'B-'].includes(res.grade),
+                      'bg-yellow-100 text-yellow-800': ['C+', 'C', 'C-'].includes(res.grade),
+                      'bg-red-100 text-red-800': ['D+', 'D', 'D-', 'E'].includes(res.grade)
+                    }">
+                    {{ res.grade }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-slate-500">{{ res.examDate | date:'mediumDate' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Subject Progression -->
+      <section *ngIf="progression$ | async as prog" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-100">
+          <h2 class="text-xl font-semibold text-slate-800">Subject Progression</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-medium">
+              <tr>
+                <th class="px-6 py-4">Subject</th>
+                <!-- Dynamically show exams from the first subject's data as headers if possible, 
+                     or just rely on the fact that all subjects likely have same exams logic or list them. 
+                     For simplicity assuming standard set of exams. 
+                     Actually, we need the exam names from the progression data structure.
+                     Let's extract them from the first subject entry. -->
+                <ng-container *ngIf="getSubjects(prog).length > 0">
+                   <th *ngFor="let exam of prog.progression[getSubjects(prog)[0]]" class="px-6 py-4">
+                     {{ exam.examName }}
+                   </th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let subject of getSubjects(prog)" class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-slate-900">{{ subject }}</td>
+                <td *ngFor="let exam of prog.progression[subject]" class="px-6 py-4 text-slate-600">
+                  {{ exam.score !== null ? exam.score : '-' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      
+      <!-- Improvement Analysis -->
+      <section *ngIf="improvement$ | async as improvements" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+         <div class="p-6 border-b border-slate-100">
+          <h2 class="text-xl font-semibold text-slate-800">Exam-to-Exam Improvement</h2>
+        </div>
+        <div class="p-6">
+           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div *ngFor="let item of improvements" class="p-4 rounded-lg border border-slate-200 flex items-center justify-between">
+                 <span class="font-medium text-slate-700">{{ item.examName }}</span>
+                 <div class="flex items-center gap-2">
+                    <span class="text-lg font-bold" [ngClass]="item.delta >= 0 ? 'text-green-600' : 'text-red-600'">
+                       {{ item.delta > 0 ? '+' : ''}}{{ item.delta }}
+                    </span>
+                    <span class="text-xs text-slate-400">points</span>
+                 </div>
+              </div>
+           </div>
+           <div *ngIf="!improvements || improvements.length === 0" class="text-slate-500 italic">
+             No improvement data available yet (requires at least 2 exams).
+           </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>

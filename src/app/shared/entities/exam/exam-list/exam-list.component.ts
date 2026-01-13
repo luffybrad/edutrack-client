@@ -1,8 +1,9 @@
+//src/app/shared/entities/exam/exam-list/exam-list.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
-import { debounceTime, Observable, Subject as RxSubject } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { debounceTime, Subject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ExamService, Exam } from '../../../../services/exam.service';
@@ -16,7 +17,7 @@ import { RoleType } from '../../../../auth/auth.routes';
   selector: 'app-exam-list',
   imports: [CommonModule, FormsModule, RouterModule, LoadingOverlayComponent],
   templateUrl: './exam-list.component.html',
-  styleUrl: './exam-list.component.css',
+  styleUrls: ['./exam-list.component.css'],
 })
 export class ExamListComponent implements OnInit {
   exams: (Exam & { selected?: boolean })[] = [];
@@ -26,32 +27,27 @@ export class ExamListComponent implements OnInit {
   modalMode: 'add' | 'edit' | 'view' | null = null;
 
   loading = false;
+  searchTerm = '';
+  private searchSubject = new Subject<string>();
 
   RoleType = RoleType;
-  role$: Observable<RoleType | null>;
-
-  searchTerm = '';
-  private searchSubject = new RxSubject<string>();
+  role$!: Observable<RoleType | null>; // initialized later in ngOnInit
 
   constructor(
     private examService: ExamService,
     private auth: AuthService,
-    private toast: ToastService,
-    private router: Router
-  ) {
-    this.role$ = this.auth
-      .getProfile$()
-      .pipe(map((profile) => profile?.role ?? null));
-  }
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void {
-    this.auth.getProfile().subscribe();
+    // initialize role$ safely after auth is available
+    this.role$ = this.auth.getProfile$().pipe(map((profile) => profile?.role ?? null));
+
     this.fetchExams();
-    this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
-      this.applySearch();
-    });
+    this.searchSubject.pipe(debounceTime(300)).subscribe(() => this.applySearch());
   }
 
+  // --- Fetch exams ---
   fetchExams(): void {
     this.loading = true;
     this.examService.getAll().subscribe({
@@ -59,31 +55,19 @@ export class ExamListComponent implements OnInit {
         this.exams = (res.data || []).map((e) => ({ ...e, selected: false }));
         this.applySearch();
       },
-      error: (err) => {
-        this.toast.apiError('Failed to fetch exams', err);
-      },
-      complete: () => {
-        this.loading = false;
-      },
+      error: (err) => this.toast.apiError('Failed to fetch exams', err),
+      complete: () => (this.loading = false),
     });
   }
-  goToAssignClasses(id: string): void {
-    this.router.navigate(['/dashboard/admin/exams', id, 'assign-classes']);
-  }
 
-  getTotalStudents(exam: Exam): number {
-    return exam.students?.length || 0;
-  }
-
+  // --- Search ---
   triggerSearch(): void {
     this.searchSubject.next(this.searchTerm);
   }
 
   applySearch(): void {
     const term = this.searchTerm.toLowerCase();
-    this.filteredExams = this.exams.filter((e) =>
-      e.name.toLowerCase().includes(term)
-    );
+    this.filteredExams = this.exams.filter((e) => e.name.toLowerCase().includes(term));
   }
 
   clearSearch(): void {
@@ -91,16 +75,13 @@ export class ExamListComponent implements OnInit {
     this.applySearch();
   }
 
+  // --- Modals ---
   openModal(mode: 'add' | 'edit' | 'view', exam?: Exam): void {
     this.modalMode = mode;
-
     if (mode === 'add') {
       this.selectedExam = { name: '', date: '' };
     } else if (exam) {
-      this.selectedExam = {
-        ...exam,
-        date: mode === 'edit' ? exam.date?.split('T')[0] : exam.date,
-      };
+      this.selectedExam = { ...exam, date: exam.date?.split('T')[0] };
     } else {
       this.selectedExam = null;
     }
@@ -111,85 +92,69 @@ export class ExamListComponent implements OnInit {
     this.selectedExam = null;
   }
 
+  // --- CRUD ---
   saveExam(): void {
-    if (!this.selectedExam?.name?.trim() || !this.selectedExam?.date?.trim()) {
-      this.toast.error('Exam name and date are required');
+    if (!this.selectedExam?.name || !this.selectedExam?.date) {
+      this.toast.error('Name and date are required');
       return;
     }
 
-    if (this.modalMode === 'add') {
-      this.examService.create(this.selectedExam).subscribe({
-        next: () => {
-          this.toast.success('Exam created successfully!');
-          this.fetchExams();
-          this.closeModal();
-        },
-        error: (err) => {
-          this.toast.apiError('Failed to create exam', err);
-        },
-      });
-    } else if (this.modalMode === 'edit' && this.selectedExam?.id) {
-      this.examService
-        .update(this.selectedExam.id, this.selectedExam)
-        .subscribe({
-          next: () => {
-            this.toast.success('Exam updated successfully!');
-            this.fetchExams();
-            this.closeModal();
-          },
-          error: (err) => {
-            this.toast.apiError('Failed to update exam', err);
-          },
-        });
-    }
-  }
+    const action =
+      this.modalMode === 'add'
+        ? this.examService.create(this.selectedExam)
+        : this.selectedExam.id
+        ? this.examService.update(this.selectedExam.id, this.selectedExam)
+        : null;
 
-  deleteExam(id: string): void {
-    if (!confirm('Are you sure you want to delete this exam?')) return;
-
-    this.examService.delete(id).subscribe({
+    action?.subscribe({
       next: () => {
-        this.toast.success('Exam deleted.');
+        this.toast.success(
+          `Exam ${this.modalMode === 'add' ? 'created' : 'updated'} successfully`
+        );
         this.fetchExams();
+        this.closeModal();
       },
-      error: (err) => {
-        this.toast.apiError('Failed to delete exam', err);
-      },
+      error: (err) => this.toast.apiError('Failed to save exam', err),
     });
   }
 
-  get selectedIds(): string[] {
-    return this.exams.filter((e) => e.selected).map((e) => e.id!);
-  }
-
-  get allSelected(): boolean {
-    return this.exams.length > 0 && this.exams.every((e) => e.selected);
+  deleteExam(id: string): void {
+    if (!confirm('Are you sure?')) return;
+    this.examService.delete(id).subscribe({
+      next: () => {
+        this.toast.success('Exam deleted');
+        this.fetchExams();
+      },
+      error: (err) => this.toast.apiError('Failed to delete exam', err),
+    });
   }
 
   bulkDeleteSelected(): void {
-    const ids = this.selectedIds;
-    if (ids.length === 0) return;
-
-    if (!confirm(`Delete ${ids.length} exams?`)) return;
+    const ids = this.exams.filter((e) => e.selected).map((e) => e.id!);
+    if (!ids.length || !confirm(`Delete ${ids.length} exams?`)) return;
 
     let completed = 0;
     ids.forEach((id) => {
       this.examService.delete(id).subscribe({
-        next: () => {
-          this.toast.success('Exam deleted.');
-        },
-        error: (err: any) => {
-          this.toast.apiError('Failed to delete exam', err);
-        },
+        next: () => this.toast.success('Exam deleted'),
+        error: (err) => this.toast.apiError('Failed to delete exam', err),
         complete: () => {
           completed++;
-          if (completed === ids.length) {
-            this.fetchExams();
-          }
+          if (completed === ids.length) this.fetchExams();
         },
       });
     });
   }
+
+  // --- Selected Exams ---
+get selectedIds(): string[] {
+  return this.exams.filter((e) => e.selected).map((e) => e.id!);
+}
+
+get allSelected(): boolean {
+  return this.exams.length > 0 && this.exams.every((e) => e.selected);
+}
+
 
   toggleSelectAll(event: any): void {
     const checked = event.target.checked;

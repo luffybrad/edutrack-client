@@ -1,8 +1,10 @@
+// src/app/services/student.service.ts
 import { ApiResponse } from '../shared/utils/api-response';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Subject } from './subject.service';
 
 export interface StudentClass {
   id: string;
@@ -17,6 +19,7 @@ export interface Student {
   name: string;
   classId: string;
   guardianId?: string;
+  subjects?: Subject[];
   class?: StudentClass; // ✅ proper nested type
 }
 
@@ -66,9 +69,9 @@ export class StudentService {
     );
   }
 
-  getSubjects(id: string): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/${id}/subjects`, {
-      withCredentials: true,
-    });
-  }
+  // getSubjects(id: string): Observable<ApiResponse<any>> {
+  //   return this.http.get<ApiResponse<any>>(`${this.baseUrl}/${id}/subjects`, {
+  //     withCredentials: true,
+  //   });
+  // }
 }

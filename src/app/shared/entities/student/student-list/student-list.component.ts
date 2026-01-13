@@ -30,8 +30,12 @@ export class StudentListComponent implements OnInit {
   selectedStudent: Student | null = null;
   modalMode: 'view' | 'edit' | null = null;
   guardian: Guardian | null = null;
+
   loading = false;
   classes: Class[] = [];
+  subjectsDisplay: string = '';
+
+
 
   role$: Observable<RoleType | null>;
   RoleType = RoleType;
@@ -67,6 +71,17 @@ export class StudentListComponent implements OnInit {
       this.applyFilters();
     });
   }
+
+
+
+setSubjectsDisplay(student: Student) {
+  if (student.subjects?.length) {
+    this.subjectsDisplay = student.subjects.map(s => s.name).join(', ');
+  } else {
+    this.subjectsDisplay = 'No subjects assigned';
+  }
+}
+
 
   fetchClasses(): void {
     this.classService.getAll().subscribe({
@@ -134,6 +149,7 @@ export class StudentListComponent implements OnInit {
       ...student,
       classId: student.classId || student.class?.id || '', // ✅ always ensure classId is set for editing
     };
+    this.setSubjectsDisplay(this.selectedStudent);
     this.modalMode = mode;
 
     if (mode === 'view' && student.guardianId) {
@@ -150,6 +166,13 @@ export class StudentListComponent implements OnInit {
         },
       });
     }
+if (mode === 'view' && student.subjects) {
+  this.setSubjectsDisplay(student);
+
+  this.guardian = null;
+  this.loading = false;
+}
+
   }
 
   closeModal(): void {

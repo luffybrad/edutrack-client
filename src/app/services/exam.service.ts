@@ -1,4 +1,4 @@
-// ✅ src/app/services/exam.service.ts
+// src/app/services/exam.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,7 +15,6 @@ export interface Exam {
   date: string; // ISO format
   createdAt?: string;
   updatedAt?: string;
-  classes?: Class[]; // Optional, if you want to include class details
   students?: Student[];
 }
 
@@ -51,22 +50,6 @@ export class ExamService {
 
   delete(id: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
-  }
-  updateClasses(data: {
-    examId: string;
-    classIds: string[];
-  }): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(
-      `${this.baseUrl}/update-classes`,
-      data,
-      { withCredentials: true }
-    );
-  }
-
-  getStudents(id: string): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/${id}/students`, {
       withCredentials: true,
     });
   }

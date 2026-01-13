@@ -1,0 +1,69 @@
+<div class="p-6 max-w-4xl mx-auto bg-white rounded shadow">
+    <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+        <i class="fas fa-calendar-alt"></i> Generate Timetable
+    </h2>
+
+    <form [formGroup]="generateForm" (ngSubmit)="generateTimetable()" class="space-y-4">
+
+        <!-- Class Select -->
+        <div>
+            <label class="block font-semibold">Class</label>
+            <select formControlName="classId" class="border p-2 rounded w-full">
+                <option value="">Select class</option>
+                <option *ngFor="let cls of classes" [value]="cls.id">
+                    {{ cls.form }} {{ cls.stream }} ({{ cls.year }})
+                </option>
+            </select>
+        </div>
+
+        <!-- Subjects Multi-Select -->
+        <div>
+            <label class="block font-semibold">Subjects</label>
+            <select formControlName="subjectIds" multiple class="border p-2 rounded w-full">
+                <option *ngFor="let sub of subjects" [ngValue]="sub.id">{{ sub.name }}</option>
+            </select>
+        </div>
+
+        <!-- Lessons per day -->
+        <div>
+            <label class="block font-semibold">Lessons per day</label>
+            <input type="number" formControlName="lessonsPerDay" min="1" class="border p-2 rounded w-full" />
+        </div>
+
+        <!-- Generate Button -->
+        <button type="submit" [disabled]="loading"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+            <i class="fas fa-plus"></i> Generate
+        </button>
+
+    </form>
+
+    <!-- Loading / Error -->
+    <div *ngIf="loading" class="mt-4 text-blue-600">Generating timetable...</div>
+    <div *ngIf="error" class="mt-4 text-red-600 font-semibold">{{ error }}</div>
+
+    <!-- Generated Timetable -->
+    <div *ngIf="generatedTimetable?.schedule" class="mt-6">
+        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+            <i class="fas fa-table"></i> Generated Timetable
+        </h3>
+        <table class="border-collapse border border-gray-300 w-full">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border px-2 py-1">Day</th>
+                    <th *ngFor="let lesson of getLessons('MONDAY'); let i = index" class="border px-2 py-1">
+                        Lesson {{ i + 1 }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let day of weekDays">
+                    <td class="border px-2 py-1 font-semibold">{{ day }}</td>
+                    <td *ngFor="let lesson of getLessons(day)" class="border px-2 py-1">
+                        {{ lesson }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

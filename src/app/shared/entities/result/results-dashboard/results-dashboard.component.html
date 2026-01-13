@@ -1,0 +1,41 @@
+<div class="results-dashboard p-6 bg-gray-50 min-h-screen">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Exams</h2>
+
+    <div *ngIf="loading" class="text-gray-500">Loading exams...</div>
+    <div *ngIf="!loading && exams.length === 0" class="text-gray-500">No exams available</div>
+
+    <div *ngIf="exams.length" class="overflow-x-auto mt-4">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-3 px-6 text-left text-gray-700 font-medium uppercase tracking-wider">Exam Name</th>
+                    <th class="py-3 px-6 text-left text-gray-700 font-medium uppercase tracking-wider">Date</th>
+                    <th class="py-3 px-6 text-center text-gray-700 font-medium uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let exam of exams" class="hover:bg-gray-50 border-b border-gray-200">
+                    <td class="py-3 px-6 text-gray-800">{{ exam.name }}</td>
+                    <td class="py-3 px-6 text-gray-600">{{ exam.date | date:'mediumDate' }}</td>
+                    <td class="py-3 px-6 text-center flex gap-2 justify-center">
+                        <!-- Upload -->
+                        <label
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors duration-200">
+                            <span *ngIf="uploadingExamId !== exam.id">Upload Results</span>
+                            <span *ngIf="uploadingExamId === exam.id">Uploading...</span>
+                            <input type="file" (change)="onFileSelected($event, exam.id!)" hidden accept=".xlsx,.xls" />
+                        </label>
+
+                        <!-- Analytics -->
+                        <a [routerLink]="['exam', exam.id]"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+                            📊 Analytics
+                        </a>
+
+                    </td>
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,3 +1,4 @@
+//src/app/dashboard/admin/admin.routes.ts
 import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { AdminHomeComponent } from './admin-home/admin-home.component';
@@ -12,7 +13,13 @@ import { GuardianAddComponent } from '../../shared/entities/guardian/guardian-ad
 import { SubjectListComponent } from '../../shared/entities/subject/subject-list/subject-list.component';
 import { SubjectAssignComponent } from '../../shared/entities/subject/subject-assign/subject-assign.component';
 import { ExamListComponent } from '../../shared/entities/exam/exam-list/exam-list.component';
-import { ExamAssignComponent } from '../../shared/entities/exam/exam-assign/exam-assign.component';
+import { ResultsDashboardComponent } from '../../shared/entities/result/results-dashboard/results-dashboard.component';
+import { ResultsExamAnalysisComponent } from '../../shared/entities/result/results-exam-analysis/results-exam-analysis.component';
+import { ResultsSubjectAnalysisComponent } from '../../shared/entities/result/results-subject-analysis/results-subject-analysis.component';
+import { ResultsStudentAnalysisComponent } from '../../shared/entities/result/results-student-analysis/results-student-analysis.component';
+import { TimetableListComponent } from '../../shared/entities/timetable/timetable-list/timetable-list.component';
+import { TimetableGenerateComponent } from '../../shared/entities/timetable/timetable-generate/timetable-generate.component';
+
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -30,12 +37,35 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'guardians/add', component: GuardianAddComponent },
       { path: 'subjects', component: SubjectListComponent },
       {
-        path: 'subjects/:id/assign-classes',
+        path: 'subjects/:id/assign-students',
         component: SubjectAssignComponent,
       },
       { path: 'exams', component: ExamListComponent },
-      { path: 'exams/:id/assign-classes', component: ExamAssignComponent },
-      // Add more admin pages here like 'students', 'results', etc.
+      {
+        path: 'results', component: ResultsDashboardComponent
+      },
+  {
+    path: 'results/exam/:examId',
+    component: ResultsExamAnalysisComponent
+  },
+
+  {
+  path: 'results/exam/:examId/subjects',
+  component: ResultsSubjectAnalysisComponent
+},
+{
+  path: 'results/exam/:examId/students',
+  component: ResultsStudentAnalysisComponent
+},
+{
+  path:'timetables',
+  component: TimetableListComponent
+},
+{
+  path: 'timetables/generate',
+  component: TimetableGenerateComponent
+}
+
     ],
   },
 ];

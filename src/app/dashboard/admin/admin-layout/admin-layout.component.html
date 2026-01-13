@@ -1,15 +1,9 @@
 <div class="flex flex-col md:flex-row min-h-screen">
   <!-- Backdrop for mobile -->
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-    *ngIf="sidebarOpen"
-    (click)="toggleSidebar()"
-  ></div>
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
 
   <!-- Mobile Top Bar -->
-  <header
-    class="flex items-center justify-between md:hidden bg-blue-800 text-white px-4 py-3 z-50"
-  >
+  <header class="flex items-center justify-between md:hidden bg-blue-800 text-white px-4 py-3 z-50">
     <h2 class="text-lg font-bold">KBHS Admin</h2>
     <button (click)="toggleSidebar()" class="focus:outline-none">
       <i class="fas fa-bars text-xl"></i>
@@ -23,91 +17,64 @@
       '-translate-x-full': !sidebarOpen,
       'translate-x-0': sidebarOpen,
       'md:translate-x-0': true
-    }"
-  >
+    }">
     <h2 class="text-2xl font-bold mb-6 hidden md:block">KBHS Admin</h2>
 
     <nav class="flex flex-col justify-between flex-1">
       <div class="space-y-2 text-sm font-medium">
-        <a
-          routerLink="/dashboard/admin"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-chart-pie w-5 text-white"></i> Overview
         </a>
-        <a
-          routerLink="/dashboard/admin/classes"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/classes" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-layer-group w-5 text-white"></i> Classes
         </a>
 
-        <a
-          routerLink="/dashboard/admin/students"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/students" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-user-graduate w-5 text-white"></i> Students
         </a>
 
-        <a
-          routerLink="/dashboard/admin/teachers"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/teachers" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-chalkboard-teacher w-5 text-white"></i> Teachers
         </a>
 
-        <a
-          routerLink="/dashboard/admin/guardians"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/guardians" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-users w-5 text-white"></i> Guardians
         </a>
 
-        <a
-          routerLink="/dashboard/admin/subjects"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/subjects" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-book w-5 text-white"></i> Subjects
         </a>
 
-        <a
-          routerLink="/dashboard/admin/exams"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/exams" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-file-alt w-5 text-white"></i> Exams
         </a>
 
-        <a
-          routerLink="dashboard/admin/results"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+        <a routerLink="/dashboard/admin/results" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-chart-line w-5 text-white"></i> Results
+        </a>
+
+        <a routerLink="/dashboard/admin/timetables" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
+          <i class="fas fa-calendar-alt w-5 text-white"></i> Timetables
         </a>
       </div>
 
       <!-- Footer Links -->
-      <div
-        class="mt-8 space-y-2 border-t border-blue-700 pt-4 text-sm font-medium"
-      >
-        <a
-          routerLink="dashboard/admin/profile"
-          routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-        >
+      <div class="mt-8 space-y-2 border-t border-blue-700 pt-4 text-sm font-medium">
+        <a routerLink="dashboard/admin/profile" routerLinkActive="bg-blue-900"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
           <i class="fas fa-user-cog w-5 text-white"></i> Profile
         </a>
-        <a
-          (click)="logout()"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-red-600 transition-colors cursor-pointer"
-        >
+        <a (click)="logout()"
+          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-red-600 transition-colors cursor-pointer">
           <i class="fas fa-sign-out-alt w-5 text-white"></i> Logout
         </a>
       </div>

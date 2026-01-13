@@ -84,9 +84,9 @@ export class SubjectListComponent implements OnInit {
   }
 }
 
-assignClasses(subject: Subject): void {
-  // Navigate to the assign-classes page for this subject
-  this.router.navigate(['/dashboard/admin/subjects', subject.id, 'assign-classes']);
+assignStudents(subject: Subject): void {
+
+  this.router.navigate(['/dashboard/admin/subjects', subject.id, 'assign-students']);
 }
 
 
