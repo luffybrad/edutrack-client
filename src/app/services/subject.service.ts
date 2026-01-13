@@ -4,14 +4,24 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../shared/utils/api-response';
-import { Student } from './student.service';
+import { Student, StudentService } from './student.service';
 
 export interface Subject {
   id?: string;
   name: string;
   totalStudents?: number;
+  totalClasses?: number;
   students?: Student[];
+  classes?: Class[];
 }
+
+export interface Class {
+  id: string;
+  form: number;
+  stream: string;
+  year: number;
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class SubjectService {
@@ -61,4 +71,21 @@ export class SubjectService {
       { withCredentials: true }
     );
   }
+
+  // Get subjects offered by a class
+getSubjectsByClass(classId: string): Observable<ApiResponse<Subject[]>> {
+  return this.http.get<ApiResponse<Subject[]>>(
+    `${this.baseUrl}/class/${classId}`,
+    { withCredentials: true }
+  );
+}
+
+// Get classes offering a subject
+getClassesBySubject(subjectId: string): Observable<ApiResponse<Class[]>> {
+  return this.http.get<ApiResponse<Class[]>>(
+    `${this.baseUrl}/${subjectId}/classes`,
+    { withCredentials: true }
+  );
+}
+
 }

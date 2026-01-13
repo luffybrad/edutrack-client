@@ -10,7 +10,7 @@ export interface TimetableSchedule {
   WEDNESDAY: string[];
   THURSDAY: string[];
   FRIDAY: string[];
-  [key: string]: string[] | undefined
+  [key: string]: string[] | undefined;
 }
 
 export interface Timetable {
@@ -41,6 +41,15 @@ export class TimetableService {
     );
   }
 
+  // Save or update timetable
+  save(data: Timetable): Observable<ApiResponse<Timetable>> {
+    return this.http.post<ApiResponse<Timetable>>(
+      `${this.baseUrl}/save`,
+      data,
+      { withCredentials: true }
+    );
+  }
+
   // Get timetable for a specific class
   getByClass(classId: string): Observable<ApiResponse<Timetable>> {
     return this.http.get<ApiResponse<Timetable>>(
@@ -55,5 +64,13 @@ export class TimetableService {
       `${this.baseUrl}/${classId}`,
       { withCredentials: true }
     );
+  }
+
+  // Download timetable PDF
+  downloadPDF(classId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${classId}/download`, {
+      responseType: 'blob',
+      withCredentials: true,
+    });
   }
 }

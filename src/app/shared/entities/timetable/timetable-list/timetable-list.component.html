@@ -1,14 +1,13 @@
 <div class="p-6 bg-gray-50 min-h-screen">
+
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-calendar-alt"></i>
-            Class Timetables
+            <i class="fas fa-calendar-alt"></i> Class Timetables
         </h2>
         <button (click)="goToGenerate()"
             class="px-4 py-2 bg-blue-600 text-white rounded flex items-center gap-2 hover:bg-blue-700">
             <i class="fas fa-plus"></i> Generate Timetable
         </button>
-
     </div>
 
     <!-- Class selection -->
@@ -33,22 +32,30 @@
 
     <!-- Timetable table -->
     <div *ngIf="selectedTimetable && selectedTimetable.schedule" class="overflow-x-auto">
+
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                 <i class="fas fa-table"></i> Timetable
             </h3>
-            <button (click)="deleteTimetable()" [disabled]="loading"
-                class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50">
-                <i class="fas fa-trash-alt"></i> Delete Timetable
-            </button>
+
+            <div class="flex gap-2">
+                <button (click)="deleteTimetable()" [disabled]="loading"
+                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50">
+                    <i class="fas fa-trash-alt"></i> Delete Timetable
+                </button>
+
+                <button (click)="downloadPDF()" [disabled]="loading || !selectedTimetable"
+                    class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </button>
+            </div>
         </div>
 
         <table class="min-w-full border border-gray-300 bg-white rounded overflow-hidden">
             <thead class="bg-gray-200">
                 <tr>
                     <th class="px-4 py-2 border-b text-left">Day</th>
-                    <th *ngFor="let lesson of (selectedTimetable.schedule['MONDAY'] || []); let i = index"
-                        class="px-4 py-2 border-b text-left">
+                    <th *ngFor="let lesson of getLessons('MONDAY'); let i = index" class="px-4 py-2 border-b text-left">
                         Lesson {{ i + 1 }}
                     </th>
                 </tr>
@@ -56,11 +63,13 @@
             <tbody>
                 <tr *ngFor="let day of weekDays" class="hover:bg-gray-50">
                     <td class="px-4 py-2 border-b font-medium">{{ day }}</td>
-                    <td *ngFor="let lesson of (selectedTimetable.schedule[day] || [])" class="px-4 py-2 border-b">
+                    <td *ngFor="let lesson of getLessons(day)" class="px-4 py-2 border-b">
                         {{ lesson }}
                     </td>
                 </tr>
             </tbody>
         </table>
+
     </div>
+
 </div>

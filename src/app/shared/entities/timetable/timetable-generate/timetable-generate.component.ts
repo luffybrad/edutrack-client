@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TimetableService, GenerateTimetableDto, Timetable, TimetableSchedule } from '../../../../services/timetable.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { SubjectService, Subject } from '../../../../services/subject.service';
+import { ToastService } from '../../../utils/toast.service';
 
 @Component({
   selector: 'app-timetable-generate',
@@ -19,6 +20,7 @@ export class TimetableGenerateComponent implements OnInit {
   generatedTimetable: Timetable | null = null;
   loading = false;
   error: string | null = null;
+  saving = false;
 
   readonly weekDays: (keyof TimetableSchedule)[] = [
     'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'
@@ -28,24 +30,51 @@ export class TimetableGenerateComponent implements OnInit {
     private fb: FormBuilder,
     private timetableService: TimetableService,
     private classService: ClassService,
-    private subjectService: SubjectService
+    private subjectService: SubjectService,
+    private toast: ToastService
   ) {
     this.generateForm = this.fb.group({
-      classId: ['', Validators.required],
-      subjectIds: [[], Validators.required], // array of selected subject IDs
-      lessonsPerDay: [5, [Validators.required, Validators.min(1)]],
+      classId: [''],
+      subjectIds: [[]], // array of selected subject IDs
+      lessonsPerDay: [5],
     });
+
+
   }
 
-  ngOnInit(): void {
-    this.loadClasses();
-    this.loadSubjects();
+private loadSubjectsByClass(classId: string) {
+  this.loading = true;
+  this.subjectService.getSubjectsByClass(classId).subscribe({
+    next: res => {
+      this.subjects = res.data;
+      const subjectIds = this.subjects.map(s => s.id!);
+      this.generateForm.get('subjectIds')?.setValue(subjectIds);
+      this.loading = false;
+    },
+    error: err => {
+      this.subjects = [];
+      this.loading = false;
+      this.error = 'Failed to load subjects for selected class';
+      this.toast.apiError('Failed to load subjects', err);
+    }
+  });
+}
 
-    // DEBUG: log subjectIds whenever selection changes
-    this.generateForm.get('subjectIds')?.valueChanges.subscribe(val => {
-      console.log('Selected subjects:', val);
-    });
-  }
+
+
+ngOnInit(): void {
+  this.loadClasses();
+
+  // Whenever class selection changes, fetch subjects
+  this.generateForm.get('classId')?.valueChanges.subscribe(classId => {
+    if (classId) {
+      this.loadSubjectsByClass(classId);
+    } else {
+      this.subjects = [];
+    }
+  });
+}
+
 
   private loadClasses() {
     this.classService.getAll().subscribe({
@@ -61,28 +90,48 @@ export class TimetableGenerateComponent implements OnInit {
     });
   }
 
-  generateTimetable() {
-    console.log('Form value before submit:', this.generateForm.value);
+generateTimetable() {
+  console.log('Form value before submit:', this.generateForm.value);
 
-    if (this.generateForm.invalid) return;
+  if (this.generateForm.invalid) return;
 
-    this.loading = true;
-    this.error = null;
-    this.generatedTimetable = null;
+  this.loading = true;
+  this.error = null;
+  this.generatedTimetable = null;
 
-    const dto: GenerateTimetableDto = this.generateForm.value;
+  const dto: GenerateTimetableDto = this.generateForm.value;
 
-    this.timetableService.generate(dto).subscribe({
-      next: res => {
-        this.generatedTimetable = res.data;
-        this.loading = false;
-      },
-      error: err => {
-        this.error = err?.error?.message || 'Failed to generate timetable';
-        this.loading = false;
-      }
-    });
-  }
+  this.timetableService.generate(dto).subscribe({
+    next: res => {
+      this.generatedTimetable = res.data;
+      this.loading = false;
+      this.toast.success('Timetable generated successfully!');
+    },
+    error: err => {
+      this.loading = false;
+      this.toast.apiError('Failed to generate timetable', err);
+    }
+  });
+}
+
+saveTimetable() {
+  if (!this.generatedTimetable) return;
+
+  this.saving = true;
+
+  this.timetableService.save(this.generatedTimetable).subscribe({
+    next: (res) => {
+      this.toast.success('Timetable saved successfully!');
+      this.generatedTimetable = res.data; // update with saved timetable if returned
+      this.saving = false;
+    },
+    error: (err) => {
+      this.toast.apiError('Failed to save timetable', err);
+      this.saving = false;
+    }
+  });
+}
+
 
   trackByIndex(index: number): number {
     return index;

@@ -3,7 +3,8 @@ import { TimetableService, Timetable } from '../../../../services/timetable.serv
 import { ClassService, Class } from '../../../../services/class.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { ToastService } from '../../../utils/toast.service';
 
 @Component({
   selector: 'app-timetable-list',
@@ -24,7 +25,8 @@ export class TimetableListComponent implements OnInit {
   constructor(
     private classService: ClassService,
     private timetableService: TimetableService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -39,29 +41,53 @@ export class TimetableListComponent implements OnInit {
   }
 
   goToGenerate() {
-  this.router.navigate(['/dashboard/admin/timetables/generate']);
-}
-  
+    this.router.navigate(['/dashboard/admin/timetables/generate']);
+  }
 
   selectClass(event: Event) {
-  const classId = (event.target as HTMLSelectElement).value;
-  this.selectedClassId = classId;
-  this.selectedTimetable = null;
-  this.loading = true;
-  this.error = null;
+    const classId = (event.target as HTMLSelectElement).value.trim();
 
-  this.timetableService.getByClass(classId).subscribe({
-    next: res => {
-      this.selectedTimetable = res.data;
-      this.loading = false;
-    },
-    error: () => {
-      this.error = 'No timetable found for this class';
-      this.loading = false;
+    if (!classId) {
+      this.selectedClassId = null;
+      this.selectedTimetable = null;
+      this.error = 'Please select a valid class';
+      return;
     }
-  });
-}
 
+    this.selectedClassId = classId;
+    this.selectedTimetable = null;
+    this.loading = true;
+    this.error = null;
+
+    this.timetableService.getByClass(classId).subscribe({
+      next: res => {
+        if (res?.data?.id) {
+          this.selectedTimetable = res.data;
+        } else {
+          this.selectedTimetable = null;
+          this.error = 'No timetable found for this class';
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        if (err?.status === 404) {
+          this.selectedTimetable = null;
+          this.error = 'No timetable found for this class';
+        } else {
+          this.selectedTimetable = null;
+          this.error = 'Failed to fetch timetable';
+        }
+        this.loading = false;
+      }
+    });
+  }
+
+  // Safe getter for lessons
+  getLessons(day: string): string[] {
+    if (!this.selectedTimetable?.schedule) return [];
+    const key = day.toUpperCase();
+    return this.selectedTimetable.schedule[key] || [];
+  }
 
   deleteTimetable() {
     if (!this.selectedClassId) return;
@@ -74,7 +100,7 @@ export class TimetableListComponent implements OnInit {
       next: () => {
         this.selectedTimetable = null;
         this.loading = false;
-        alert('Timetable deleted successfully');
+        this.toast.success('Timetable deleted successfully!');
       },
       error: () => {
         this.error = 'Failed to delete timetable';
@@ -83,7 +109,30 @@ export class TimetableListComponent implements OnInit {
     });
   }
 
-  
+  downloadPDF() {
+    if (!this.selectedClassId) return;
+
+    this.loading = true;
+    this.error = null;
+
+    this.timetableService.downloadPDF(this.selectedClassId).subscribe({
+      next: (blob: Blob) => {
+        this.loading = false;
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `timetable-${this.selectedClassId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = 'Failed to download PDF';
+        console.error(err);
+      }
+    });
+  }
 
   trackByIndex(index: number) {
     return index;

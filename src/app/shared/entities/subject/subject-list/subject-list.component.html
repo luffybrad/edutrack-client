@@ -41,6 +41,7 @@
         </th>
         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Total Students</th>
+        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Total Classes</th>
         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
       </tr>
     </thead>
@@ -52,6 +53,7 @@
         </td>
         <td class="px-4 py-3">{{ subject.name.toUpperCase() }}</td>
         <td class="px-4 py-3">{{ subject.totalStudents || 0 }}</td>
+        <td class="px-4 py-3">{{ subject.totalClasses || 0 }}</td>
         <td class="px-4 py-3 flex gap-3">
           <ng-container *ngIf="(role$ | async) === RoleType.Admin">
             <button (click)="openModal('edit', subject)"

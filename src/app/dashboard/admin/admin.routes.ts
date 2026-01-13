@@ -19,6 +19,7 @@ import { ResultsSubjectAnalysisComponent } from '../../shared/entities/result/re
 import { ResultsStudentAnalysisComponent } from '../../shared/entities/result/results-student-analysis/results-student-analysis.component';
 import { TimetableListComponent } from '../../shared/entities/timetable/timetable-list/timetable-list.component';
 import { TimetableGenerateComponent } from '../../shared/entities/timetable/timetable-generate/timetable-generate.component';
+import { FeeListComponent } from '../../shared/entities/fee/fee-list/fee-list.component';
 
 
 export const ADMIN_ROUTES: Routes = [
@@ -64,6 +65,10 @@ export const ADMIN_ROUTES: Routes = [
 {
   path: 'timetables/generate',
   component: TimetableGenerateComponent
+},
+{
+  path: 'fees',
+  component: FeeListComponent
 }
 
     ],
