@@ -233,6 +233,7 @@ export class FeeDashboardComponent implements OnInit {
           this.updateChart();
           this.showToast('success', 'Transaction added successfully');
           this.showTransactionModal = false;
+          this.loadFeeArrears();
         },
         error: () => this.showToast('error', 'Transaction failed'),
       });
