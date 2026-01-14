@@ -17,7 +17,7 @@ import { ResultsDashboardComponent } from '../../shared/entities/result/results-
 
 import { TimetableListComponent } from '../../shared/entities/timetable/timetable-list/timetable-list.component';
 import { TimetableGenerateComponent } from '../../shared/entities/timetable/timetable-generate/timetable-generate.component';
-import { FeeListComponent } from '../../shared/entities/fee/fee-list/fee-list.component';
+import { FeeDashboardComponent } from '../../shared/entities/fee/fee-dashboard/fee-dashboard.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -54,7 +54,7 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'fees',
-        component: FeeListComponent,
+        component: FeeDashboardComponent,
       },
     ],
   },
