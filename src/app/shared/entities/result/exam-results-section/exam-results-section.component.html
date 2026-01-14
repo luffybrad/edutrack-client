@@ -1,0 +1,66 @@
+<div class="bg-white p-6 rounded-lg shadow-md border border-blue-200 mt-4">
+    <h2 class="text-2xl font-semibold text-blue-600 mb-4 flex items-center gap-2">
+        <i class="fas fa-table"></i> Exam Results
+    </h2>
+
+    <!-- Filters -->
+    <div class="flex flex-col md:flex-row gap-3 mb-4">
+        <select [(ngModel)]="selectedExamId" (change)="onExamChange()"
+            class="border rounded-lg p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="" disabled selected>Select Exam</option>
+            <option *ngFor="let exam of exams" [value]="exam.id">{{ exam.name }}</option>
+        </select>
+
+        <select [(ngModel)]="selectedClassId" (change)="onClassChange()"
+            class="border rounded-lg p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="" selected>All Classes</option>
+            <option *ngFor="let cls of classes" [value]="cls">{{ cls }}</option>
+        </select>
+
+        <button (click)="downloadSummary()" [disabled]="!selectedExamId"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+            <i class="fas fa-file-excel"></i> Summary Excel
+        </button>
+
+        <button (click)="downloadClassPerformance()" [disabled]="!selectedExamId"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+            <i class="fas fa-file-pdf"></i> Class PDF
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-blue-600">Loading...</div>
+
+    <!-- No Results -->
+    <div *ngIf="!loading && !results.length" class="text-gray-500">
+        No results found for the selected exam/class.
+    </div>
+
+    <!-- Results Table -->
+    <div *ngIf="results.length" class="overflow-x-auto">
+        <table class="w-full table-auto border border-blue-200">
+            <thead class="bg-blue-100 text-blue-700">
+                <tr>
+                    <th class="border px-2 py-1">Student</th>
+                    <th *ngFor="let s of results[0].subjectScores | keyvalue" class="border px-2 py-1">
+                        {{ s.key }}
+                    </th>
+                    <th class="border px-2 py-1">Total</th>
+                    <th class="border px-2 py-1">Mean</th>
+                    <th class="border px-2 py-1">Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let r of results" class="hover:bg-blue-50">
+                    <td class="border px-2 py-1">{{ r.student?.name }}</td>
+                    <td *ngFor="let s of r.subjectScores | keyvalue" class="border px-2 py-1">
+                        {{ s.value ?? 'N/A' }}
+                    </td>
+                    <td class="border px-2 py-1 font-semibold">{{ r.totalScore }}</td>
+                    <td class="border px-2 py-1 font-semibold">{{ r.meanScore }}</td>
+                    <td class="border px-2 py-1 font-semibold">{{ r.grade }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

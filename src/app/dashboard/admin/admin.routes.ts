@@ -14,13 +14,10 @@ import { SubjectListComponent } from '../../shared/entities/subject/subject-list
 import { SubjectAssignComponent } from '../../shared/entities/subject/subject-assign/subject-assign.component';
 import { ExamListComponent } from '../../shared/entities/exam/exam-list/exam-list.component';
 import { ResultsDashboardComponent } from '../../shared/entities/result/results-dashboard/results-dashboard.component';
-import { ResultsExamAnalysisComponent } from '../../shared/entities/result/results-exam-analysis/results-exam-analysis.component';
-import { ResultsSubjectAnalysisComponent } from '../../shared/entities/result/results-subject-analysis/results-subject-analysis.component';
-import { ResultsStudentAnalysisComponent } from '../../shared/entities/result/results-student-analysis/results-student-analysis.component';
+
 import { TimetableListComponent } from '../../shared/entities/timetable/timetable-list/timetable-list.component';
 import { TimetableGenerateComponent } from '../../shared/entities/timetable/timetable-generate/timetable-generate.component';
 import { FeeListComponent } from '../../shared/entities/fee/fee-list/fee-list.component';
-
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -43,34 +40,22 @@ export const ADMIN_ROUTES: Routes = [
       },
       { path: 'exams', component: ExamListComponent },
       {
-        path: 'results', component: ResultsDashboardComponent
+        path: 'results',
+        component: ResultsDashboardComponent,
       },
-  {
-    path: 'results/exam/:examId',
-    component: ResultsExamAnalysisComponent
-  },
 
-  {
-  path: 'results/exam/:examId/subjects',
-  component: ResultsSubjectAnalysisComponent
-},
-{
-  path: 'results/exam/:examId/students',
-  component: ResultsStudentAnalysisComponent
-},
-{
-  path:'timetables',
-  component: TimetableListComponent
-},
-{
-  path: 'timetables/generate',
-  component: TimetableGenerateComponent
-},
-{
-  path: 'fees',
-  component: FeeListComponent
-}
-
+      {
+        path: 'timetables',
+        component: TimetableListComponent,
+      },
+      {
+        path: 'timetables/generate',
+        component: TimetableGenerateComponent,
+      },
+      {
+        path: 'fees',
+        component: FeeListComponent,
+      },
     ],
   },
 ];

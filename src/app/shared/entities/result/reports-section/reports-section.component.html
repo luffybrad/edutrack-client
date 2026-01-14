@@ -1,0 +1,40 @@
+<div class="bg-white p-6 rounded shadow-md border border-blue-200 mt-4">
+    <h2 class="text-2xl font-semibold text-blue-600 mb-4">Reports & Exports</h2>
+
+    <div class="flex flex-wrap gap-3">
+        <!-- Student PDF -->
+        <button
+            class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            (click)="downloadStudentPDF()" [disabled]="!studentId" title="Download report PDF for selected student">
+            <i class="fas fa-file-pdf"></i> Student PDF
+        </button>
+
+        <!-- Exam Summary Excel -->
+        <button
+            class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+            (click)="downloadExamSummary()" [disabled]="!examId" title="Download summary Excel for selected exam">
+            <i class="fas fa-file-excel"></i> Exam Summary
+        </button>
+
+        <!-- Subject Analysis Excel -->
+        <button
+            class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+            (click)="downloadSubjectAnalysis()" [disabled]="!examId || !selectedSubject"
+            title="Download subject analysis Excel for selected subject">
+            <i class="fas fa-chart-bar"></i> Subject Analysis
+        </button>
+
+        <!-- Class Performance PDF -->
+        <button
+            class="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+            (click)="downloadClassPerformance()" [disabled]="!examId || !selectedClassId"
+            title="Download class performance PDF for selected class">
+            <i class="fas fa-school"></i> Class Performance
+        </button>
+    </div>
+
+    <!-- Optional info -->
+    <div *ngIf="!studentId && !examId" class="text-gray-500 mt-3">
+        Select a student or exam to enable report downloads.
+    </div>
+</div>

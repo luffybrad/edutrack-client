@@ -1,85 +1,99 @@
 // src/app/shared/entities/result/results-dashboard/results-dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ResultService, ReportFile } from '../../../../services/result.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
-import { finalize } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { Exam, ExamService } from '../../../../services/exam.service';
-import { ToastService } from '../../../../shared/utils/toast.service';
-import { RouterLink, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { StudentResultsSectionComponent } from '../student-results-section/student-results-section.component';
+import { SubjectAnalysisSectionComponent } from '../subject-analysis-section/subject-analysis-section.component';
+import { ExamResultsSectionComponent } from '../exam-results-section/exam-results-section.component';
+import { ExamAnalyticsSectionComponent } from '../exam-analytics-section/exam-analytics-section.component';
+import { ReportsSectionComponent } from '../reports-section/reports-section.component';
+import { UploadResultsSectionComponent } from '../upload-results-section/upload-results-section.component';
+import { ExamService, Exam } from '../../../../services/exam.service';
+import { StudentService, Student } from '../../../../services/student.service';
+import { ResultService, Result } from '../../../../services/result.service';
 
 @Component({
   selector: 'app-results-dashboard',
   standalone: true,
-  imports: [CommonModule,  RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    UploadResultsSectionComponent,
+    StudentResultsSectionComponent,
+    SubjectAnalysisSectionComponent,
+    ExamResultsSectionComponent,
+    ExamAnalyticsSectionComponent,
+    ReportsSectionComponent,
+  ],
   templateUrl: './results-dashboard.component.html',
-  styleUrl: './results-dashboard.component.css'
 })
 export class ResultsDashboardComponent implements OnInit {
   exams: Exam[] = [];
-  loading = false;
-  uploadingExamId: string | null = null;
+  students: Student[] = [];
+  subjects: string[] = [];
+  classes: string[] = [];
 
-  constructor(private http: HttpClient, private resultService: ResultService,
-  private examService: ExamService,
-  private toast: ToastService
+  selectedExamId?: string;
+  selectedStudentId?: string;
+  selectedSubject?: string;
+  selectedClassId?: string;
+
+  constructor(
+    private examService: ExamService,
+    private studentService: StudentService,
+    private resultService: ResultService
   ) {}
 
-  ngOnInit(): void {
-    this.fetchExams();
+  ngOnInit() {
+    this.loadExams();
+    this.loadStudents();
   }
 
-fetchExams(): void {
-  this.loading = true;
-
-  this.examService.getAll()
-    .pipe(finalize(() => this.loading = false))
-    .subscribe({
-      next: res => {
-        if (res.success && res.data) {
-          this.exams = res.data; // ✅ unwrap data from ApiResponse
-        } else {
-          this.exams = [];
-          console.warn('No exams returned from API');
-        }
-      },
-      error: err => {
-        this.exams = [];
-        console.error('Failed to fetch exams', err);
-      }
+  loadExams() {
+    this.examService.getAll().subscribe((res) => {
+      this.exams = res.data || [];
     });
-}
+  }
 
+  loadStudents() {
+    this.studentService.getAll().subscribe((res) => {
+      this.students = res.data || [];
+    });
+  }
 
-onFileSelected(event: Event, examId?: string): void {
-  if (!examId) return;
+  onExamChange() {
+    if (!this.selectedExamId) return;
 
-  const input = event.target as HTMLInputElement;
-  if (!input.files || input.files.length === 0) return;
+    this.selectedSubject = undefined;
+    this.selectedClassId = undefined;
 
-  const file = input.files[0];
-  this.uploadingExamId = examId;
+    // Fetch results for this exam to populate subjects and classes dynamically
+    this.resultService.getByExam(this.selectedExamId).subscribe((res) => {
+      const results: Result[] = res.data?.results || [];
 
-  this.resultService.uploadResults(examId, file).subscribe({
-    next: (res) => {
-      const { created, updated, deleted } = res.data; // ✅ unwrap data
-
-      this.toast.success(
-        `Upload complete: Created ${created}, Updated ${updated}, Deleted ${deleted}`
+      // Populate unique subjects
+      const subjectSet = new Set<string>();
+      results.forEach((r) =>
+        Object.keys(r.subjectScores).forEach((s) => subjectSet.add(s))
       );
+      this.subjects = Array.from(subjectSet).sort();
 
-      this.uploadingExamId = null;
-      input.value = ''; // ✅ allow re-upload
-    },
-    error: (err) => {
-      this.toast.apiError('Upload failed', err);
-      this.uploadingExamId = null;
-      input.value = ''; // ✅ reset on error
-    }
-  });
+      // Populate unique classes
+      const classSet = new Set<string>();
+      results.forEach((r) => {
+        if (r.student?.class) classSet.add(r.student.class);
+      });
+      this.classes = Array.from(classSet).sort();
+    });
+  }
+
+  onUpload() {
+    // Refresh exams, students, and reset filters
+    this.loadExams();
+    this.loadStudents();
+    this.selectedExamId = undefined;
+    this.selectedStudentId = undefined;
+    this.selectedSubject = undefined;
+    this.selectedClassId = undefined;
+  }
 }
-
-
-}
-

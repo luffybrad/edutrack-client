@@ -1,0 +1,56 @@
+<div class="bg-white p-6 rounded shadow-md border border-blue-200">
+    <h2 class="text-2xl font-semibold text-blue-600 mb-4">Subject Analysis</h2>
+
+    <!-- Exam & Subject Selection -->
+    <div class="flex flex-col md:flex-row gap-4 mb-4">
+        <div class="flex-1">
+            <label class="block mb-1 text-blue-700 font-medium">Select Exam</label>
+            <select [(ngModel)]="selectedExamId" (change)="onExamChange()"
+                class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="" disabled selected>Select an exam</option>
+                <option *ngFor="let exam of exams" [value]="exam.id">{{ exam.name }}</option>
+            </select>
+        </div>
+
+        <div class="flex-1">
+            <label class="block mb-1 text-blue-700 font-medium">Select Subject</label>
+            <select [(ngModel)]="selectedSubject" (change)="loadAnalysis()" [disabled]="!subjects.length"
+                class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100">
+                <option value="" disabled selected>Select a subject</option>
+                <option *ngFor="let subject of subjects" [value]="subject">{{ subject }}</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="loading" class="text-blue-600 font-medium mb-3">Loading analysis...</div>
+
+    <!-- Analysis Section -->
+    <div *ngIf="analysis" class="space-y-4">
+        <h3 class="text-xl font-semibold text-blue-700">Analysis - {{ analysis.subject }}</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-blue-50 p-3 rounded text-center shadow-sm">
+                <span class="block text-gray-500 text-sm">Highest</span>
+                <span class="block font-bold text-blue-700">{{ analysis.highest }}</span>
+            </div>
+            <div class="bg-blue-50 p-3 rounded text-center shadow-sm">
+                <span class="block text-gray-500 text-sm">Lowest</span>
+                <span class="block font-bold text-blue-700">{{ analysis.lowest }}</span>
+            </div>
+            <div class="bg-blue-50 p-3 rounded text-center shadow-sm">
+                <span class="block text-gray-500 text-sm">Mean</span>
+                <span class="block font-bold text-blue-700">{{ analysis.mean }}</span>
+            </div>
+            <div class="bg-blue-50 p-3 rounded text-center shadow-sm">
+                <span class="block text-gray-500 text-sm">Count</span>
+                <span class="block font-bold text-blue-700">{{ analysis.count }}</span>
+            </div>
+        </div>
+
+        <!-- Grade Distribution Chart -->
+        <div *ngIf="gradeChartData.datasets.length" class="mt-4 bg-blue-50 p-4 rounded shadow-sm">
+            <canvas baseChart [data]="gradeChartData" [options]="chartOptions" [type]="'bar'"></canvas>
+        </div>
+    </div>
+</div>
