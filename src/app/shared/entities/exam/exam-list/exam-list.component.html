@@ -1,131 +1,391 @@
-<!-- src/app/shared/entities/exam/exam-list/exam-list.component.html -->
 <app-loading-overlay [show]="loading"></app-loading-overlay>
 
-<!-- Page Header -->
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
-    Exams
-  </h2>
+<!-- Main Container -->
+<div class="space-y-8 p-4">
+  <!-- Enhanced Page Header -->
+  <div class="bg-gradient-to-r from-blue-50 to-sky-50 p-6 rounded-2xl border border-blue-100 shadow-sm">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="p-3.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-xl shadow">
+          <i class="fas fa-clipboard-check text-white text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">Exam Management</h1>
+          <p class="text-gray-600 mt-1">Schedule and manage academic examinations</p>
+        </div>
+      </div>
 
-  <button *ngIf="(role$ | async) === RoleType.Admin" (click)="openModal('add')"
-    class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
-    <i class="fas fa-plus"></i>
-    Add Exam
-  </button>
-</div>
+      <!-- Add Exam Button -->
+      <button *ngIf="(role$ | async) === RoleType.Admin" (click)="openModal('add')"
+        class="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-sky-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5">
+        <i class="fas fa-plus-circle text-lg"></i>
+        <span class="font-medium">Schedule New Exam</span>
+      </button>
+    </div>
+  </div>
 
-<!-- Search -->
-<div class="mb-6 w-full relative">
-  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-  <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="triggerSearch()" placeholder="Search by Exam Name"
-    class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-  <button *ngIf="searchTerm" (click)="clearSearch()"
-    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500">
-    <i class="fas fa-times-circle"></i>
-  </button>
-</div>
-
-<!-- Bulk Actions -->
-<div *ngIf="(role$ | async) === RoleType.Admin && selectedIds.length" class="mb-4 flex justify-between items-center">
-  <span class="text-sm text-gray-600">Selected: {{ selectedIds.length }}</span>
-  <button (click)="bulkDeleteSelected()" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-    Delete Selected
-  </button>
-</div>
-
-<!-- Exams Table -->
-<div class="overflow-x-auto bg-white rounded shadow">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-3">
-          <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)" />
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
-
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
-      <tr *ngFor="let exam of filteredExams" class="hover:bg-gray-50 transition">
-        <td class="px-4 py-3">
-          <input type="checkbox" [(ngModel)]="exam.selected" />
-        </td>
-        <td class="px-4 py-3">{{ exam.name }}</td>
-        <td class="px-4 py-3">{{ exam.date | date: 'mediumDate' }}</td>
-
-        <td class="px-4 py-3 flex gap-3">
-          <ng-container *ngIf="(role$ | async) === RoleType.Admin">
-            <button (click)="openModal('view', exam)"
-              class="text-green-600 hover:text-green-800 flex items-center gap-1">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button (click)="openModal('edit', exam)"
-              class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button (click)="deleteExam(exam.id!)" class="text-red-600 hover:text-red-800 flex items-center gap-1">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </ng-container>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- Add/Edit Modal -->
-<div *ngIf="modalMode && modalMode !== 'view'"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">
-    <h3 class="text-2xl font-bold mb-6 text-gray-800">
-      {{ modalMode === 'add' ? 'Add Exam' : 'Edit Exam' }}
-    </h3>
-
-    <div class="mb-4">
-      <label class="block mb-2 text-gray-700">Name</label>
-      <input *ngIf="selectedExam" [(ngModel)]="selectedExam.name"
-        class="border border-gray-300 rounded px-3 py-2 w-full focus:ring focus:ring-blue-100" />
+  <!-- Search and Bulk Actions Section -->
+  <div class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm">
+    <!-- Search Bar -->
+    <div class="relative group mb-6">
+      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+        <div class="p-2 bg-blue-50 rounded-lg">
+          <i class="fas fa-search text-blue-500"></i>
+        </div>
+      </div>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="triggerSearch()"
+        placeholder="Search exams by name..."
+        class="w-full pl-16 pr-12 py-4 border-2 border-blue-100 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 text-gray-700 placeholder-gray-400" />
+      <button *ngIf="searchTerm" (click)="clearSearch()"
+        class="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+      <div class="mt-3 text-sm text-gray-500 flex items-center gap-2">
+        <i class="fas fa-info-circle text-blue-400"></i>
+        Found {{filteredExams.length}} of {{exams.length}} exams
+      </div>
     </div>
 
-    <div class="mb-6">
-      <label class="block mb-2 text-gray-700">Date</label>
-      <input *ngIf="selectedExam" type="date" [(ngModel)]="selectedExam.date"
-        class="border border-gray-300 rounded px-3 py-2 w-full focus:ring focus:ring-blue-100" />
+    <!-- Bulk Delete Section -->
+    <div *ngIf="(role$ | async) === RoleType.Admin && selectedIds.length"
+      class="mb-6 bg-gradient-to-r from-red-50 to-orange-50 p-5 rounded-xl border border-red-100">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-red-100 rounded-lg">
+            <i class="fas fa-exclamation-triangle text-red-600"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-800">{{ selectedIds.length }} exams selected</h4>
+            <p class="text-sm text-gray-600">These exams will be permanently deleted</p>
+          </div>
+        </div>
+        <button (click)="bulkDeleteSelected()"
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-5 py-2.5 rounded-xl shadow hover:shadow-lg hover:from-red-700 hover:to-orange-700 transition-all">
+          <i class="fas fa-trash-alt"></i>
+          <span class="font-medium">Delete Selected</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Exams Table -->
+  <div class="bg-white rounded-2xl border border-blue-50 shadow-sm overflow-hidden">
+    <!-- Table Header -->
+    <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-sky-50 border-b border-blue-100">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800">Examination Schedule</h3>
+        <div class="flex items-center gap-2 text-sm text-blue-600">
+          <i class="fas fa-calendar-alt"></i>
+          <span>{{ exams.length }} total exams</span>
+        </div>
+      </div>
     </div>
 
-    <div class="flex justify-end gap-2">
-      <button (click)="closeModal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
-        Cancel
-      </button>
-      <button (click)="saveExam()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        Save
-      </button>
+    <!-- Responsive Table Container -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-blue-50">
+        <thead>
+          <tr class="bg-blue-50/50">
+            <th class="w-16 px-6 py-4">
+              <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)"
+                class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-file-signature text-blue-500"></i>
+                <span>Exam Name</span>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-calendar-day text-blue-500"></i>
+                <span>Date</span>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-cog text-blue-500"></i>
+                <span>Actions</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-blue-50">
+          <tr *ngFor="let exam of filteredExams" class="hover:bg-blue-50/30 transition-colors duration-150 group">
+            <!-- Checkbox Column -->
+            <td class="px-6 py-4">
+              <input type="checkbox" [(ngModel)]="exam.selected"
+                class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+            </td>
+
+            <!-- Exam Name Column -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-blue-100 to-sky-100 rounded-xl flex items-center justify-center">
+                  <i class="fas fa-clipboard-list text-blue-600 text-lg"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-gray-900 text-lg">{{ exam.name }}</div>
+                  <div class="text-sm text-gray-500">ID: {{ exam.id?.slice(0, 8) || 'N/A' }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Date Column -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                  <i class="fas fa-calendar text-amber-600 text-lg"></i>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-900">{{ exam.date | date: 'mediumDate' }}</div>
+                  <div class="text-sm text-gray-500">
+                    {{ exam.date | date: 'EEEE' }}
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Actions Column -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex gap-2">
+                <!-- View Button -->
+                <button (click)="openModal('view', exam)"
+                  class="p-2.5 text-green-600 hover:text-white hover:bg-green-500 rounded-xl transition-all duration-200 group/btn relative"
+                  title="View Details">
+                  <i class="fas fa-eye"></i>
+                  <span
+                    class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                    View
+                  </span>
+                </button>
+
+                <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                  <!-- Edit Button -->
+                  <button (click)="openModal('edit', exam)"
+                    class="p-2.5 text-amber-600 hover:text-white hover:bg-amber-500 rounded-xl transition-all duration-200 group/btn relative"
+                    title="Edit Exam">
+                    <i class="fas fa-edit"></i>
+                    <span
+                      class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                      Edit
+                    </span>
+                  </button>
+
+                  <!-- Delete Button -->
+                  <button (click)="deleteExam(exam.id!)"
+                    class="p-2.5 text-red-600 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-200 group/btn relative"
+                    title="Delete Exam">
+                    <i class="fas fa-trash-alt"></i>
+                    <span
+                      class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                      Delete
+                    </span>
+                  </button>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="!filteredExams.length && !loading">
+            <td colspan="4" class="px-6 py-12 text-center">
+              <div class="flex flex-col items-center justify-center text-gray-400">
+                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                  <i class="fas fa-clipboard text-3xl text-blue-200"></i>
+                </div>
+                <h4 class="text-lg font-medium text-gray-500 mb-2">No exams found</h4>
+                <p class="text-sm max-w-md">
+                  {{ searchTerm ? 'No exams match your search criteria. Try a different search term.' : 'No exams have
+                  been scheduled yet. Click "Schedule New Exam" to create one.' }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Footer -->
+    <div class="px-6 py-4 border-t border-blue-50 bg-blue-50/30">
+      <div class="flex items-center justify-between text-sm text-gray-600">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-info-circle text-blue-400"></i>
+          <span>Showing {{filteredExams.length}} exams</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fas fa-sync-alt text-blue-400"></i>
+          <button (click)="fetchExams()" class="text-blue-600 hover:text-blue-800 hover:underline">
+            Refresh
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- View Exam Modal -->
-<div *ngIf="modalMode === 'view'" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">
-    <h3 class="text-2xl font-bold mb-6 text-gray-800">View Exam Details</h3>
-
-    <div class="mb-4">
-      <label class="block mb-1 text-gray-700 font-medium">Name</label>
-      <div class="text-gray-800">{{ selectedExam?.name }}</div>
+<!-- Enhanced Add/Edit Modal -->
+<div *ngIf="modalMode && modalMode !== 'view'"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-4 border-b border-blue-100 rounded-t-2xl">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
+          <i class="fas fa-clipboard-check text-white text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">
+            {{ modalMode === 'add' ? 'Schedule New Exam' : 'Edit Exam Details' }}
+          </h3>
+          <p class="text-sm text-gray-600">
+            {{ modalMode === 'add' ? 'Create a new examination schedule' : 'Update examination details' }}
+          </p>
+        </div>
+      </div>
     </div>
 
-    <div class="mb-4">
-      <label class="block mb-1 text-gray-700 font-medium">Date</label>
-      <div class="text-gray-800">{{ selectedExam?.date | date: 'mediumDate' }}</div>
+    <!-- Modal Content -->
+    <div class="p-6">
+      <div *ngIf="selectedExam" class="space-y-6">
+        <!-- Exam Name Section -->
+        <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <i class="fas fa-file-signature text-blue-500"></i>
+            Exam Name
+          </label>
+          <input [(ngModel)]="selectedExam.name" placeholder="Enter exam name (e.g., Mid-Term, Final)"
+            class="w-full px-4 py-3.5 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 text-lg font-medium placeholder-gray-400" />
+          <div class="mt-3 flex items-start gap-2 text-xs text-gray-500">
+            <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+            <p>Use a descriptive name that identifies the exam period</p>
+          </div>
+        </div>
+
+        <!-- Exam Date Section -->
+        <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <i class="fas fa-calendar-day text-blue-500"></i>
+            Exam Date
+          </label>
+          <input type="date" [(ngModel)]="selectedExam.date"
+            class="w-full px-4 py-3.5 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 font-medium" />
+          <div class="mt-3 flex items-start gap-2 text-xs text-gray-500">
+            <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+            <p>Select the date when this examination will be conducted</p>
+          </div>
+
+          <!-- Date Preview -->
+          <div *ngIf="selectedExam.date" class="mt-4 p-3 bg-white border border-blue-100 rounded-lg">
+            <div class="flex items-center gap-2 text-sm text-gray-700">
+              <i class="fas fa-calendar-check text-green-500"></i>
+              <span>Scheduled for: <span class="font-semibold">{{ selectedExam.date | date: 'fullDate' }}</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Modal Footer -->
+    <div
+      class="bg-gradient-to-r from-blue-50/80 to-sky-50/80 backdrop-blur-sm px-6 py-4 border-t border-blue-100 rounded-b-2xl">
+      <div class="flex justify-end gap-3">
+        <button (click)="closeModal()"
+          class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+          Cancel
+        </button>
+        <button (click)="saveExam()"
+          class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow hover:shadow-lg hover:from-blue-700 hover:to-sky-700 transition-all font-medium">
+          {{ modalMode === 'add' ? 'Schedule Exam' : 'Update Exam' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <div class="flex justify-end">
-      <button (click)="closeModal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
-        Close
-      </button>
+<!-- Enhanced View Modal -->
+<div *ngIf="modalMode === 'view'"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" (click)="closeModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-4 border-b border-blue-100 rounded-t-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
+            <i class="fas fa-eye text-white text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">Exam Details</h3>
+            <p class="text-sm text-gray-600">View examination information</p>
+          </div>
+        </div>
+        <button (click)="closeModal()"
+          class="p-2 hover:bg-white rounded-xl transition-colors text-gray-400 hover:text-gray-600" title="Close">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="p-6">
+      <div *ngIf="selectedExam" class="space-y-6">
+        <!-- Exam Info Card -->
+        <div class="bg-gradient-to-b from-blue-50 to-white p-5 rounded-xl border border-blue-100">
+          <h4 class="text-sm font-semibold text-blue-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-info-circle"></i>
+            Examination Information
+          </h4>
+
+          <!-- Name Field -->
+          <div class="mb-5">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-file-signature text-blue-500"></i>
+              Exam Name
+            </label>
+            <div class="p-3 bg-white border border-blue-100 rounded-lg">
+              <div class="text-lg font-bold text-gray-800">{{ selectedExam.name }}</div>
+            </div>
+          </div>
+
+          <!-- Date Field -->
+          <div class="mb-5">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-calendar-day text-blue-500"></i>
+              Scheduled Date
+            </label>
+            <div class="p-3 bg-white border border-blue-100 rounded-lg">
+              <div class="text-lg font-bold text-gray-800">{{ selectedExam.date | date: 'fullDate' }}</div>
+              <div class="text-sm text-gray-600 mt-1">{{ selectedExam.date | date: 'EEEE' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-green-100 rounded-lg">
+              <i class="fas fa-check-circle text-green-600"></i>
+            </div>
+            <div>
+              <h5 class="font-semibold text-gray-800">Exam Status</h5>
+              <p class="text-sm text-gray-600">This exam is active and scheduled</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div
+      class="bg-gradient-to-r from-blue-50/80 to-sky-50/80 backdrop-blur-sm px-6 py-4 border-t border-blue-100 rounded-b-2xl">
+      <div class="flex justify-end">
+        <button (click)="closeModal()"
+          class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>

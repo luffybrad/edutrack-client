@@ -1,76 +1,327 @@
-<h2 class="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h2>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-  <!-- Card Template -->
-  <div class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4">
-    <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
-      <i class="fas fa-user-graduate text-xl"></i>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-4 md:p-6">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+          School Analytics Dashboard
+        </h1>
+        <p class="text-gray-600">
+          Real-time overview of school performance and metrics
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+          <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+          <span>Live data</span>
+        </div>
+        <button (click)="refreshData()"
+          class="px-4 py-2 bg-white border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200 flex items-center gap-2 text-sm font-medium">
+          <i class="fas fa-sync-alt" [class.animate-spin]="isLoading"></i>
+          {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+        </button>
+      </div>
     </div>
-    <div>
-      <p class="text-sm text-gray-500">Students</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalStudents }}</h3>
-    </div>
-  </div>
-
-  <div class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4">
-    <div class="bg-green-100 text-green-600 p-3 rounded-full">
-      <i class="fas fa-chalkboard-teacher text-xl"></i>
-    </div>
-    <div>
-      <p class="text-sm text-gray-500">Teachers</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalTeachers }}</h3>
-    </div>
-  </div>
-
-  <div class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4">
-    <div class="bg-yellow-100 text-yellow-600 p-3 rounded-full">
-      <i class="fas fa-users text-xl"></i>
-    </div>
-    <div>
-      <p class="text-sm text-gray-500">Guardians</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalGuardians }}</h3>
+    <div class="mt-4 text-sm text-gray-500">
+      Last updated: {{ lastUpdated | date:'medium' }}
     </div>
   </div>
 
-  <div class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4">
-    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
-      <i class="fas fa-book text-xl"></i>
+  <!-- Loading State -->
+  @if (isLoading) {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    @for (item of [1,2,3,4]; track $index) {
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 animate-pulse">
+      <div class="h-8 bg-gray-200 rounded-lg mb-4"></div>
+      <div class="h-4 bg-gray-200 rounded w-3/4"></div>
     </div>
-    <div>
-      <p class="text-sm text-gray-500">Subjects</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalSubjects }}</h3>
+    }
+  </div>
+  }
+
+  <!-- Main Stats Grid -->
+  @if (!isLoading) {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Students Card -->
+    <div
+      class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg shadow-blue-100/50 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+          <i class="fas fa-user-graduate text-xl"></i>
+        </div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+          {{ studentsPerClass }}/class
+        </span>
+      </div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.totalStudents }}</h3>
+      <p class="text-gray-600 text-sm font-medium">Total Students</p>
+      <div class="mt-4 pt-4 border-t border-blue-50">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-500">Active enrollment</span>
+          <span class="font-semibold text-blue-700">{{ stats.totalClasses }} classes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Teachers Card -->
+    <div
+      class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-emerald-100 shadow-lg shadow-emerald-100/50 hover:shadow-xl hover:shadow-emerald-200/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+          <i class="fas fa-chalkboard-teacher text-xl"></i>
+        </div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
+          {{ teacherStudentRatio }}
+        </span>
+      </div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.totalTeachers }}</h3>
+      <p class="text-gray-600 text-sm font-medium">Teaching Staff</p>
+      <div class="mt-4 pt-4 border-t border-emerald-50">
+        <div class="flex items-center gap-2 text-sm">
+          <i class="fas fa-chart-line text-emerald-500"></i>
+          <span class="text-gray-500">{{ stats.totalSubjects }} subjects covered</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Classes Card -->
+    <div
+      class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-violet-100 shadow-lg shadow-violet-100/50 hover:shadow-xl hover:shadow-violet-200/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-lg">
+          <i class="fas fa-layer-group text-xl"></i>
+        </div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-violet-100 text-violet-700">
+          {{ stats.classDistribution.length }} forms
+        </span>
+      </div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.totalClasses }}</h3>
+      <p class="text-gray-600 text-sm font-medium">Active Classes</p>
+      <div class="mt-4 pt-4 border-t border-violet-50">
+        <div class="flex flex-wrap gap-2">
+          @for (form of [1,2,3,4]; track $index) {
+          <span class="text-xs px-2 py-1 rounded-full border {{ getClassColor(form) }}">
+            Form {{ form }}
+          </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Fee Collection Card -->
+    <div
+      class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-amber-100 shadow-lg shadow-amber-100/50 hover:shadow-xl hover:shadow-amber-200/50 transition-all duration-300">
+      <div class="flex items-center justify-between mb-4">
+        <div class="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg">
+          <i class="fas fa-money-check-alt text-xl"></i>
+        </div>
+        <span
+          class="text-xs font-semibold px-3 py-1 rounded-full {{ stats.feeCollection >= 75 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+          {{ stats.feeCollection >= 75 ? 'On track' : 'Needs attention' }}
+        </span>
+      </div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.feeCollection }}%</h3>
+      <p class="text-gray-600 text-sm font-medium">Fee Collection Rate</p>
+      <div class="mt-4">
+        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div class="h-full rounded-full {{ getFeeProgressColor(stats.feeCollection) }} transition-all duration-500"
+            [style.width.%]="stats.feeCollection">
+          </div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-500 mt-2">
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4">
-    <div class="bg-pink-100 text-pink-600 p-3 rounded-full">
-      <i class="fas fa-layer-group text-xl"></i>
+  <!-- Second Row Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Exams Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-100 shadow-lg">
+      <div class="flex items-start justify-between">
+        <div>
+          <div
+            class="p-3 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 text-white inline-block mb-4 shadow-lg">
+            <i class="fas fa-file-alt text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.totalExams }}</h3>
+          <p class="text-gray-600 text-sm font-medium">Exams Conducted</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500 mb-2">This academic year</div>
+          <div class="text-lg font-bold text-cyan-700">
+            {{ stats.recentExams.length }} upcoming
+          </div>
+        </div>
+      </div>
+      @if (stats.recentExams.length > 0) {
+      <div class="mt-4 pt-4 border-t border-cyan-50">
+        <div class="text-xs text-gray-600">
+          Latest: {{ stats.recentExams[0].name }}
+        </div>
+      </div>
+      }
     </div>
-    <div>
-      <p class="text-sm text-gray-500">Classes</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalClasses }}</h3>
+
+    <!-- Subjects Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-indigo-100 shadow-lg">
+      <div class="flex items-start justify-between">
+        <div>
+          <div
+            class="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white inline-block mb-4 shadow-lg">
+            <i class="fas fa-book text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.totalSubjects }}</h3>
+          <p class="text-gray-600 text-sm font-medium">Subjects Offered</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500 mb-2">Core & Elective</div>
+          <!-- Subjects Card - Update subjects per class -->
+          <div class="text-lg font-bold text-indigo-700">
+            {{ subjectsPerClass }}/class
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guardians Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-rose-100 shadow-lg">
+      <div class="flex items-start justify-between">
+        <div>
+          <div
+            class="p-3 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 text-white inline-block mb-4 shadow-lg">
+            <i class="fas fa-users text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ stats.totalGuardians }}</h3>
+          <p class="text-gray-600 text-sm font-medium">Registered Guardians</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-gray-500 mb-2">Engagement rate</div>
+          <!-- Guardians Card - Update engagement rate -->
+          <div class="text-lg font-bold text-rose-700">
+            {{ guardianEngagementRate }}%
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4">
-    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
-      <i class="fas fa-file-alt text-xl"></i>
+  <!-- Charts & Activities Section -->
+  <!-- In the Charts & Activities Section, replace the performance chart div with: -->
+
+  <!-- Academic Overview -->
+  <div class="lg:col-span-2 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800">Academic Overview</h3>
+        <p class="text-gray-600 text-sm">Performance metrics available after exam upload</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+          {{ stats.totalExams }} exams
+        </span>
+      </div>
     </div>
-    <div>
-      <p class="text-sm text-gray-500">Exams</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalExams }}</h3>
+
+    <!-- Dynamic Content Placeholder -->
+    <div class="h-64 flex flex-col items-center justify-center text-center">
+      @if (stats.totalExams > 0) {
+      <div class="text-5xl text-blue-500 mb-4">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <h4 class="text-lg font-semibold text-gray-800 mb-2">Exam Data Available</h4>
+      <p class="text-gray-600 max-w-md">
+        {{ stats.totalExams }} exams have been conducted. Upload results to view performance analytics.
+      </p>
+      } @else {
+      <div class="text-5xl text-gray-300 mb-4">
+        <i class="fas fa-chart-bar"></i>
+      </div>
+      <h4 class="text-lg font-semibold text-gray-800 mb-2">No Exam Data Yet</h4>
+      <p class="text-gray-600 max-w-md">
+        Schedule exams and upload results to view performance analytics and trends.
+      </p>
+      }
+    </div>
+
+    <div class="mt-6 pt-6 border-t border-blue-50">
+      <div class="flex items-center justify-between text-sm">
+        <span class="text-gray-600">
+          Last exam: {{ stats.recentExams.length > 0 ? stats.recentExams[0].name : 'None scheduled' }}
+        </span>
+        <span class="text-blue-600 font-medium">
+          {{ stats.totalExams }} total exams
+        </span>
+      </div>
     </div>
   </div>
 
-  <div
-    class="bg-white shadow-md rounded-2xl p-6 flex items-center gap-4 col-span-full sm:col-span-2 lg:col-span-1"
-  >
-    <div class="bg-red-100 text-red-600 p-3 rounded-full">
-      <i class="fas fa-chart-line text-xl"></i>
+  <!-- Class Distribution -->
+  @if (stats.classDistribution.length > 0) {
+  <div class="mt-6 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800">Class Distribution</h3>
+        <p class="text-gray-600 text-sm">Student enrollment per form</p>
+      </div>
+      <div class="text-sm text-gray-500">
+        Total: {{ stats.totalStudents }} students
+      </div>
     </div>
-    <div>
-      <p class="text-sm text-gray-500">Results</p>
-      <h3 class="text-2xl font-bold text-gray-800">{{ totalResults }}</h3>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      @for (classItem of stats.classDistribution; track classItem.form) {
+      <div class="text-center p-4 rounded-xl border {{ getClassColor(classItem.form) }}">
+        <div class="text-2xl font-bold mb-1">{{ classItem.count }}</div>
+        <div class="text-sm font-medium mb-2">Form {{ classItem.form }}</div>
+        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div class="h-full rounded-full bg-current opacity-30"
+            [style.width.%]="stats.totalStudents > 0 ? (classItem.count / stats.totalStudents) * 100 : 0">
+          </div>
+        </div>
+        <div class="text-xs text-gray-600 mt-2">
+          {{ stats.totalStudents > 0 ? ((classItem.count / stats.totalStudents) * 100).toFixed(1) : '0.0' }}% of total
+        </div>
+      </div>
+      }
     </div>
   </div>
+  }
+
+  <!-- Recent Exams -->
+  @if (stats.recentExams.length > 0) {
+  <div class="mt-6 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800">Recent Exams</h3>
+        <p class="text-gray-600 text-sm">Recently scheduled examinations</p>
+      </div>
+      <div class="text-sm text-blue-600 font-medium">
+        {{ stats.totalExams }} total
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      @for (exam of stats.recentExams; track $index) {
+      <div class="p-4 rounded-xl border border-blue-100 bg-blue-50/50">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="font-semibold text-gray-800">{{ exam.name }}</h4>
+          <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+            {{ exam.students }} students
+          </span>
+        </div>
+        <p class="text-sm text-gray-600 mb-3">Date: {{ exam.date }}</p>
+        <div class="text-xs text-gray-500">
+          <i class="fas fa-calendar-alt mr-1"></i>
+          Scheduled
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+  }
 </div>

@@ -52,20 +52,24 @@ export class SubjectAssignComponent implements OnInit {
         // Track assigned students
         this.assignedStudentIds = new Set(
           (this.subject.students ?? [])
-            .map(s => s.id)
+            .map((s) => s.id)
             .filter((id): id is string => !!id)
         );
       })
-      .catch(err => this.toast.apiError('Failed to load data', err))
+      .catch((err) => this.toast.apiError('Failed to load data', err))
       .finally(() => (this.loading = false));
   }
 
   /** Students in a class */
-// Make classId access safe everywhere
-getStudentsForClass(classId?: string): Student[] {
-  return classId ? this.students.filter(s => s.classId === classId) : [];
-}
+  // Make classId access safe everywhere
+  getStudentsForClass(classId?: string): Student[] {
+    return classId ? this.students.filter((s) => s.classId === classId) : [];
+  }
 
+  // In your component class
+  navigateToSubjects(): void {
+    this.router.navigate(['/dashboard/admin/subjects']);
+  }
 
   /** Student checkbox state */
   isAssigned(student: Student): boolean {
@@ -75,13 +79,16 @@ getStudentsForClass(classId?: string): Student[] {
   /** Class checkbox state */
   isClassFullyAssigned(cls: Class): boolean {
     const classStudents = this.getStudentsForClass(cls.id!);
-    return classStudents.length > 0 && classStudents.every(s => !!s.id && this.assignedStudentIds.has(s.id));
+    return (
+      classStudents.length > 0 &&
+      classStudents.every((s) => !!s.id && this.assignedStudentIds.has(s.id))
+    );
   }
 
   /** Toggle all students in a class */
   toggleClass(cls: Class, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    this.getStudentsForClass(cls.id!).forEach(student => {
+    this.getStudentsForClass(cls.id!).forEach((student) => {
       if (!student.id) return;
       checked
         ? this.assignedStudentIds.add(student.id)
@@ -103,13 +110,17 @@ getStudentsForClass(classId?: string): Student[] {
     if (!this.subject?.id) return;
 
     this.loading = true;
-    this.subjectService.updateSubjectStudents(this.subject.id, Array.from(this.assignedStudentIds))
+    this.subjectService
+      .updateSubjectStudents(
+        this.subject.id,
+        Array.from(this.assignedStudentIds)
+      )
       .subscribe({
         next: () => {
           this.toast.success('Subject students updated successfully.');
           this.router.navigate(['/dashboard/admin/subjects']);
         },
-        error: err => {
+        error: (err) => {
           this.toast.apiError('Failed to update subject students', err);
           this.loading = false;
         },
@@ -120,5 +131,28 @@ getStudentsForClass(classId?: string): Student[] {
   /** Total students currently assigned */
   getTotalAssigned(): number {
     return this.assignedStudentIds.size;
+  }
+
+  getSelectedStudentsForClass(cls: Class): number {
+    const classStudents = this.getStudentsForClass(cls.id!);
+    return classStudents.filter((student) => this.isAssigned(student)).length;
+  }
+
+  getClassSelectionStatus(cls: Class): string {
+    const selected = this.getSelectedStudentsForClass(cls);
+    const total = this.getStudentsForClass(cls.id!).length;
+
+    if (selected === 0) return 'None';
+    if (selected === total) return 'Fully Assigned';
+    return 'Partial';
+  }
+
+  getClassSelectionColor(cls: Class): { bg: string; text: string } {
+    const selected = this.getSelectedStudentsForClass(cls);
+
+    if (selected > 0) {
+      return { bg: 'bg-green-100', text: 'text-green-800' };
+    }
+    return { bg: 'bg-gray-100', text: 'text-gray-600' };
   }
 }

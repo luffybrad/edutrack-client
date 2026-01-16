@@ -136,4 +136,22 @@ export class ClassListComponent implements OnInit {
       error: (err) => this.toast.apiError('Failed to delete class', err),
     });
   }
+
+  // Add this getter to your ClassListComponent class
+  get totalStudentsCount(): number {
+    return this.classes.reduce((total, cls) => {
+      return total + (cls.students?.length || 0);
+    }, 0);
+  }
+
+  get uniqueFormsCount(): number {
+    const uniqueForms = new Set(this.classes.map((c) => c.form));
+    return uniqueForms.size;
+  }
+
+  get avgClassSize(): number {
+    return this.classes.length > 0
+      ? Math.round(this.totalStudentsCount / this.classes.length)
+      : 0;
+  }
 }

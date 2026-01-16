@@ -27,6 +27,7 @@ import { LoadingOverlayComponent } from '../../../components/loading-overlay/loa
 export class ClassAddComponent implements OnInit {
   form: FormGroup;
   loading = false;
+  currentYear = new Date().getFullYear();
 
   constructor(
     private fb: FormBuilder,

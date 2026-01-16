@@ -1,84 +1,167 @@
-<div class="max-w-lg mx-auto bg-white p-6 rounded-xl shadow-md relative">
-  <!-- Back Button -->
-  <div class="flex justify-between items-center mb-4">
-    <h2 class="text-3xl font-bold text-gray-800">Add Student</h2>
-    <a
-      (click)="goBack()"
-      class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 cursor-pointer"
-    >
-      <i class="fas fa-arrow-left"></i>
-      Back to Student List
-    </a>
+<app-loading-overlay [show]="loading"></app-loading-overlay>
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-4 md:p-6">
+  <!-- Header Section -->
+  <div class="max-w-4xl mx-auto">
+    <!-- Navigation -->
+    <div class="mb-8">
+      <button (click)="goBack()"
+        class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors duration-200 group">
+        <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform duration-200"></i>
+        <span class="font-medium">Back to Students</span>
+      </button>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-100 shadow-xl overflow-hidden">
+      <!-- Card Header -->
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 md:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">Add New Student</h1>
+            <p class="text-blue-100 opacity-90">
+              Fill in the student details below to add them to the system
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-white/20">
+            <i class="fas fa-user-graduate text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Content -->
+      <div class="p-6 md:p-8">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+          <!-- Admission Number -->
+          <div>
+            <label class="block mb-3">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                  <i class="fas fa-id-card"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Admission Number
+                </span>
+                <span class="text-red-500">*</span>
+              </div>
+              <input type="text" formControlName="admNo" placeholder="Enter student admission number"
+                class="w-full px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
+              @if (form.get('admNo')?.touched && form.get('admNo')?.invalid) {
+              <div class="mt-2 text-sm text-red-600">
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Admission number is required</p>
+              </div>
+              }
+            </label>
+          </div>
+
+          <!-- Student Name -->
+          <div>
+            <label class="block mb-3">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="p-2 rounded-lg bg-emerald-100 text-emerald-600">
+                  <i class="fas fa-user"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Full Name
+                </span>
+                <span class="text-red-500">*</span>
+              </div>
+              <input type="text" formControlName="name" placeholder="Enter student full name"
+                class="w-full px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
+              @if (form.get('name')?.touched && form.get('name')?.invalid) {
+              <div class="mt-2 text-sm text-red-600">
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Student name is required</p>
+              </div>
+              }
+            </label>
+          </div>
+
+          <!-- Class Selection -->
+          <div>
+            <label class="block mb-3">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="p-2 rounded-lg bg-violet-100 text-violet-600">
+                  <i class="fas fa-school"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Class Assignment
+                </span>
+                <span class="text-red-500">*</span>
+              </div>
+
+              @if (classes.length === 0 && !loading) {
+              <div class="px-4 py-3 border border-amber-200 rounded-xl bg-amber-50 text-amber-800">
+                <div class="flex items-center gap-3">
+                  <i class="fas fa-exclamation-triangle text-lg"></i>
+                  <div>
+                    <p class="font-medium">No classes available</p>
+                    <p class="text-sm mt-1">Please create classes first before adding students</p>
+                  </div>
+                </div>
+              </div>
+              } @else {
+              <select formControlName="classId"
+                class="w-full px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white">
+                <option value="" disabled selected>Select a class for the student</option>
+                @for (cls of classes; track cls.id) {
+                <option [value]="cls.id">
+                  Form {{ cls.form }}{{ cls.stream }} • {{ cls.year }}
+                </option>
+                }
+              </select>
+              }
+
+              @if (form.get('classId')?.touched && form.get('classId')?.invalid) {
+              <div class="mt-2 text-sm text-red-600">
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Please select a class for the student</p>
+              </div>
+              }
+            </label>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-6 border-t border-blue-100">
+            <div class="flex flex-col md:flex-row gap-4">
+              <button type="button" (click)="goBack()" [disabled]="loading"
+                class="flex-1 px-6 py-3.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium flex items-center justify-center gap-2 disabled:opacity-50">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+
+              <button type="submit" [disabled]="loading || form.invalid || classes.length === 0"
+                class="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                @if (loading) {
+                <i class="fas fa-spinner fa-spin"></i>
+                Adding Student...
+                } @else {
+                <i class="fas fa-user-plus"></i>
+                Add Student
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Help Text -->
+    <div class="mt-6 p-4 bg-blue-50/50 border border-blue-200 rounded-xl">
+      <div class="flex items-start gap-3">
+        <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <div>
+          <p class="font-medium text-gray-800 mb-1">Student Enrollment Guide</p>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Ensure the admission number is unique</li>
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Use the student's official full name</li>
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Assign to the correct class for proper
+              tracking</li>
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Guardian can be assigned after student
+              creation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
-    <!-- Admission No -->
-    <div>
-      <label class="block mb-1 text-sm font-medium text-gray-700"
-        >Admission No</label
-      >
-      <input
-        type="text"
-        formControlName="admNo"
-        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder="e.g. KBHS1234"
-      />
-      <small
-        *ngIf="form.get('admNo')?.invalid && form.get('admNo')?.touched"
-        class="text-red-600"
-      >
-        Admission No is required.
-      </small>
-    </div>
-
-    <!-- Name -->
-    <div>
-      <label class="block mb-1 text-sm font-medium text-gray-700">Name</label>
-      <input
-        type="text"
-        formControlName="name"
-        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder="e.g. John Doe"
-      />
-      <small
-        *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
-        class="text-red-600"
-      >
-        Name is required.
-      </small>
-    </div>
-
-    <!-- Class Dropdown -->
-    <div>
-      <label class="block mb-1 text-sm font-medium text-gray-700">Class</label>
-      <select
-        formControlName="classId"
-        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="" disabled selected>Select a class</option>
-        <option *ngFor="let cls of classes" [value]="cls.id">
-          Form {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
-        </option>
-      </select>
-      <small
-        *ngIf="form.get('classId')?.invalid && form.get('classId')?.touched"
-        class="text-red-600"
-      >
-        Class is required.
-      </small>
-    </div>
-
-    <!-- Submit Button -->
-    <button
-      type="submit"
-      [disabled]="loading"
-      class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-50"
-    >
-      <i class="fas fa-plus"></i>
-      Add Student
-    </button>
-  </form>
-
-  <!-- Loading Overlay -->
-  <app-loading-overlay [show]="loading"></app-loading-overlay>
 </div>

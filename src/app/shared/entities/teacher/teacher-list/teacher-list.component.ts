@@ -139,4 +139,19 @@ export class TeacherListComponent implements OnInit {
       error: (err) => this.toast.apiError('Failed to delete teacher', err),
     });
   }
+
+  // Add these getters after the existing properties
+  get assignedTeachersCount(): number {
+    return this.teachers.filter((t) => t.classId).length;
+  }
+
+  get unassignedTeachersCount(): number {
+    return this.teachers.filter((t) => !t.classId).length;
+  }
+
+  get assignmentRate(): number {
+    return this.teachers.length > 0
+      ? Math.round((this.assignedTeachersCount / this.teachers.length) * 100)
+      : 0;
+  }
 }

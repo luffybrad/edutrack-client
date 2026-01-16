@@ -96,4 +96,27 @@ export class ResultsDashboardComponent implements OnInit {
     this.selectedSubject = undefined;
     this.selectedClassId = undefined;
   }
+
+  // Add these methods to your existing ResultsDashboardComponent class
+
+  // Helper to count active filters
+  getActiveFilterCount(): number {
+    let count = 0;
+    if (this.selectedExamId) count++;
+    if (this.selectedStudentId) count++;
+    if (this.selectedSubject) count++;
+    if (this.selectedClassId) count++;
+    return count;
+  }
+
+  // Clear all filters
+  clearFilters(): void {
+    this.selectedExamId = undefined;
+    this.selectedStudentId = undefined;
+    this.selectedSubject = undefined;
+    this.selectedClassId = undefined;
+  }
+
+  // Current date/time for footer
+  currentDateTime = new Date();
 }

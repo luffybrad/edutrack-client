@@ -1,254 +1,409 @@
 <app-loading-overlay [show]="loading"></app-loading-overlay>
 
-<!-- ✅ Page header -->
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
-    Guardians
-  </h2>
+<!-- ✅ Enhanced Page Header -->
+<div class="mb-8 bg-gradient-to-r from-blue-50 to-sky-50 p-6 rounded-2xl border border-blue-100 shadow-sm">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="p-3 bg-gradient-to-br from-blue-500 to-sky-500 rounded-xl shadow">
+        <i class="fas fa-user-shield text-white text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Guardian Management</h1>
+        <p class="text-gray-600 mt-1">Manage and oversee student guardians information</p>
+      </div>
+    </div>
 
-  <!-- Desktop Add Button -->
-  <a
-    *ngIf="(role$ | async) === RoleType.Admin"
-    routerLink="add"
-    class="hidden md:inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-  >
-    <i class="fas fa-plus"></i>
-    Add New Guardian
-  </a>
+    <!-- Desktop Add Button -->
+    <a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
+      class="hidden md:inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-sky-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5">
+      <i class="fas fa-plus-circle text-lg"></i>
+      <span class="font-medium">Add New Guardian</span>
+    </a>
+  </div>
 </div>
 
 <!-- ✅ Mobile FAB -->
-<a
-  *ngIf="(role$ | async) === RoleType.Admin"
-  routerLink="add"
-  class="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700"
->
-  <i class="fas fa-plus text-xl"></i>
+<a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
+  class="md:hidden fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-200 z-40">
+  <i class="fas fa-plus text-2xl"></i>
 </a>
 
-<!-- 🔍 Search -->
-<div class="mb-6 w-full relative">
-  <i
-    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-  ></i>
-  <input
-    type="text"
-    [(ngModel)]="searchTerm"
-    (ngModelChange)="triggerSearch()"
-    placeholder="Search by Name, Email, or Phone"
-    class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-  <button
-    *ngIf="searchTerm"
-    (click)="clearSearch()"
-    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500"
-  >
-    <i class="fas fa-times-circle"></i>
-  </button>
+<!-- 🔍 Enhanced Search Section -->
+<div class="mb-8 bg-white p-6 rounded-2xl border border-blue-50 shadow-sm">
+  <div class="relative group">
+    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+      <div class="p-2 bg-blue-50 rounded-lg">
+        <i class="fas fa-search text-blue-500"></i>
+      </div>
+    </div>
+    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="triggerSearch()"
+      placeholder="Search guardians by name, email, or phone number..."
+      class="w-full pl-16 pr-12 py-4 border-2 border-blue-100 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 text-gray-700 placeholder-gray-400" />
+    <button *ngIf="searchTerm" (click)="clearSearch()"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors">
+      <i class="fas fa-times text-lg"></i>
+    </button>
+    <div class="mt-3 text-sm text-gray-500 flex items-center gap-2">
+      <i class="fas fa-info-circle text-blue-400"></i>
+      Found {{filteredGuardians.length}} of {{guardians.length}} guardians
+    </div>
+  </div>
 </div>
 
-<!-- 📋 Table -->
-<div class="overflow-x-auto bg-white rounded shadow">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Name
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Email
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Phone
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Students
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Actions
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
-      <tr
-        *ngFor="let guardian of filteredGuardians"
-        class="hover:bg-gray-50 transition"
-      >
-        <td class="px-4 py-3">{{ guardian.name }}</td>
-        <td class="px-4 py-3">{{ guardian.email }}</td>
-        <td class="px-4 py-3">{{ guardian.phone }}</td>
-        <td class="px-4 py-3">{{ guardian.students?.length || 0 }}</td>
-        <td class="px-4 py-3 flex gap-3">
-          <button
-            (click)="openModal(guardian, 'view')"
-            class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-          >
-            <i class="fas fa-eye"></i>
-          </button>
-          <ng-container *ngIf="(role$ | async) === RoleType.Admin">
-            <button
-              (click)="openModal(guardian, 'edit')"
-              class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1"
-            >
-              <i class="fas fa-edit"></i>
-            </button>
-            <button
-              (click)="deleteGuardian(guardian.id!)"
-              class="text-red-600 hover:text-red-800 flex items-center gap-1"
-            >
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </ng-container>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- ✅ View/Edit Modal -->
-<div
-  *ngIf="modalMode"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
->
-  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md relative">
-    <h3 class="text-2xl font-bold mb-6 text-gray-800">
-      {{
-        modalMode === "view"
-          ? "Guardian: " + selectedGuardian?.name
-          : "Edit Guardian"
-      }}
-    </h3>
-
-    <div *ngIf="selectedGuardian">
-      <!-- ✅ Name -->
-      <label class="block mb-4">
-        <span class="text-sm text-gray-700 font-medium">Name</span>
-        <input
-          [(ngModel)]="selectedGuardian.name"
-          [readonly]="modalMode === 'view'"
-          class="border border-gray-300 rounded px-3 py-2 w-full bg-white focus:ring focus:ring-blue-100"
-        />
-      </label>
-
-      <!-- ✅ Email -->
-      <label class="block mb-4">
-        <span class="text-sm text-gray-700 font-medium">Email</span>
-        <input
-          [(ngModel)]="selectedGuardian.email"
-          [readonly]="modalMode === 'view'"
-          class="border border-gray-300 rounded px-3 py-2 w-full bg-white focus:ring focus:ring-blue-100"
-        />
-      </label>
-
-      <!-- ✅ Phone with Masking -->
-      <label class="block mb-4">
-        <span class="text-sm text-gray-700 font-medium">Phone</span>
-        <input
-          [(ngModel)]="selectedGuardian.phone"
-          [readonly]="modalMode === 'view'"
-          mask="0000 000 000"
-          placeholder="07XX XXX XXX"
-          class="border border-gray-300 rounded px-3 py-2 w-full bg-white focus:ring focus:ring-blue-100"
-        />
-      </label>
-
-      <!-- ✅ Students Multi-Select Chips -->
-      <!-- VIEW MODE -->
-      <div *ngIf="modalMode === 'view'" class="mb-4">
-        <label class="block mb-2 text-sm text-gray-700 font-medium">
-          Assigned Students ({{ selectedGuardian.students?.length || 0 }})
-        </label>
-        <div
-          *ngIf="selectedGuardian?.students?.length; else noStudentsView"
-          class="flex flex-wrap gap-2"
-        >
-          <span
-            *ngFor="let student of selectedGuardian.students"
-            class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium"
-          >
-            {{ student.admNo }} — {{ student.name }}
-          </span>
-        </div>
-        <ng-template #noStudentsView>
-          <p class="text-gray-500 text-sm">No students assigned.</p>
-        </ng-template>
+<!-- 📋 Enhanced Table Section -->
+<div class="bg-white rounded-2xl border border-blue-50 shadow-sm overflow-hidden">
+  <!-- Table Header -->
+  <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-sky-50 border-b border-blue-100">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-gray-800">Guardians List</h3>
+      <div class="flex items-center gap-2 text-sm text-blue-600">
+        <i class="fas fa-users"></i>
+        <span>{{ guardians.length }} total guardians</span>
       </div>
+    </div>
+  </div>
 
-      <!-- EDIT MODE -->
-      <div *ngIf="modalMode === 'edit'" class="mb-4">
-        <label class="block mb-2 text-sm text-gray-700 font-medium">
-          Assign Students
-        </label>
+  <!-- Responsive Table Container -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-blue-50">
+      <thead>
+        <tr class="bg-blue-50/50">
+          <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-user text-blue-500"></i>
+              <span>Name</span>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-envelope text-blue-500"></i>
+              <span>Email</span>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-phone text-blue-500"></i>
+              <span>Phone</span>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-graduation-cap text-blue-500"></i>
+              <span>Students</span>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-cog text-blue-500"></i>
+              <span>Actions</span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-blue-50">
+        <tr *ngFor="let guardian of filteredGuardians" class="hover:bg-blue-50/30 transition-colors duration-150 group">
+          <!-- Name Column -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-blue-600"></i>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900">{{ guardian.name }}</div>
+              </div>
+            </div>
+          </td>
 
-        <!-- Selected Chips -->
-        <div class="flex flex-wrap gap-2 mb-2">
-          <span
-            *ngFor="let sid of selectedGuardian?.studentIds"
-            class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium"
-          >
-            {{ getStudentInfo(sid) }}
-            <button
-              type="button"
-              (click)="toggleStudent(sid)"
-              class="ml-1 text-blue-700 hover:text-blue-900 text-xs"
-            >
-              ×
-            </button>
-          </span>
-          <ng-container *ngIf="!selectedGuardian?.studentIds?.length">
-            <span class="text-gray-500 text-xs">No students selected</span>
-          </ng-container>
-        </div>
+          <!-- Email Column -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-envelope text-gray-400 text-sm"></i>
+              <span class="text-gray-600">{{ guardian.email }}</span>
+            </div>
+          </td>
 
-        <!-- Search input -->
-        <input
-          type="text"
-          [(ngModel)]="studentSearch"
-          placeholder="Search students by name or AdmNo..."
-          class="border border-gray-300 rounded px-3 py-2 w-full mb-2"
-        />
+          <!-- Phone Column -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-phone text-gray-400 text-sm"></i>
+              <span class="text-gray-600 font-mono">{{ guardian.phone }}</span>
+            </div>
+          </td>
 
-        <!-- Students checkbox list -->
-        <div class="border border-gray-300 rounded max-h-40 overflow-y-auto">
-          <label
-            *ngFor="let student of filteredStudents"
-            class="flex items-center px-3 py-2 hover:bg-gray-50"
-          >
-            <input
-              type="checkbox"
-              [checked]="
-                (selectedGuardian.studentIds ?? []).includes(student.id ?? '')
-              "
-              (change)="student.id ? toggleStudent(student.id) : null"
-              class="mr-2"
-            />
-            <span class="text-sm text-gray-800">
-              {{ student.admNo }} — {{ student.name }}
-            </span>
-          </label>
-          <p
-            *ngIf="!filteredStudents.length"
-            class="px-3 py-2 text-sm text-gray-500"
-          >
-            No students found.
-          </p>
-        </div>
+          <!-- Students Column -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-1.5 rounded-full text-sm font-medium" [ngClass]="{
+                  'bg-green-100 text-green-800': (guardian.students?.length || 0) > 0,
+                  'bg-gray-100 text-gray-600': (guardian.students?.length || 0) === 0
+                }">
+                {{ guardian.students?.length || 0 }}
+              </span>
+              <div class="text-sm text-gray-500">
+                {{ (guardian.students?.length || 0) > 0 ? 'student(s)' : 'No students' }}
+              </div>
+            </div>
+          </td>
+
+          <!-- Actions Column -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex gap-2">
+              <button (click)="openModal(guardian, 'view')"
+                class="p-2.5 text-blue-600 hover:text-white hover:bg-blue-500 rounded-xl transition-all duration-200 group/btn"
+                title="View Details">
+                <i class="fas fa-eye"></i>
+                <span
+                  class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                  View
+                </span>
+              </button>
+
+              <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                <button (click)="openModal(guardian, 'edit')"
+                  class="p-2.5 text-amber-600 hover:text-white hover:bg-amber-500 rounded-xl transition-all duration-200 group/btn"
+                  title="Edit">
+                  <i class="fas fa-edit"></i>
+                  <span
+                    class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                    Edit
+                  </span>
+                </button>
+                <button (click)="deleteGuardian(guardian.id!)"
+                  class="p-2.5 text-red-600 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-200 group/btn"
+                  title="Delete">
+                  <i class="fas fa-trash-alt"></i>
+                  <span
+                    class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                    Delete
+                  </span>
+                </button>
+              </ng-container>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="!filteredGuardians.length && !loading">
+          <td colspan="5" class="px-6 py-12 text-center">
+            <div class="flex flex-col items-center justify-center text-gray-400">
+              <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-user-slash text-3xl text-blue-200"></i>
+              </div>
+              <h4 class="text-lg font-medium text-gray-500 mb-2">No guardians found</h4>
+              <p class="text-sm max-w-md">
+                {{ searchTerm ? 'No guardians match your search criteria. Try a different search term.' : 'No guardians
+                have been added yet.' }}
+              </p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Table Footer -->
+  <div class="px-6 py-4 border-t border-blue-50 bg-blue-50/30">
+    <div class="flex items-center justify-between text-sm text-gray-600">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-info-circle text-blue-400"></i>
+        <span>Showing {{filteredGuardians.length}} guardians</span>
       </div>
-
-      <!-- ✅ Actions -->
-      <div class="flex justify-end gap-2 mt-6">
-        <button
-          (click)="closeModal()"
-          class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-        >
-          Close
+      <div class="flex items-center gap-2">
+        <i class="fas fa-sync-alt text-blue-400"></i>
+        <button (click)="fetchGuardians()" class="text-blue-600 hover:text-blue-800 hover:underline">
+          Refresh
         </button>
-        <button
-          *ngIf="modalMode === 'edit'"
-          (click)="saveChanges()"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Save
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Enhanced View/Edit Modal -->
+<div *ngIf="modalMode" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  (click)="closeModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="sticky top-0 bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-4 border-b border-blue-100 rounded-t-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
+            <i class="fas fa-user-shield text-white text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-gray-800">
+              {{ modalMode === "view" ? "Guardian Details" : "Edit Guardian" }}
+            </h3>
+            <p class="text-sm text-gray-600">
+              {{ modalMode === "view" ? "Viewing guardian information" : "Update guardian details" }}
+            </p>
+          </div>
+        </div>
+        <button (click)="closeModal()"
+          class="p-2 hover:bg-white rounded-xl transition-colors text-gray-400 hover:text-gray-600" title="Close">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="p-6">
+      <div *ngIf="selectedGuardian" class="space-y-6">
+        <!-- Profile Info Section -->
+        <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+          <h4 class="text-sm font-semibold text-blue-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-id-card"></i>
+            Profile Information
+          </h4>
+
+          <!-- Name -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-user text-blue-500"></i>
+              Full Name
+            </label>
+            <input [(ngModel)]="selectedGuardian.name" [readonly]="modalMode === 'view'"
+              class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all"
+              [class.opacity-75]="modalMode === 'view'" />
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-envelope text-blue-500"></i>
+              Email Address
+            </label>
+            <input [(ngModel)]="selectedGuardian.email" [readonly]="modalMode === 'view'" type="email"
+              class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all"
+              [class.opacity-75]="modalMode === 'view'" />
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-phone text-blue-500"></i>
+              Phone Number
+            </label>
+            <input [(ngModel)]="selectedGuardian.phone" [readonly]="modalMode === 'view'" mask="0000 000 000"
+              placeholder="07XX XXX XXX"
+              class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all font-mono"
+              [class.opacity-75]="modalMode === 'view'" />
+          </div>
+        </div>
+
+        <!-- Students Section -->
+        <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+          <h4 class="text-sm font-semibold text-blue-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-graduation-cap"></i>
+            Assigned Students
+          </h4>
+
+          <!-- VIEW MODE -->
+          <div *ngIf="modalMode === 'view'" class="space-y-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-gray-600">
+                {{ selectedGuardian.students?.length || 0 }} student(s) assigned
+              </span>
+            </div>
+            <div *ngIf="selectedGuardian.students?.length; else noStudentsView" class="space-y-3">
+              <div *ngFor="let student of selectedGuardian.students"
+                class="flex items-center gap-3 p-3 bg-white rounded-lg border border-blue-50">
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-user-graduate text-green-600"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-medium text-gray-900">{{ student.name }}</div>
+                  <div class="text-sm text-gray-500 font-mono">{{ student.admNo }}</div>
+                </div>
+              </div>
+            </div>
+            <ng-template #noStudentsView>
+              <div class="text-center py-6">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-user-slash text-gray-400 text-xl"></i>
+                </div>
+                <p class="text-gray-500">No students assigned to this guardian</p>
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- EDIT MODE -->
+          <div *ngIf="modalMode === 'edit'" class="space-y-4">
+            <!-- Selected Students Chips -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-3">
+                Selected Students ({{ selectedGuardian.studentIds?.length || 0 }})
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <div *ngFor="let sid of selectedGuardian.studentIds"
+                  class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-sky-500 text-white px-3 py-1.5 rounded-full shadow-sm">
+                  <i class="fas fa-user-graduate text-sm"></i>
+                  <span class="text-sm font-medium">{{ getStudentInfo(sid) }}</span>
+                  <button type="button" (click)="toggleStudent(sid)" class="ml-1 hover:text-red-100 transition-colors">
+                    <i class="fas fa-times text-xs"></i>
+                  </button>
+                </div>
+                <div *ngIf="!selectedGuardian.studentIds?.length" class="text-gray-400 text-sm py-2">
+                  No students selected. Search below to add students.
+                </div>
+              </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="relative">
+              <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <i class="fas fa-search"></i>
+              </div>
+              <input type="text" [(ngModel)]="studentSearch"
+                placeholder="Search students by name or admission number..."
+                class="w-full pl-10 pr-4 py-3 border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all" />
+            </div>
+
+            <!-- Students List -->
+            <div class="border-2 border-blue-100 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+              <div *ngFor="let student of filteredStudents" class="border-b border-blue-50 last:border-0">
+                <label class="flex items-center gap-3 p-4 hover:bg-blue-50/50 cursor-pointer transition-colors">
+                  <div class="relative">
+                    <input type="checkbox" [checked]="(selectedGuardian.studentIds ?? []).includes(student.id ?? '')"
+                      (change)="student.id ? toggleStudent(student.id) : null"
+                      class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+                  </div>
+                  <div class="flex items-center gap-3 flex-1">
+                    <div
+                      class="w-10 h-10 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
+                      <i class="fas fa-user-graduate text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-900">{{ student.name }}</div>
+                      <div class="text-sm text-gray-500 font-mono">{{ student.admNo }}</div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              <div *ngIf="!filteredStudents.length" class="text-center py-8 text-gray-400">
+                <i class="fas fa-search text-2xl mb-2"></i>
+                <p>No students found matching your search</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div
+      class="sticky bottom-0 bg-gradient-to-r from-blue-50/80 to-sky-50/80 backdrop-blur-sm px-6 py-4 border-t border-blue-100 rounded-b-2xl">
+      <div class="flex justify-end gap-3">
+        <button (click)="closeModal()"
+          class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+          Cancel
+        </button>
+        <button *ngIf="modalMode === 'edit'" (click)="saveChanges()"
+          class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow hover:shadow-lg hover:from-blue-700 hover:to-sky-700 transition-all font-medium">
+          <i class="fas fa-save mr-2"></i>
+          Save Changes
         </button>
       </div>
     </div>

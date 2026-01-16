@@ -87,4 +87,9 @@ export class TeacherAddComponent implements OnInit {
       },
     });
   }
+
+  getSelectedClass(): Class | null {
+    const classId = this.teacherForm.get('classId')?.value;
+    return this.classes.find((c) => c.id === classId) || null;
+  }
 }

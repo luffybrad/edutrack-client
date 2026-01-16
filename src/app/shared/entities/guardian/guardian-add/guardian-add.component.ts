@@ -84,4 +84,9 @@ export class GuardianAddComponent implements OnInit {
         error: (err) => this.toast.apiError('Failed to create guardian', err),
       });
   }
+
+  getStudentInfo(studentId: string): string {
+    const student = this.students.find((s) => s.id === studentId);
+    return student ? `${student.admNo} — ${student.name}` : '';
+  }
 }

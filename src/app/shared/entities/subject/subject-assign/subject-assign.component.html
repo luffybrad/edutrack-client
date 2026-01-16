@@ -1,34 +1,238 @@
-<!-- src/app/shared/entities/subject/subject-assign/subject-assign.component.html -->
 <app-loading-overlay [show]="loading"></app-loading-overlay>
 
-<h2 class="text-xl font-bold mb-4" *ngIf="subject">
-  Assign Students to {{ subject.name | uppercase }}
-</h2>
+<!-- Main Container -->
+<div class="min-h-screen bg-gradient-to-br from-blue-50/30 to-sky-50/30 py-8 px-4">
+  <div class="max-w-6xl mx-auto">
 
-<div class="space-y-4 max-h-[500px] overflow-y-auto border p-4 rounded">
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-sky-600 px-8 py-6 rounded-2xl shadow-2xl mb-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="p-3.5 bg-white/10 backdrop-blur-sm rounded-xl">
+            <i class="fas fa-book text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white" *ngIf="subject">
+              Assign Students to <span class="bg-white/20 px-3 py-1 rounded-lg">{{ subject.name | uppercase }}</span>
+            </h1>
+            <p class="text-blue-100 mt-2 flex items-center gap-2">
+              <i class="fas fa-info-circle"></i>
+              Select students from each class to assign them to this subject
+            </p>
+          </div>
+        </div>
 
-  <div *ngFor="let cls of classes" class="border rounded p-3">
-    <!-- Class checkbox -->
-    <label class="font-semibold flex items-center gap-2">
-      <input type="checkbox" [checked]="isClassFullyAssigned(cls)" (change)="toggleClass(cls, $event)" />
-      FORM {{ cls.form }} - {{ cls.stream }} ({{ cls.year }})
-    </label>
+        <!-- Back Button -->
+        <button (click)="navigateToSubjects()"
+          class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-xl transition-all duration-200 group">
+          <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+          <span class="font-medium">Back to Subjects</span>
+        </button>
+      </div>
+    </div>
 
-    <!-- Students in class -->
-    <div class="ml-6 mt-2 space-y-1">
-      <label *ngFor="let student of getStudentsForClass(cls.id!)" class="flex items-center gap-2 text-sm">
-        <input type="checkbox" [checked]="isAssigned(student)" (change)="toggleStudent(student, $event)" />
-        {{ student.name }}
-      </label>
+    <!-- Statistics Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Total Classes -->
+      <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total Classes</p>
+            <p class="text-3xl font-bold text-gray-800">{{ classes.length }}</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-xl">
+            <i class="fas fa-school text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Students -->
+      <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total Students</p>
+            <p class="text-3xl font-bold text-gray-800">{{ students.length }}</p>
+          </div>
+          <div class="p-3 bg-green-100 rounded-xl">
+            <i class="fas fa-users text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Currently Assigned -->
+      <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Currently Assigned</p>
+            <p class="text-3xl font-bold text-blue-600">{{ getTotalAssigned() }}</p>
+          </div>
+          <div class="p-3 bg-gradient-to-r from-blue-100 to-sky-100 rounded-xl">
+            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Classes & Students Container -->
+    <div class="bg-white rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
+      <!-- Container Header -->
+      <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-4 border-b border-blue-100">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-layer-group text-blue-600"></i>
+            Classes & Students
+          </h3>
+          <div class="text-sm text-blue-600">
+            Select individual students or entire classes
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="p-6 max-h-[600px] overflow-y-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div *ngFor="let cls of classes"
+            class="bg-gradient-to-b from-blue-50 to-white rounded-xl border border-blue-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+
+            <!-- Class Header -->
+            <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-4 py-3 border-b border-blue-100">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <input type="checkbox" [checked]="isClassFullyAssigned(cls)" (change)="toggleClass(cls, $event)"
+                      class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-800">FORM {{ cls.form }} - {{ cls.stream }}</h4>
+                    <p class="text-xs text-gray-600">{{ cls.year }}</p>
+                  </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                  {{ getStudentsForClass(cls.id!).length }} students
+                </div>
+              </div>
+            </div>
+
+            <!-- Students List -->
+            <div class="p-4">
+              <div *ngIf="getStudentsForClass(cls.id!).length > 0; else noStudents" class="space-y-3">
+                <label *ngFor="let student of getStudentsForClass(cls.id!)"
+                  class="flex items-center gap-3 p-3 hover:bg-blue-50/50 rounded-lg transition-colors cursor-pointer group">
+                  <div class="relative flex items-center">
+                    <input type="checkbox" [checked]="isAssigned(student)" (change)="toggleStudent(student, $event)"
+                      class="w-4 h-4 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-1" />
+                  </div>
+                  <div class="flex items-center gap-3 flex-1">
+                    <div
+                      class="w-10 h-10 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
+                      <i class="fas fa-user text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-900">{{ student.name }}</div>
+                      <div class="text-xs text-gray-500 font-mono">{{ student.admNo }}</div>
+                    </div>
+                    <div [class.text-green-600]="isAssigned(student)" [class.text-gray-300]="!isAssigned(student)"
+                      class="transition-colors">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              <ng-template #noStudents>
+                <div class="text-center py-4">
+                  <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-user-slash text-gray-400"></i>
+                  </div>
+                  <p class="text-sm text-gray-500">No students in this class</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Class Footer -->
+            <div class="px-4 py-3 bg-blue-50/30 border-t border-blue-100">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-600">
+                  {{ getSelectedStudentsForClass(cls) }}/{{ getStudentsForClass(cls.id!).length }} selected
+                </span>
+                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="{
+                  'bg-green-100 text-green-800': getSelectedStudentsForClass(cls) > 0,
+                  'bg-gray-100 text-gray-600': getSelectedStudentsForClass(cls) === 0
+                }">
+                  {{ getClassSelectionStatus(cls) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!classes.length && !loading" class="text-center py-12">
+          <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-school text-blue-200 text-2xl"></i>
+          </div>
+          <h4 class="text-lg font-medium text-gray-500 mb-2">No Classes Found</h4>
+          <p class="text-gray-400">There are no classes available to assign students from.</p>
+        </div>
+      </div>
+
+      <!-- Container Footer -->
+      <div class="bg-gradient-to-r from-blue-50/80 to-sky-50/80 backdrop-blur-sm px-6 py-4 border-t border-blue-100">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-100 rounded-lg">
+              <i class="fas fa-info-circle text-blue-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-700">
+                <span class="font-semibold">{{ getTotalAssigned() }} students</span> selected for
+                <span class="font-semibold text-blue-600">
+                  {{ (subject.name | uppercase) || 'SUBJECT' }}
+                </span>
+              <p class="text-xs text-gray-500">Review selections before saving</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button (click)="navigateToSubjects()"
+              class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+              Cancel
+            </button>
+            <button (click)="save()" [disabled]="getTotalAssigned() === 0"
+              [class]="getTotalAssigned() === 0 
+                ? 'px-6 py-2.5 bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed font-medium'
+                : 'px-6 py-2.5 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5 font-medium'">
+              <i class="fas fa-save mr-2"></i>
+              Save Assignments
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection Summary -->
+    <div class="mt-6 bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+      <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-chart-pie text-blue-600"></i>
+        Selection Summary
+      </h4>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center p-4 bg-blue-50 rounded-xl">
+          <div class="text-2xl font-bold text-blue-700">{{ classes.length }}</div>
+          <div class="text-sm text-gray-600">Total Classes</div>
+        </div>
+        <div class="text-center p-4 bg-green-50 rounded-xl">
+          <div class="text-2xl font-bold text-green-700">{{ students.length }}</div>
+          <div class="text-sm text-gray-600">Total Students</div>
+        </div>
+        <div class="text-center p-4 bg-amber-50 rounded-xl">
+          <div class="text-2xl font-bold text-amber-700">{{ getTotalAssigned() }}</div>
+          <div class="text-sm text-gray-600">Selected Students</div>
+        </div>
+        <div class="text-center p-4 bg-purple-50 rounded-xl">
+          <div class="text-2xl font-bold text-purple-700">{{ students.length - getTotalAssigned() }}</div>
+          <div class="text-sm text-gray-600">Remaining</div>
+        </div>
+      </div>
     </div>
   </div>
-
 </div>
-
-<p class="mt-2 text-gray-600 font-medium">
-  Total Students Assigned: {{ getTotalAssigned() }}
-</p>
-
-<button class="mt-6 bg-blue-600 text-white px-4 py-2 rounded" (click)="save()">
-  Save Changes
-</button>

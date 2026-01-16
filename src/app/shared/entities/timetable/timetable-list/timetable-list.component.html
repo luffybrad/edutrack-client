@@ -1,75 +1,427 @@
-<div class="p-6 bg-gray-50 min-h-screen">
+<app-loading-overlay [show]="loading"></app-loading-overlay>
 
-    <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-calendar-alt"></i> Class Timetables
-        </h2>
-        <button (click)="goToGenerate()"
-            class="px-4 py-2 bg-blue-600 text-white rounded flex items-center gap-2 hover:bg-blue-700">
-            <i class="fas fa-plus"></i> Generate Timetable
-        </button>
-    </div>
+<div class="min-h-screen bg-gradient-to-br from-blue-50/30 to-sky-50/30 py-8 px-4">
+    <div class="max-w-7xl mx-auto">
 
-    <!-- Class selection -->
-    <div class="mb-4">
-        <label class="block mb-2 font-medium text-gray-700">Select Class:</label>
-        <select (change)="selectClass($event)"
-            class="w-full md:w-1/3 px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring focus:ring-blue-300">
-            <option value="">-- Select --</option>
-            <option *ngFor="let cls of classes" [value]="cls.id">
-                {{ cls.form }} {{ cls.stream }} ({{ cls.year }})
-            </option>
-        </select>
-    </div>
+        <!-- Enhanced Header Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-sky-600 px-8 py-6 rounded-2xl shadow-2xl mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3.5 bg-white/10 backdrop-blur-sm rounded-xl">
+                        <i class="fas fa-calendar-alt text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Class Timetable Management</h1>
+                        <p class="text-blue-100 mt-2 flex items-center gap-2">
+                            <i class="fas fa-clock"></i>
+                            View, manage, and analyze class schedules
+                        </p>
+                    </div>
+                </div>
 
-    <!-- Loading & error -->
-    <div *ngIf="loading" class="text-blue-600 font-medium mb-4 flex items-center gap-2">
-        <i class="fas fa-spinner fa-spin"></i> Loading...
-    </div>
-    <div *ngIf="error" class="text-red-600 font-medium mb-4 flex items-center gap-2">
-        <i class="fas fa-exclamation-triangle"></i> {{ error }}
-    </div>
-
-    <!-- Timetable table -->
-    <div *ngIf="selectedTimetable && selectedTimetable.schedule" class="overflow-x-auto">
-
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-table"></i> Timetable
-            </h3>
-
-            <div class="flex gap-2">
-                <button (click)="deleteTimetable()" [disabled]="loading"
-                    class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50">
-                    <i class="fas fa-trash-alt"></i> Delete Timetable
-                </button>
-
-                <button (click)="downloadPDF()" [disabled]="loading || !selectedTimetable"
-                    class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50">
-                    <i class="fas fa-file-pdf"></i> Download PDF
+                <!-- Generate Timetable Button -->
+                <button (click)="goToGenerate()"
+                    class="inline-flex items-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 transform hover:-translate-y-0.5 group">
+                    <i class="fas fa-plus-circle text-lg group-hover:rotate-90 transition-transform"></i>
+                    <span class="font-medium">Generate New Timetable</span>
                 </button>
             </div>
         </div>
 
-        <table class="min-w-full border border-gray-300 bg-white rounded overflow-hidden">
-            <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-4 py-2 border-b text-left">Day</th>
-                    <th *ngFor="let lesson of getLessons('MONDAY'); let i = index" class="px-4 py-2 border-b text-left">
-                        Lesson {{ i + 1 }}
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let day of weekDays" class="hover:bg-gray-50">
-                    <td class="px-4 py-2 border-b font-medium">{{ day }}</td>
-                    <td *ngFor="let lesson of getLessons(day)" class="px-4 py-2 border-b">
-                        {{ lesson }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- Analytics Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Total Classes</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ classes.length }}</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-xl">
+                        <i class="fas fa-school text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
 
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">With Timetable</p>
+                        <p class="text-3xl font-bold text-green-800">{{ getClassesWithTimetable() }}</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-xl">
+                        <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Without Timetable</p>
+                        <p class="text-3xl font-bold text-amber-800">{{ classes.length - getClassesWithTimetable() }}
+                        </p>
+                    </div>
+                    <div class="p-3 bg-amber-100 rounded-xl">
+                        <i class="fas fa-calendar-times text-amber-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Coverage Rate</p>
+                        <p class="text-3xl font-bold text-purple-800">
+                            {{ getTimetableCoverage() }}%
+                        </p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-xl">
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classes Summary Grid -->
+        <div class="bg-white rounded-2xl border border-blue-100 shadow-lg mb-8">
+            <!-- Section Header -->
+            <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-4 border-b border-blue-100 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-layer-group text-blue-600"></i>
+                        Classes Summary
+                    </h3>
+                    <div class="text-sm text-blue-600">
+                        {{ classes.length }} classes in total
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes Grid -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div *ngFor="let cls of classes"
+                        class="bg-gradient-to-b from-blue-50 to-white rounded-xl border border-blue-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+
+                        <!-- Class Header -->
+                        <div class="px-4 py-3 border-b border-blue-100">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-10 h-10 bg-gradient-to-br from-blue-100 to-sky-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-school text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">FORM {{ cls.form }} - {{ cls.stream }}</h4>
+                                        <p class="text-xs text-gray-600">{{ cls.year }}</p>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="{
+                        'bg-green-100 text-green-800': hasTimetable(cls.id!),
+                        'bg-amber-100 text-amber-800': !hasTimetable(cls.id!)
+                      }">
+                                    {{ hasTimetable(cls.id!) ? 'Scheduled' : 'Not Scheduled' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Class Details -->
+                        <div class="p-4">
+
+
+                            <!-- Action Buttons -->
+                            <div class="mt-4 flex gap-2">
+                                <button *ngIf="hasTimetable(cls.id!)" (click)="selectClassFromCard(cls.id!)"
+                                    class="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-sky-600 text-white text-sm rounded-lg hover:from-blue-700 hover:to-sky-700 transition-all flex items-center justify-center gap-2">
+                                    <i class="fas fa-eye"></i>
+                                    View Timetable
+                                </button>
+                                <button *ngIf="!hasTimetable(cls.id!)" (click)="goToGenerateForClass(cls.id!)"
+                                    class="flex-1 px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center gap-2">
+                                    <i class="fas fa-plus"></i>
+                                    Generate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!classes.length && !loading" class="py-12 text-center">
+                    <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-school text-blue-300 text-2xl"></i>
+                    </div>
+                    <h4 class="text-lg font-medium text-gray-500 mb-2">No Classes Found</h4>
+                    <p class="text-gray-400">No classes have been created yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Timetable View (Existing Logic) -->
+        <div *ngIf="selectedClassId && (selectedTimetable || loading || error)" class="mb-8">
+
+            <!-- Class Selection Card (Updated to show selected class) -->
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-lg p-6 mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
+                            <i class="fas fa-school text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">
+                                Selected Class:
+                                <span class="text-blue-600">
+                                    {{ getSelectedClassName() }}
+                                </span>
+                            </h3>
+                            <p class="text-sm text-gray-600">
+                                Viewing timetable for the selected class
+                            </p>
+                        </div>
+                    </div>
+                    <button (click)="clearSelection()"
+                        class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fas fa-times"></i>
+                        Clear Selection
+                    </button>
+                </div>
+
+                <div class="text-sm text-gray-500 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-blue-400"></i>
+                    You can select a different class from the list above or clear this selection
+                </div>
+            </div>
+
+            <!-- Loading & Error States -->
+            <div *ngIf="loading" class="mb-8">
+                <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-8">
+                    <div class="flex flex-col items-center justify-center text-center">
+                        <div
+                            class="w-20 h-20 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Loading Timetable</h3>
+                        <p class="text-gray-500">Fetching schedule information...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="error" class="mb-8">
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-100 shadow-sm p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="p-3 bg-red-100 rounded-xl">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-1">Unable to Load Timetable</h4>
+                            <p class="text-gray-600">{{ error }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timetable Display Section -->
+            <div *ngIf="selectedTimetable && selectedTimetable.schedule" class="space-y-8">
+                <!-- Rest of the existing timetable display code remains exactly the same -->
+                <!-- Copy all the existing timetable display HTML from your current component -->
+                <!-- Timetable Header -->
+                <div class="bg-white rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-4 border-b border-blue-100">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
+                                    <i class="fas fa-table text-white text-lg"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">Class Timetable</h3>
+                                    <p class="text-sm text-gray-600">
+                                        Showing schedule for selected class
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-3">
+                                <button (click)="downloadPDF()" [disabled]="loading || !selectedTimetable"
+                                    [class]="loading || !selectedTimetable 
+                    ? 'inline-flex items-center gap-2 px-5 py-2.5 bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed'
+                    : 'inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl shadow hover:shadow-lg hover:from-green-700 hover:to-emerald-700 transition-all'">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span class="font-medium">Download PDF</span>
+                                </button>
+
+                                <button (click)="deleteTimetable()" [disabled]="loading"
+                                    [class]="loading 
+                    ? 'inline-flex items-center gap-2 px-5 py-2.5 bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed'
+                    : 'inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl shadow hover:shadow-lg hover:from-red-700 hover:to-orange-700 transition-all'">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span class="font-medium">Delete Timetable</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timetable Table -->
+                    <div class="p-6 overflow-x-auto">
+                        <table
+                            class="min-w-full divide-y divide-blue-100 border border-blue-100 rounded-xl overflow-hidden">
+                            <thead>
+                                <tr class="bg-gradient-to-r from-blue-50 to-sky-50">
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-calendar-day text-blue-500"></i>
+                                            <span>Day</span>
+                                        </div>
+                                    </th>
+                                    <th *ngFor="let lesson of getLessons('MONDAY'); let i = index"
+                                        class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                        <div class="flex items-center gap-2">
+                                            <div
+                                                class="w-8 h-8 bg-gradient-to-br from-blue-100 to-sky-100 rounded-lg flex items-center justify-center">
+                                                <span class="font-bold text-blue-600">{{ i + 1 }}</span>
+                                            </div>
+                                            <span>Lesson {{ i + 1 }}</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-blue-50">
+                                <tr *ngFor="let day of weekDays; let even = even"
+                                    class="hover:bg-blue-50/30 transition-colors">
+                                    <!-- Day Column -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-12 h-12 bg-gradient-to-br from-blue-100 to-sky-100 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-calendar text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-bold text-gray-900">{{ day }}</div>
+                                                <div class="text-xs text-gray-500">{{ getLessons(day).length }} lessons
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Lesson Columns -->
+                                    <td *ngFor="let lesson of getLessons(day); let lessonIndex = index"
+                                        class="px-6 py-4 whitespace-nowrap">
+                                        <div class="p-3 rounded-lg border transition-all duration-200" [ngClass]="{
+                      'border-green-200 bg-green-50': lesson,
+                      'border-gray-200 bg-gray-50': !lesson,
+                      'hover:shadow-md hover:border-blue-300': lesson
+                    }">
+                                            <div class="text-sm font-medium text-gray-900"
+                                                *ngIf="lesson; else emptyLesson">
+                                                {{ lesson }}
+                                            </div>
+                                            <ng-template #emptyLesson>
+                                                <div class="text-sm text-gray-400 italic">No lesson scheduled</div>
+                                            </ng-template>
+                                            <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                                <i class="fas fa-clock text-gray-400"></i>
+                                                <span>Period {{ lessonIndex + 1 }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Timetable Summary -->
+                    <div class="px-6 py-4 border-t border-blue-100 bg-blue-50/30">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="fas fa-calendar-week text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">School Days</div>
+                                    <div class="text-lg font-bold text-gray-800">{{ weekDays.length }}</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
+                                <div class="p-2 bg-green-100 rounded-lg">
+                                    <i class="fas fa-book text-green-600"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">Total Lessons</div>
+                                    <div class="text-lg font-bold text-gray-800">
+                                        {{ weekDays.length * getLessons('MONDAY').length }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
+                                <div class="p-2 bg-amber-100 rounded-lg">
+                                    <i class="fas fa-clock text-amber-600"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">Periods per Day</div>
+                                    <div class="text-lg font-bold text-gray-800">{{ getLessons('MONDAY').length }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend & Help Section -->
+                <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                        Timetable Guide
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <h5 class="font-semibold text-gray-700">Legend</h5>
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 bg-green-100 border border-green-200 rounded"></div>
+                                <span class="text-sm text-gray-600">Scheduled lesson</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-4 h-4 bg-gray-100 border border-gray-200 rounded"></div>
+                                <span class="text-sm text-gray-600">Free period / No lesson</span>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <h5 class="font-semibold text-gray-700">Quick Actions</h5>
+                            <ul class="text-sm text-gray-600 space-y-2">
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-file-pdf text-green-500"></i>
+                                    <span>Download PDF for printing or sharing</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <i class="fas fa-trash-alt text-red-500"></i>
+                                    <span>Delete timetable to create a new one</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!selectedTimetable && !loading && !error && selectedClassId"
+                class="bg-white rounded-2xl border border-blue-100 shadow-lg p-12">
+                <div class="flex flex-col items-center justify-center text-center">
+                    <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-plus text-blue-300 text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-700 mb-3">No Timetable Found</h3>
+                    <p class="text-gray-500 max-w-md mb-6">
+                        There is no timetable scheduled for the selected class. Generate a new timetable to create a
+                        schedule.
+                    </p>
+                    <button (click)="goToGenerateForSelectedClass()"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow hover:shadow-lg hover:from-blue-700 hover:to-sky-700 transition-all">
+                        <i class="fas fa-plus"></i>
+                        <span class="font-medium">Generate Timetable</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>

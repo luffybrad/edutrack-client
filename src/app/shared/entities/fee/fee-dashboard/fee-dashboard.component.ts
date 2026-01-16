@@ -244,6 +244,13 @@ export class FeeDashboardComponent implements OnInit {
     this.auditLogs = [];
   }
 
+  // Add this method to your existing FeeDashboardComponent class
+  viewAllTransactions(): void {
+    // This could navigate to a detailed transactions page
+    // For now, we'll just show all transactions in the current view
+    console.log('Viewing all transactions');
+  }
+
   viewAuditLogs(arrear: FeeArrear) {
     this.auditLogs = arrear.auditLogs || [];
     this.transactions = [];
@@ -276,5 +283,15 @@ export class FeeDashboardComponent implements OnInit {
       currency: 'KES',
       minimumFractionDigits: 2,
     }).format(amount);
+  }
+
+  // Add these methods to your existing component
+
+  getTotalBalance(): number {
+    return this.feeArrears.reduce((sum, f) => sum + (f.balance || 0), 0);
+  }
+
+  getTotalPaid(): number {
+    return this.feeArrears.reduce((sum, f) => sum + (f.totalPaid || 0), 0);
   }
 }

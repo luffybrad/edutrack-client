@@ -1,193 +1,407 @@
 <app-loading-overlay [show]="loading"></app-loading-overlay>
 
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
-    Students
-  </h2>
-  <a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
-    class="hidden md:inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
-    <i class="fas fa-plus"></i>
-    Add New Student
-  </a>
-</div>
-<!-- fab mobile button -->
-<a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
-  class="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700">
-  <i class="fas fa-plus text-xl"></i>
-</a>
-
-<!-- 🔍 Search UI -->
-<div class="mb-6 w-full block relative">
-  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-  <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" placeholder="Search by name or Adm No"
-    class="w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-  <button *ngIf="searchTerm" (click)="clearSearch()"
-    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500">
-    <i class="fas fa-times-circle"></i>
-  </button>
-</div>
-<div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-  <!-- Form Filter -->
-  <select [(ngModel)]="filterForm" (change)="applyFilters()"
-    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <option value="">All Forms</option>
-    <option *ngFor="let f of [1, 2, 3, 4]" [value]="f">Form {{ f }}</option>
-  </select>
-
-  <!-- Stream Filter -->
-  <input [(ngModel)]="filterStream" (ngModelChange)="applyFilters()" placeholder="Stream"
-    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
-  <!-- Year Filter -->
-  <input type="number" [(ngModel)]="filterYear" (ngModelChange)="applyFilters()" placeholder="Year"
-    class="border px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-</div>
-
-<!-- 📋 Table -->
-<div class="overflow-x-auto bg-white rounded shadow">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-3">
-          <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)"
-            class="form-checkbox h-4 w-4 text-blue-600" />
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Adm No
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Name
-        </th>
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Class
-        </th>
-
-        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-          Actions
-        </th>
-      </tr>
-    </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
-      <tr *ngFor="let student of filteredStudents" class="hover:bg-gray-50 transition">
-        <td class="px-4 py-3">
-          <input type="checkbox" [(ngModel)]="student.selected" class="form-checkbox h-4 w-4 text-blue-600" />
-        </td>
-        <td class="px-4 py-3">{{ student.admNo }}</td>
-        <td class="px-4 py-3">{{ student.name }}</td>
-        <td class="px-4 py-3">
-          {{ student.class?.form }}{{ student.class?.stream }} -
-          {{ student.class?.year }}
-        </td>
-
-        <td class="px-4 py-3 flex gap-3">
-          <!-- 👁 View -->
-          <button (click)="openModal(student, 'view')"
-            class="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-            <i class="fas fa-eye"></i>
-          </button>
-
-          <ng-container *ngIf="role$ | async as role">
-            <!-- ✏️ Edit -->
-            <button *ngIf="role === RoleType.Admin" (click)="openModal(student, 'edit')"
-              class="text-yellow-600 hover:text-yellow-800 flex items-center gap-1">
-              <i class="fas fa-edit"></i>
-            </button>
-
-            <!-- 🗑 Delete -->
-            <button *ngIf="role === RoleType.Admin" (click)="deleteStudent(student.id!)"
-              class="text-red-600 hover:text-red-800 flex items-center gap-1">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </ng-container>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- 🗑 Bulk Delete -->
-<ng-container *ngIf="role$ | async as role">
-  <button *ngIf="role === RoleType.Admin && selectedIds.length > 0" (click)="bulkDeleteSelected()"
-    class="mt-4 inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">
-    <i class="fas fa-trash"></i>
-    Delete ({{ selectedIds.length }})
-  </button>
-</ng-container>
-
-<!-- 🔍 View / Edit Modal -->
-<div *ngIf="modalMode" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2">
-      {{
-      modalMode === "view"
-      ? "Student: " + selectedStudent?.admNo || "—"
-      : "Edit Student"
-      }}
-    </h3>
-
-    <div *ngIf="selectedStudent">
-      <!-- Adm No -->
-      <label class="block mb-4">
-        <span class="text-sm text-gray-700">Adm No</span>
-        <input class="border border-gray-300 rounded px-3 py-2 w-full" [(ngModel)]="selectedStudent.admNo"
-          [readonly]="modalMode === 'view'" />
-      </label>
-
-      <!-- Name -->
-      <label class="block mb-4">
-        <span class="text-sm text-gray-700">Name</span>
-        <input class="border border-gray-300 rounded px-3 py-2 w-full" [(ngModel)]="selectedStudent.name"
-          [readonly]="modalMode === 'view'" />
-      </label>
-
-      <!-- 📚 Class Details (View Mode Only) -->
-      <div *ngIf="modalMode === 'view'" class="block mb-4">
-        <span class="text-sm text-gray-700">Class</span>
-        <p class="border border-gray-300 rounded px-3 py-2 w-full">
-          {{ selectedStudent.class?.form }}{{ selectedStudent.class?.stream }} -
-          {{ selectedStudent.class?.year }}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-4 md:p-6">
+  <!-- Header Section -->
+  <div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+          Student Management
+        </h1>
+        <p class="text-gray-600">
+          Manage student records, view details, and track enrollment
         </p>
       </div>
-      <!-- 📚 Class -->
-      <div *ngIf="modalMode === 'edit'" class="block mb-4">
-        <label class="block mb-1 text-sm text-gray-700">Class</label>
-        <select [(ngModel)]="selectedStudent.classId" class="border border-gray-300 rounded px-3 py-2 w-full">
-          <option value="" disabled>-- Select Class --</option>
-          <option *ngFor="let cls of classes" [value]="cls.id">
-            {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
-          </option>
+      <a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
+        class="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium">
+        <i class="fas fa-user-plus"></i>
+        Add New Student
+      </a>
+    </div>
+
+    <!-- Mobile FAB -->
+    <a *ngIf="(role$ | async) === RoleType.Admin" routerLink="add"
+      class="md:hidden fixed bottom-8 right-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 z-40">
+      <i class="fas fa-plus text-2xl"></i>
+    </a>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <!-- Total Students -->
+      <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-blue-100 shadow-lg shadow-blue-100/50">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Total Students</p>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ totalStudents }}</h3>
+          </div>
+          <div class="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+            <i class="fas fa-user-graduate text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Distribution -->
+      @for (item of studentsByForm; track item.form) {
+      <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-blue-100 shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Form {{ item.form }}</p>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ item.count }}</h3>
+          </div>
+          <div class="p-3 rounded-xl {{ getFormColor(item.form) }} shadow-lg">
+            <i class="fas fa-layer-group text-xl"></i>
+          </div>
+        </div>
+        @if (totalStudents > 0) {
+        <div class="mt-3">
+          <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full bg-current rounded-full" [style.width.%]="(item.count / totalStudents) * 100"></div>
+          </div>
+          <div class="text-xs text-gray-500 mt-1 text-right">
+            {{ ((item.count / totalStudents) * 100).toFixed(1) }}%
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Search & Filter Section -->
+  <div class="mb-8 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div class="flex-1 relative">
+        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+          placeholder="Search students by name or admission number..."
+          class="w-full pl-12 pr-12 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80" />
+        @if (searchTerm) {
+        <button (click)="searchTerm = ''; onSearchChange()"
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+          <i class="fas fa-times-circle text-lg"></i>
+        </button>
+        }
+      </div>
+
+      @if (activeFilters) {
+      <button (click)="clearFilters()"
+        class="inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium">
+        <i class="fas fa-filter-circle-xmark"></i>
+        Clear Filters
+      </button>
+      }
+    </div>
+
+    <!-- Filter Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Form Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-graduation-cap mr-2 text-blue-500"></i>
+          Form
+        </label>
+        <select [(ngModel)]="filterForm" (change)="applyFilters()"
+          class="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80">
+          <option value="">All Forms</option>
+          <option *ngFor="let f of [1, 2, 3, 4]" [value]="f">Form {{ f }}</option>
         </select>
       </div>
 
-      <!-- 👪 Subject Info -->
-      <div *ngIf="subjectsDisplay && modalMode === 'view'" class="block mb-4">
-        <span class="text-sm text-gray-700">Subjects</span>
-        <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2 capitalize">
-          {{ subjectsDisplay }}
-        </p>
+      <!-- Stream Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-stream mr-2 text-blue-500"></i>
+          Stream
+        </label>
+        <input [(ngModel)]="filterStream" (ngModelChange)="onSearchChange()" placeholder="Enter stream..."
+          class="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80" />
       </div>
 
-
-
-      <!-- 👪 Guardian Info -->
-      <div *ngIf="guardian && modalMode === 'view'" class="block mb-4">
-        <span class="text-sm text-gray-700">Guardian</span>
-        <p class="border border-gray-300 rounded px-3 py-2 w-full mb-2 capitalize">
-          {{ guardian.name }} - {{ guardian.phone}}
+      <!-- Year Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+          Year
+        </label>
+        <input type="number" [(ngModel)]="filterYear" (ngModelChange)="onSearchChange()" placeholder="Enter year..."
+          class="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80" />
       </div>
+    </div>
 
-      <div class="flex justify-end gap-2">
-        <button (click)="closeModal()"
-          class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 inline-flex items-center gap-1">
-          <i class="fas fa-times"></i>
-          Close
+    <!-- Results Counter -->
+    <div class="mt-4 pt-4 border-t border-blue-100">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          Showing <span class="font-semibold text-blue-600">{{ filteredStudents.length }}</span> of
+          <span class="font-semibold text-gray-800">{{ totalStudents }}</span> students
+          @if (activeFilters) {
+          <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+            Filtered
+          </span>
+          }
+        </div>
+        @if (selectedIds.length > 0) {
+        <button (click)="bulkDeleteSelected()"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 font-medium">
+          <i class="fas fa-trash"></i>
+          Delete {{ selectedIds.length }} Selected
         </button>
-        <button *ngIf="modalMode === 'edit'" (click)="saveChanges()"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center gap-1">
-          <i class="fas fa-save"></i>
-          Save
-        </button>
+        }
       </div>
     </div>
   </div>
+
+  <!-- Students Table -->
+  <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-blue-100">
+        <thead class="bg-gradient-to-r from-blue-50 to-cyan-50">
+          <tr>
+            <th class="px-6 py-4">
+              <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)"
+                class="form-checkbox h-5 w-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500" />
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-id-card"></i>
+                Adm No
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-user"></i>
+                Name
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-school"></i>
+                Class
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-cogs"></i>
+                Actions
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-blue-50">
+          @if (filteredStudents.length === 0) {
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center">
+              <div class="text-gray-400">
+                <i class="fas fa-user-slash text-4xl mb-4"></i>
+                <p class="text-lg font-medium text-gray-600">No students found</p>
+                <p class="text-gray-500 mt-2">
+                  @if (activeFilters) {
+                  Try adjusting your filters or search terms
+                  } @else {
+                  No students have been added yet
+                  }
+                </p>
+              </div>
+            </td>
+          </tr>
+          } @else {
+          @for (student of filteredStudents; track student.id) {
+          <tr class="hover:bg-blue-50/50 transition-colors duration-200">
+            <td class="px-6 py-4">
+              <input type="checkbox" [(ngModel)]="student.selected"
+                class="form-checkbox h-5 w-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500" />
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                  <i class="fas fa-id-card"></i>
+                </div>
+                <span class="font-medium text-gray-900">{{ student.admNo }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="p-2 rounded-lg bg-emerald-100 text-emerald-600">
+                  <i class="fas fa-user"></i>
+                </div>
+                <span class="font-medium text-gray-900">{{ student.name }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              @if (student.class) {
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border {{ getFormColor(student.class.form) }}">
+                <i class="fas fa-graduation-cap"></i>
+                <span class="font-medium">
+                  {{ student.class.form }}{{ student.class.stream }} • {{ student.class.year }}
+                </span>
+              </div>
+              } @else {
+              <span class="text-gray-400">Not assigned</span>
+              }
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <!-- View Button -->
+                <button (click)="openModal(student, 'view')"
+                  class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700 transition-colors duration-200"
+                  title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+
+                <!-- Edit Button (Admin Only) -->
+                <ng-container *ngIf="role$ | async as role">
+                  <button *ngIf="role === RoleType.Admin" (click)="openModal(student, 'edit')"
+                    class="p-2 rounded-lg bg-amber-100 text-amber-600 hover:bg-amber-200 hover:text-amber-700 transition-colors duration-200"
+                    title="Edit Student">
+                    <i class="fas fa-edit"></i>
+                  </button>
+
+                  <!-- Delete Button (Admin Only) -->
+                  <button *ngIf="role === RoleType.Admin" (click)="deleteStudent(student.id!)"
+                    class="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 transition-colors duration-200"
+                    title="Delete Student">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </ng-container>
+              </div>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- View/Edit Modal -->
+  @if (modalMode) {
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <!-- Modal Header -->
+      <div class="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-2xl font-bold">
+              {{ modalMode === 'view' ? 'Student Details' : 'Edit Student' }}
+            </h3>
+            @if (modalMode === 'view' && selectedStudent) {
+            <p class="text-blue-100 mt-1">{{ selectedStudent.admNo }}</p>
+            }
+          </div>
+          <button (click)="closeModal()" class="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6">
+        @if (selectedStudent) {
+        <div class="space-y-6">
+          <!-- Adm No -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-id-card mr-2 text-blue-500"></i>
+              Admission Number
+            </label>
+            <input [(ngModel)]="selectedStudent.admNo" [readonly]="modalMode === 'view'"
+              class="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+          </div>
+
+          <!-- Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-user mr-2 text-blue-500"></i>
+              Full Name
+            </label>
+            <input [(ngModel)]="selectedStudent.name" [readonly]="modalMode === 'view'"
+              class="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+          </div>
+
+          <!-- Class -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-school mr-2 text-blue-500"></i>
+              Class
+            </label>
+            @if (modalMode === 'view') {
+            @if (selectedStudent.class) {
+            <div
+              class="inline-flex items-center gap-2 px-4 py-3 rounded-xl border-2 {{ getFormColor(selectedStudent.class.form) }}">
+              <i class="fas fa-graduation-cap"></i>
+              <span class="font-medium">
+                {{ selectedStudent.class.form }}{{ selectedStudent.class.stream }} • {{ selectedStudent.class.year }}
+              </span>
+            </div>
+            } @else {
+            <p class="text-gray-500">No class assigned</p>
+            }
+            } @else {
+            <select [(ngModel)]="selectedStudent.classId"
+              class="w-full px-4 py-3 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">-- Select Class --</option>
+              @for (cls of classes; track cls.id) {
+              <option [value]="cls.id">
+                {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
+              </option>
+              }
+            </select>
+            }
+          </div>
+
+          <!-- Subjects (View Only) -->
+          @if (modalMode === 'view' && subjectsDisplay) {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-book mr-2 text-blue-500"></i>
+              Subjects
+            </label>
+            <div class="px-4 py-3 border border-blue-200 rounded-xl bg-blue-50/50">
+              <p class="text-gray-700 capitalize">{{ subjectsDisplay }}</p>
+            </div>
+          </div>
+          }
+
+          <!-- Guardian (View Only) -->
+          @if (modalMode === 'view' && guardian) {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-users mr-2 text-blue-500"></i>
+              Guardian
+            </label>
+            <div class="px-4 py-3 border border-blue-200 rounded-xl bg-blue-50/50">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-medium text-gray-800">{{ guardian.name }}</p>
+                  <p class="text-sm text-gray-600">{{ guardian.phone }}</p>
+                  <p class="text-sm text-gray-600">{{ guardian.email }}</p>
+                </div>
+                <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                  <i class="fas fa-user-shield text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- Modal Footer -->
+          <div class="flex justify-end gap-3 pt-6 border-t border-blue-100">
+            <button (click)="closeModal()"
+              class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 font-medium">
+              Close
+            </button>
+            @if (modalMode === 'edit') {
+            <button (click)="saveChanges()"
+              class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium">
+              Save Changes
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
 </div>

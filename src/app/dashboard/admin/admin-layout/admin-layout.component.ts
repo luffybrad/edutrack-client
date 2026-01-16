@@ -8,10 +8,16 @@ import { AuthService } from '../../../auth/auth.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-layout.component.html',
-  styleUrls: ['./admin-layout.component.css'],
 })
 export class AdminLayoutComponent {
   sidebarOpen = false;
+  currentYear = new Date().getFullYear();
+  currentDate = new Date();
+  notifications = [
+    { id: 1, title: 'New Student Enrolled', time: '2 hours ago', read: false },
+    { id: 2, title: 'Exam Results Published', time: '1 day ago', read: false },
+    { id: 3, title: 'Fee Payment Received', time: '2 days ago', read: true },
+  ];
 
   constructor(private authService: AuthService) {}
 
@@ -20,6 +26,10 @@ export class AdminLayoutComponent {
   }
 
   logout() {
-    this.authService.logout(); // Will redirect and clear session
+    this.authService.logout();
+  }
+
+  get unreadNotificationsCount(): number {
+    return this.notifications.filter((n) => !n.read).length;
   }
 }

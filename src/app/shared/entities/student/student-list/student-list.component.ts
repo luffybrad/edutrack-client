@@ -1,12 +1,10 @@
-import {
-  StudentService,
-  Student,
-} from './../../../../services/student.service';
-import { RoleType } from './../../../../auth/auth.routes';
+// src/app/shared/entities/student/student-list/student-list.component.ts
+import { StudentService, Student } from '../../../../services/student.service';
+import { RoleType } from '../../../../auth/auth.routes';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { map, debounceTime } from 'rxjs/operators';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { map, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AuthService } from '../../../../auth/auth.service';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../utils/toast.service';
@@ -23,9 +21,8 @@ import { ClassService, Class } from '../../../../services/class.service';
   selector: 'app-student-list',
   imports: [CommonModule, FormsModule, LoadingOverlayComponent, RouterModule],
   templateUrl: './student-list.component.html',
-  styleUrls: ['./student-list.component.css'],
 })
-export class StudentListComponent implements OnInit {
+export class StudentListComponent implements OnInit, OnDestroy {
   students: (Student & { selected?: boolean })[] = [];
   selectedStudent: Student | null = null;
   modalMode: 'view' | 'edit' | null = null;
@@ -34,8 +31,6 @@ export class StudentListComponent implements OnInit {
   loading = false;
   classes: Class[] = [];
   subjectsDisplay: string = '';
-
-
 
   role$: Observable<RoleType | null>;
   RoleType = RoleType;
@@ -50,9 +45,16 @@ export class StudentListComponent implements OnInit {
   filterStream: string = '';
   filterYear: number | '' = '';
 
+  // New properties for stats
+  totalStudents = 0;
+  studentsByForm: { form: number; count: number }[] = [];
+  activeFilters = false;
+
+  private searchSubscription?: Subscription;
+
   constructor(
     private studentService: StudentService,
-    private classService: ClassService, // ✅ Use correct service
+    private classService: ClassService,
     private auth: AuthService,
     private toast: ToastService,
     private guardianService: GuardianService
@@ -65,28 +67,34 @@ export class StudentListComponent implements OnInit {
   ngOnInit(): void {
     this.auth.getProfile().subscribe();
     this.fetchStudents();
-    this.fetchClasses(); // ✅ Must fetch classes for dropdown
+    this.fetchClasses();
 
-    this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
-      this.applyFilters();
-    });
+    // Setup debounced search
+    this.searchSubscription = this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe(() => {
+        this.applyFilters();
+      });
   }
 
-
-
-setSubjectsDisplay(student: Student) {
-  if (student.subjects?.length) {
-    this.subjectsDisplay = student.subjects.map(s => s.name).join(', ');
-  } else {
-    this.subjectsDisplay = 'No subjects assigned';
+  ngOnDestroy(): void {
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
   }
-}
 
+  setSubjectsDisplay(student: Student): void {
+    if (student.subjects?.length) {
+      this.subjectsDisplay = student.subjects.map((s) => s.name).join(', ');
+    } else {
+      this.subjectsDisplay = 'No subjects assigned';
+    }
+  }
 
   fetchClasses(): void {
     this.classService.getAll().subscribe({
       next: (res) => {
-        this.classes = res.data;
+        this.classes = res.data || [];
       },
       error: (err) => this.toast.apiError('Failed to load classes', err),
     });
@@ -109,7 +117,12 @@ setSubjectsDisplay(student: Student) {
     this.loading = true;
     this.studentService.getAll().subscribe({
       next: (res) => {
-        this.students = res.data.map((s) => ({ ...s, selected: false }));
+        this.students = (res.data || []).map((s) => ({
+          ...s,
+          selected: false,
+        }));
+        this.totalStudents = this.students.length;
+        this.calculateFormDistribution();
         this.applyFilters();
       },
       error: (err) => this.toast.apiError('Failed to fetch students', err),
@@ -117,6 +130,14 @@ setSubjectsDisplay(student: Student) {
         this.loading = false;
       },
     });
+  }
+
+  calculateFormDistribution(): void {
+    const forms = [1, 2, 3, 4];
+    this.studentsByForm = forms.map((form) => ({
+      form,
+      count: this.students.filter((s) => s.class?.form === form).length,
+    }));
   }
 
   applyFilters(): void {
@@ -137,17 +158,32 @@ setSubjectsDisplay(student: Student) {
 
       return matchesSearch && matchesForm && matchesStream && matchesYear;
     });
+
+    // Check if any filters are active
+    this.activeFilters = !!(
+      this.searchTerm.trim() ||
+      this.filterForm ||
+      this.filterStream ||
+      this.filterYear
+    );
   }
 
-  clearSearch(): void {
+  onSearchChange(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  clearFilters(): void {
     this.searchTerm = '';
+    this.filterForm = '';
+    this.filterStream = '';
+    this.filterYear = '';
     this.applyFilters();
   }
 
   openModal(student: Student, mode: 'view' | 'edit'): void {
     this.selectedStudent = {
       ...student,
-      classId: student.classId || student.class?.id || '', // ✅ always ensure classId is set for editing
+      classId: student.classId || student.class?.id || '',
     };
     this.setSubjectsDisplay(this.selectedStudent);
     this.modalMode = mode;
@@ -166,13 +202,11 @@ setSubjectsDisplay(student: Student) {
         },
       });
     }
-if (mode === 'view' && student.subjects) {
-  this.setSubjectsDisplay(student);
-
-  this.guardian = null;
-  this.loading = false;
-}
-
+    if (mode === 'view' && student.subjects) {
+      this.setSubjectsDisplay(student);
+      this.guardian = null;
+      this.loading = false;
+    }
   }
 
   closeModal(): void {
@@ -220,5 +254,15 @@ if (mode === 'view' && student.subjects) {
       },
       error: (err) => this.toast.apiError('Bulk delete failed', err),
     });
+  }
+
+  getFormColor(form: number): string {
+    const colors = [
+      'bg-blue-100 text-blue-800 border-blue-200',
+      'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'bg-violet-100 text-violet-800 border-violet-200',
+      'bg-amber-100 text-amber-800 border-amber-200',
+    ];
+    return colors[form - 1] || colors[0];
   }
 }

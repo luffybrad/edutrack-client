@@ -1,93 +1,254 @@
-<div class="flex flex-col md:flex-row min-h-screen">
-  <!-- Backdrop for mobile -->
-  <div class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
-
-  <!-- Mobile Top Bar -->
-  <header class="flex items-center justify-between md:hidden bg-blue-800 text-white px-4 py-3 z-50">
-    <h2 class="text-lg font-bold">KBHS Admin</h2>
-    <button (click)="toggleSidebar()" class="focus:outline-none">
-      <i class="fas fa-bars text-xl"></i>
-    </button>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex flex-col">
+  <!-- Mobile Header -->
+  <header class="lg:hidden sticky top-0 z-50 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+    <div class="flex items-center justify-between px-4 py-3">
+      <div class="flex items-center gap-3">
+        <div class="p-2 rounded-lg bg-white/20">
+          <i class="fas fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold">KBHS Admin</h2>
+          <p class="text-xs text-blue-200">School Management</p>
+        </div>
+      </div>
+      <button (click)="toggleSidebar()" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </div>
   </header>
 
-  <!-- Sidebar -->
-  <aside
-    class="bg-blue-800 text-white w-64 p-4 space-y-2 fixed md:static inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out flex flex-col justify-between h-screen"
-    [ngClass]="{
-      '-translate-x-full': !sidebarOpen,
-      'translate-x-0': sidebarOpen,
-      'md:translate-x-0': true
-    }">
-    <h2 class="text-2xl font-bold mb-6 hidden md:block">KBHS Admin</h2>
+  <!-- Backdrop for mobile sidebar -->
+  @if (sidebarOpen) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" (click)="toggleSidebar()"></div>
+  }
 
-    <nav class="flex flex-col justify-between flex-1">
-      <div class="space-y-2 text-sm font-medium">
-        <a routerLink="/dashboard/admin" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-chart-pie w-5 text-white"></i> Overview
-        </a>
-        <a routerLink="/dashboard/admin/classes" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-layer-group w-5 text-white"></i> Classes
-        </a>
+  <!-- Main Layout Container -->
+  <div class="flex flex-1 min-h-0">
+    <!-- Sidebar -->
+    <aside
+      class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white shadow-2xl lg:shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col"
+      [class]="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
-        <a routerLink="/dashboard/admin/students" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-user-graduate w-5 text-white"></i> Students
-        </a>
-
-        <a routerLink="/dashboard/admin/teachers" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-chalkboard-teacher w-5 text-white"></i> Teachers
-        </a>
-
-        <a routerLink="/dashboard/admin/guardians" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-users w-5 text-white"></i> Guardians
-        </a>
-
-        <a routerLink="/dashboard/admin/subjects" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-book w-5 text-white"></i> Subjects
-        </a>
-
-        <a routerLink="/dashboard/admin/exams" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-file-alt w-5 text-white"></i> Exams
-        </a>
-
-        <a routerLink="/dashboard/admin/results" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-chart-line w-5 text-white"></i> Results
-        </a>
-
-        <a routerLink="/dashboard/admin/timetables" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-calendar-alt w-5 text-white"></i> Timetable
-        </a>
-
-        <a routerLink="/dashboard/admin/fees" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-file-invoice-dollar w-5 text-white"></i> Fees
-        </a>
+      <!-- Logo Section -->
+      <div class="p-6 border-b border-blue-700/50 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+            <i class="fas fa-graduation-cap text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold">KBHS Admin</h1>
+            <p class="text-xs text-blue-300">Management Portal</p>
+          </div>
+        </div>
       </div>
 
-      <!-- Footer Links -->
-      <div class="mt-8 space-y-2 border-t border-blue-700 pt-4 text-sm font-medium">
-        <a routerLink="dashboard/admin/profile" routerLinkActive="bg-blue-900"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-blue-700 transition-colors">
-          <i class="fas fa-user-cog w-5 text-white"></i> Profile
+      <!-- Navigation -->
+      <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+        <!-- Dashboard -->
+        <a routerLink="/dashboard/admin" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-blue-600/30 group-hover:bg-blue-500">
+            <i class="fas fa-chart-pie w-4"></i>
+          </div>
+          <span class="font-medium">Dashboard Overview</span>
         </a>
-        <a (click)="logout()"
-          class="flex items-center gap-3 py-2 px-4 rounded hover:bg-red-600 transition-colors cursor-pointer">
-          <i class="fas fa-sign-out-alt w-5 text-white"></i> Logout
-        </a>
-      </div>
-    </nav>
-  </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 bg-gray-50 p-6 overflow-y-auto">
-    <router-outlet></router-outlet>
-  </main>
+        <!-- Students -->
+        <a routerLink="/dashboard/admin/students" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-emerald-600/30 group-hover:bg-emerald-500">
+            <i class="fas fa-user-graduate w-4"></i>
+          </div>
+          <span class="font-medium">Students</span>
+          <span class="ml-auto px-2 py-1 text-xs bg-blue-600 rounded-full">245</span>
+        </a>
+
+        <!-- Classes -->
+        <a routerLink="/dashboard/admin/classes" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-violet-600/30 group-hover:bg-violet-500">
+            <i class="fas fa-layer-group w-4"></i>
+          </div>
+          <span class="font-medium">Classes</span>
+          <span class="ml-auto px-2 py-1 text-xs bg-emerald-600 rounded-full">12</span>
+        </a>
+
+        <!-- Teachers -->
+        <a routerLink="/dashboard/admin/teachers" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-amber-600/30 group-hover:bg-amber-500">
+            <i class="fas fa-chalkboard-teacher w-4"></i>
+          </div>
+          <span class="font-medium">Teachers</span>
+        </a>
+
+        <!-- Guardians -->
+        <a routerLink="/dashboard/admin/guardians" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-cyan-600/30 group-hover:bg-cyan-500">
+            <i class="fas fa-users w-4"></i>
+          </div>
+          <span class="font-medium">Guardians</span>
+        </a>
+
+        <!-- Subjects -->
+        <a routerLink="/dashboard/admin/subjects" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-rose-600/30 group-hover:bg-rose-500">
+            <i class="fas fa-book w-4"></i>
+          </div>
+          <span class="font-medium">Subjects</span>
+        </a>
+
+        <!-- Exams -->
+        <a routerLink="/dashboard/admin/exams" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-indigo-600/30 group-hover:bg-indigo-500">
+            <i class="fas fa-file-alt w-4"></i>
+          </div>
+          <span class="font-medium">Exams</span>
+          <span class="ml-auto px-2 py-1 text-xs bg-amber-600 rounded-full">3</span>
+        </a>
+
+        <!-- Results -->
+        <a routerLink="/dashboard/admin/results" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-green-600/30 group-hover:bg-green-500">
+            <i class="fas fa-chart-line w-4"></i>
+          </div>
+          <span class="font-medium">Results</span>
+        </a>
+
+        <!-- Timetable -->
+        <a routerLink="/dashboard/admin/timetables" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-purple-600/30 group-hover:bg-purple-500">
+            <i class="fas fa-calendar-alt w-4"></i>
+          </div>
+          <span class="font-medium">Timetable</span>
+        </a>
+
+        <!-- Fees -->
+        <a routerLink="/dashboard/admin/fees" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-orange-600/30 group-hover:bg-orange-500">
+            <i class="fas fa-file-invoice-dollar w-4"></i>
+          </div>
+          <span class="font-medium">Fees</span>
+          <span class="ml-auto px-2 py-1 text-xs bg-green-600 rounded-full">87%</span>
+        </a>
+
+        <!-- Divider -->
+        <div class="my-4 border-t border-blue-700/50"></div>
+
+        <!-- System Section -->
+        <p class="px-4 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-6 mb-2">System</p>
+
+        <a routerLink="/dashboard/admin/profile" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
+          <div class="p-2 rounded-lg bg-blue-600/30 group-hover:bg-blue-500">
+            <i class="fas fa-user-cog w-4"></i>
+          </div>
+          <span class="font-medium">Profile</span>
+        </a>
+      </nav>
+
+      <!-- Logout Section -->
+      <div class="p-4 border-t border-blue-700/50 flex-shrink-0">
+        <button (click)="logout()"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-200 group">
+          <i class="fas fa-sign-out-alt w-4"></i>
+          <span class="font-medium">Logout</span>
+        </button>
+        <p class="text-xs text-blue-400 text-center mt-3">
+          © {{ currentYear }} KBHS Admin Portal
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-h-0">
+      <!-- Desktop Top Bar -->
+      <header
+        class="hidden lg:block sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-blue-100 shadow-sm flex-shrink-0">
+        <div class="px-6 py-3">
+          <div class="flex items-center justify-between">
+            <!-- Breadcrumb & Title -->
+            <div>
+              <h1 class="text-xl font-bold text-gray-800">Administration Dashboard</h1>
+              <nav class="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                <a routerLink="/dashboard/admin" class="hover:text-blue-600 transition-colors">
+                  <i class="fas fa-home"></i> Dashboard
+                </a>
+                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                <span class="text-gray-800 font-medium">Current Section</span>
+              </nav>
+            </div>
+
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-4">
+
+
+              <!-- Quick Stats -->
+              <div class="hidden xl:flex items-center gap-4">
+                <div class="text-center">
+                  <div class="text-xs text-gray-500">Today</div>
+                  <div class="font-semibold text-gray-800">{{ currentDate | date:'dd MMM' }}</div>
+                </div>
+                <div class="h-6 w-px bg-gray-200"></div>
+                <div class="text-center">
+                  <div class="text-xs text-gray-500">Status</div>
+                  <div class="font-semibold text-emerald-600 flex items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    Online
+                  </div>
+                </div>
+              </div>
+
+              <!-- User Profile -->
+              <div class="flex items-center gap-3">
+                <div class="text-right hidden md:block">
+                  <div class="font-medium text-gray-800">Administrator</div>
+
+                </div>
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
+                  AD
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Content Area -->
+      <main class="flex-1 overflow-auto">
+        <div class="p-4 md:p-6">
+          <router-outlet></router-outlet>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 border-t border-blue-100 bg-white/50 p-6">
+          <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div class="text-center md:text-left">
+                <p class="text-gray-700 font-medium">KBHS School Management System</p>
+                <p class="text-sm text-gray-500 mt-1">© {{ currentYear }} All rights reserved</p>
+              </div>
+              <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500 flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  System Status: <span class="font-medium text-emerald-600">Operational</span>
+                </span>
+                <div class="h-4 w-px bg-gray-300"></div>
+                <span class="text-sm text-gray-500">
+                  Version: 2.1.0
+                </span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
 </div>

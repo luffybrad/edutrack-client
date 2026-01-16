@@ -1,77 +1,180 @@
 <app-loading-overlay [show]="loading"></app-loading-overlay>
 
-<div class="max-w-lg mx-auto bg-white p-6 rounded shadow">
-  <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold">Add Class</h2>
-    <button
-      type="button"
-      (click)="goBack()"
-      class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
-    >
-      <i class="fas fa-arrow-left"></i>
-      <span>Back to Classes</span>
-    </button>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-4 md:p-6">
+  <!-- Header Section -->
+  <div class="max-w-4xl mx-auto">
+    <!-- Navigation -->
+    <div class="mb-8">
+      <button (click)="goBack()"
+        class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors duration-200 group">
+        <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform duration-200"></i>
+        <span class="font-medium">Back to Classes</span>
+      </button>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-100 shadow-xl overflow-hidden">
+      <!-- Card Header -->
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 md:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">Create New Class</h1>
+            <p class="text-blue-100 opacity-90">
+              Add a new class to the school system
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-white/20">
+            <i class="fas fa-school text-2xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Content -->
+      <div class="p-6 md:p-8">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+          <!-- Form Input -->
+          <div>
+            <label class="block mb-3">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                  <i class="fas fa-hashtag"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Form Level
+                </span>
+                <span class="text-red-500">*</span>
+              </div>
+              <input type="number" max="4" min="1" formControlName="form" placeholder="Enter form level (1-4)"
+                class="w-full px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
+              @if (form.controls['form'].touched && form.controls['form'].invalid) {
+              <div class="mt-2 text-sm text-red-600">
+                @if (form.controls['form'].errors?.['required']) {
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Form level is required</p>
+                }
+                @if (form.controls['form'].errors?.['min'] || form.controls['form'].errors?.['max']) {
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Must be between 1 and 4</p>
+                }
+              </div>
+              }
+            </label>
+          </div>
+
+          <!-- Stream Input -->
+          <div>
+            <label class="block mb-3">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="p-2 rounded-lg bg-emerald-100 text-emerald-600">
+                  <i class="fas fa-stream"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Stream
+                </span>
+                <span class="text-red-500">*</span>
+              </div>
+              <input type="text" formControlName="stream" placeholder="Enter stream (e.g., A, B, NORTH)"
+                (input)="transformStreamToUppercase()"
+                class="w-full px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 uppercase" />
+              @if (form.controls['stream'].touched && form.controls['stream'].invalid) {
+              <div class="mt-2 text-sm text-red-600">
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Stream is required</p>
+              </div>
+              }
+              <p class="mt-2 text-xs text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i> Will be automatically converted to uppercase
+              </p>
+            </label>
+          </div>
+
+          <!-- Year Input -->
+          <div>
+            <label class="block mb-3">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="p-2 rounded-lg bg-violet-100 text-violet-600">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Academic Year
+                </span>
+                <span class="text-red-500">*</span>
+              </div>
+              <input type="number" formControlName="year" placeholder="Enter academic year"
+                class="w-full px-4 py-3 rounded-xl border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
+              @if (form.controls['year'].touched && form.controls['year'].invalid) {
+              <div class="mt-2 text-sm text-red-600">
+                <p><i class="fas fa-exclamation-circle mr-1"></i> Academic year is required</p>
+              </div>
+              }
+              <p class="mt-2 text-xs text-gray-500">
+                <i class="fas fa-calendar mr-1"></i> Default: Current year ({{ currentYear }})
+              </p>
+            </label>
+          </div>
+
+          <!-- Class Preview -->
+          @if (form.valid) {
+          <div class="p-4 border border-blue-200 rounded-xl bg-blue-50/50">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-700 mb-1">Class Preview:</p>
+                <div
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                  <i class="fas fa-school"></i>
+                  <span class="font-semibold">
+                    Form {{ form.get('form')?.value }} {{ form.get('stream')?.value?.toUpperCase() || 'STREAM' }}
+                  </span>
+                  <span class="text-gray-600">• Year {{ form.get('year')?.value }}</span>
+                </div>
+              </div>
+              <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                <i class="fas fa-eye text-xl"></i>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- Action Buttons -->
+          <div class="pt-6 border-t border-blue-100">
+            <div class="flex flex-col md:flex-row gap-4">
+              <button type="button" (click)="goBack()" [disabled]="loading"
+                class="flex-1 px-6 py-3.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium flex items-center justify-center gap-2 disabled:opacity-50">
+                <i class="fas fa-times"></i>
+                Cancel
+              </button>
+
+              <button type="submit" [disabled]="loading || form.invalid"
+                class="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                @if (loading) {
+                <i class="fas fa-spinner fa-spin"></i>
+                Creating Class...
+                } @else {
+                <i class="fas fa-plus-circle"></i>
+                Create Class
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Help Text -->
+    <div class="mt-6 p-4 bg-blue-50/50 border border-blue-200 rounded-xl">
+      <div class="flex items-start gap-3">
+        <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <div>
+          <p class="font-medium text-gray-800 mb-1">Class Creation Guidelines</p>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Form must be between 1 and 4</li>
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Stream will be automatically capitalized</li>
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Use the current academic year unless specified
+              otherwise</li>
+            <li><i class="fas fa-check-circle text-emerald-500 mr-2"></i> Teachers can be assigned after class creation
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <label class="block mb-4">
-      <span class="text-sm text-gray-700">Form</span>
-      <input
-        type="number"
-        max="4"
-        min="1"
-        formControlName="form"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-        placeholder="1-4"
-      />
-      <span
-        *ngIf="form.controls['form'].invalid && form.controls['form'].touched"
-        class="text-red-500 text-xs"
-      >
-        Required (1–4)
-      </span>
-    </label>
-
-    <label class="block mb-4">
-      <span class="text-sm text-gray-700">Stream</span>
-      <input
-        type="text"
-        formControlName="stream"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-        placeholder="e.g. North, A"
-        (input)="transformStreamToUppercase()"
-      />
-      <span
-        *ngIf="
-          form.controls['stream'].invalid && form.controls['stream'].touched
-        "
-        class="text-red-500 text-xs"
-      >
-        Required
-      </span>
-    </label>
-
-    <label class="block mb-4">
-      <span class="text-sm text-gray-700">Year</span>
-      <input
-        type="number"
-        formControlName="year"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-        placeholder="e.g. 2025"
-      />
-      <span
-        *ngIf="form.controls['year'].invalid && form.controls['year'].touched"
-        class="text-red-500 text-xs"
-      >
-        Required
-      </span>
-    </label>
-
-    <button
-      type="submit"
-      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-      Save Class
-    </button>
-  </form>
 </div>
