@@ -5,6 +5,8 @@ import { RouterModule, Router } from '@angular/router';
 import { debounceTime, Subject as RxSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SubjectService, Subject } from '../../../../services/subject.service';
+import { ClassService } from '../../../../services/class.service';
+import { StudentService } from '../../../../services/student.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { ToastService } from '../../../utils/toast.service';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
@@ -21,6 +23,10 @@ export class SubjectListComponent implements OnInit {
   subjects: (Subject & { selected?: boolean })[] = [];
   filteredSubjects: (Subject & { selected?: boolean })[] = [];
 
+  // Add these properties near other properties
+  teacherClassId: string | null = null;
+  studentsInClass: any[] = [];
+
   selectedSubject: Subject | null = null;
   modalMode: 'add' | 'edit' | null = null;
 
@@ -35,13 +41,24 @@ export class SubjectListComponent implements OnInit {
     private subjectService: SubjectService,
     private auth: AuthService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private classService: ClassService,
+    private studentService: StudentService
   ) {
     this.role$ = this.auth.getProfile$().pipe(map((p) => p?.role ?? null));
   }
 
   ngOnInit(): void {
     this.auth.getProfile().subscribe();
+
+    // Get teacher's classId from profile
+    this.auth.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+      if (this.teacherClassId) {
+        this.fetchStudentsInClass();
+      }
+    });
+
     this.fetchSubjects();
 
     this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
@@ -49,12 +66,48 @@ export class SubjectListComponent implements OnInit {
     });
   }
 
+  fetchStudentsInClass(): void {
+    if (!this.teacherClassId) return;
+
+    this.studentService.getAll().subscribe({
+      next: (res) => {
+        // Filter students by teacher's class
+        this.studentsInClass = res.data.filter(
+          (s) =>
+            s.class?.id === this.teacherClassId ||
+            s.classId === this.teacherClassId
+        );
+        // Re-fetch subjects to apply filtering
+        this.fetchSubjects();
+      },
+      error: (err) => this.toast.apiError('Failed to fetch students', err),
+    });
+  }
+
   fetchSubjects(): void {
     this.loading = true;
     this.subjectService.getAll().subscribe({
       next: (res) => {
+        let subjects = res.data;
+
+        // If teacher, filter subjects to those taken by students in their class
+        if (this.teacherClassId && this.studentsInClass.length > 0) {
+          // Get unique subject IDs from students' subjects
+          const subjectIds = new Set<string>();
+          this.studentsInClass.forEach((student) => {
+            if (student.subjects && student.subjects.length > 0) {
+              student.subjects.forEach((subject: any) => {
+                if (subject.id) subjectIds.add(subject.id);
+              });
+            }
+          });
+
+          // Filter subjects to only those that students in class are taking
+          subjects = subjects.filter((s) => subjectIds.has(s.id!));
+        }
+
         // subjects now contain totalStudents property
-        this.subjects = res.data.map((s) => ({ ...s, selected: false }));
+        this.subjects = subjects.map((s) => ({ ...s, selected: false }));
         this.applySearch();
       },
       error: (err) => this.toast.apiError('Failed to fetch subjects', err),
@@ -79,17 +132,18 @@ export class SubjectListComponent implements OnInit {
   }
 
   allowLettersOnly(event: KeyboardEvent): void {
-  if (!/^[a-zA-Z]$/.test(event.key)) {
-    event.preventDefault();
+    if (!/^[a-zA-Z]$/.test(event.key)) {
+      event.preventDefault();
+    }
   }
-}
 
-assignStudents(subject: Subject): void {
-
-  this.router.navigate(['/dashboard/admin/subjects', subject.id, 'assign-students']);
-}
-
-
+  assignStudents(subject: Subject): void {
+    this.router.navigate([
+      '/dashboard/admin/subjects',
+      subject.id,
+      'assign-students',
+    ]);
+  }
 
   openModal(mode: 'add' | 'edit', subject?: Subject): void {
     this.modalMode = mode;

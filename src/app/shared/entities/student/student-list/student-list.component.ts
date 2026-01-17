@@ -27,6 +27,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   selectedStudent: Student | null = null;
   modalMode: 'view' | 'edit' | null = null;
   guardian: Guardian | null = null;
+  teacherClassId: string | null = null;
 
   loading = false;
   classes: Class[] = [];
@@ -66,6 +67,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.auth.getProfile().subscribe();
+
+    // Get teacher's classId from profile
+    this.auth.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+    });
+
     this.fetchStudents();
     this.fetchClasses();
 
@@ -94,7 +101,14 @@ export class StudentListComponent implements OnInit, OnDestroy {
   fetchClasses(): void {
     this.classService.getAll().subscribe({
       next: (res) => {
-        this.classes = res.data || [];
+        let classes = res.data || [];
+
+        // Filter classes by teacher's class
+        if (this.teacherClassId) {
+          classes = classes.filter((cls) => cls.id === this.teacherClassId);
+        }
+
+        this.classes = classes;
       },
       error: (err) => this.toast.apiError('Failed to load classes', err),
     });
@@ -117,7 +131,18 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.studentService.getAll().subscribe({
       next: (res) => {
-        this.students = (res.data || []).map((s) => ({
+        let students = res.data || [];
+
+        // Filter students by teacher's class
+        if (this.teacherClassId) {
+          students = students.filter(
+            (s) =>
+              s.class?.id === this.teacherClassId ||
+              s.classId === this.teacherClassId
+          );
+        }
+
+        this.students = students.map((s) => ({
           ...s,
           selected: false,
         }));

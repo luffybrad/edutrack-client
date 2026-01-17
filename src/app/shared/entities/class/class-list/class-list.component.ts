@@ -31,6 +31,7 @@ export class ClassListComponent implements OnInit {
   loading = false;
   modalMode: 'view' | 'edit' | null = null;
   selectedClass: Class | null = null;
+  teacherClassId: string | null = null;
 
   role$!: Observable<RoleType | null>;
   RoleType = RoleType;
@@ -48,10 +49,35 @@ export class ClassListComponent implements OnInit {
     this.role$ = this.authService
       .getProfile$()
       .pipe(map((p) => p?.role ?? null));
+
+    // Get teacherId from profile
+    this.authService.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+    });
+
     this.fetchClasses();
     this.searchSubject
       .pipe(debounceTime(300))
       .subscribe(() => this.applyFilters());
+  }
+
+  fetchClasses() {
+    this.loading = true;
+    this.classService.getAll().subscribe({
+      next: (res) => {
+        // Apply teacher filter immediately
+        if (this.teacherClassId) {
+          this.classes = res.data.filter(
+            (cls) => cls.id === this.teacherClassId
+          );
+        } else {
+          this.classes = res.data;
+        }
+        this.filteredClasses = this.classes;
+      },
+      error: () => this.toast.error('Failed to load classes'),
+      complete: () => (this.loading = false),
+    });
   }
 
   transformSelectedClassStream(): void {
@@ -60,25 +86,16 @@ export class ClassListComponent implements OnInit {
     }
   }
 
-  fetchClasses() {
-    this.loading = true;
-    this.classService.getAll().subscribe({
-      next: (res) => {
-        this.classes = res.data;
-        this.filteredClasses = this.classes;
-      },
-      error: () => this.toast.error('Failed to load classes'),
-      complete: () => (this.loading = false),
-    });
-  }
-
   triggerSearch() {
     this.searchSubject.next(this.searchTerm);
   }
 
   applyFilters() {
     const term = this.searchTerm.toLowerCase();
-    this.filteredClasses = this.classes.filter(
+
+    let sourceClasses = this.classes;
+
+    this.filteredClasses = sourceClasses.filter(
       (cls) =>
         cls.stream.toLowerCase().includes(term) ||
         cls.teacher?.name?.toLowerCase().includes(term)

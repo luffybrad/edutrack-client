@@ -1,86 +1,254 @@
-<div
-  class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col"
->
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex flex-col">
   <!-- Header -->
-  <header
-    class="flex flex-col sm:flex-row justify-between items-center p-4 sm:p-6 bg-white shadow-md gap-4"
-  >
-    <h1
-      class="text-xl sm:text-2xl font-bold text-blue-700 text-center sm:text-left"
-    >
-      Kitengela Boys High School
-    </h1>
-    <div
-      class="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto justify-center"
-    >
-      <button
-        class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition duration-300"
-        (click)="goToLogin()"
-      >
-        Login
-      </button>
-      <button
-        class="w-full sm:w-auto px-4 py-2 bg-white text-blue-600 border border-blue-600 hover:bg-blue-50 rounded-xl shadow-md transition duration-300"
-        (click)="goToSignup()"
-      >
-        Sign Up
-      </button>
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-blue-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Logo & School Name -->
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg">
+            <i class="fas fa-school text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Edutrack School Management System</h1>
+            <p class="text-xs text-gray-500 hidden sm:block">Excellence in Education</p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <button (click)="goToLogin()"
+            class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <i class="fas fa-sign-in-alt text-sm"></i>
+            <span class="font-medium">Login</span>
+          </button>
+
+          <button (click)="goToSignup()"
+            class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <i class="fas fa-user-plus text-sm"></i>
+            <span class="font-medium">Sign Up</span>
+          </button>
+
+          <!-- Mobile Menu Button -->
+          <button class="sm:hidden p-2 rounded-lg hover:bg-blue-50 transition-colors">
+            <i class="fas fa-bars text-gray-600 text-xl"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <main
-    class="flex flex-1 flex-col-reverse lg:flex-row items-center justify-center text-center lg:text-left px-4 sm:px-6 py-12 sm:py-16 gap-10"
-  >
-    <!-- Text Content -->
-    <div class="max-w-xl">
-      <h2
-        class="text-3xl sm:text-4xl md:text-5xl font-bold text-blue-800 leading-tight"
-      >
-        Welcome to <br class="sm:hidden" />
-        Kitengela Boys High School
-      </h2>
-      <p class="mt-4 sm:mt-6 text-base sm:text-lg text-gray-700">
-        A modern school management system to simplify administration, student
-        performance tracking, and communication.
-      </p>
+  <main class="flex-1">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <!-- Left Content -->
+        <div class="space-y-8">
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
+            <i class="fas fa-star text-blue-600 text-sm"></i>
+            <span class="text-sm font-medium text-blue-700">Leading School Management System</span>
+          </div>
 
-      <div
-        class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center"
-      >
-        <button
-          class="w-full sm:w-auto px-6 py-3 bg-white border border-blue-600 text-blue-600 text-lg rounded-full shadow-md hover:bg-blue-50 transition duration-300"
-          (click)="goToSignup()"
-        >
-          Sign Up
-        </button>
+          <!-- Main Heading -->
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight">
+            Excellence in
+            <span class="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              Education
+            </span>
+          </h1>
+
+          <!-- Description -->
+          <p class="text-lg sm:text-xl text-gray-600 leading-relaxed">
+            Welcome to Edutack's comprehensive management portal.
+            Streamline administration, track student performance, and enhance communication
+            with our modern educational platform.
+          </p>
+
+          <!-- Features Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+            <div class="flex items-center gap-3 p-4 bg-white rounded-xl border border-blue-100 shadow-sm">
+              <div class="p-2 bg-blue-100 rounded-lg">
+                <i class="fas fa-chart-line text-blue-600"></i>
+              </div>
+              <span class="font-medium text-gray-700">Performance Analytics</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-4 bg-white rounded-xl border border-blue-100 shadow-sm">
+              <div class="p-2 bg-green-100 rounded-lg">
+                <i class="fas fa-users text-green-600"></i>
+              </div>
+              <span class="font-medium text-gray-700">Parent-Teacher Portal</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-4 bg-white rounded-xl border border-blue-100 shadow-sm">
+              <div class="p-2 bg-purple-100 rounded-lg">
+                <i class="fas fa-calendar-alt text-purple-600"></i>
+              </div>
+              <span class="font-medium text-gray-700">Smart Timetable</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-4 bg-white rounded-xl border border-blue-100 shadow-sm">
+              <div class="p-2 bg-amber-100 rounded-lg">
+                <i class="fas fa-file-invoice-dollar text-amber-600"></i>
+              </div>
+              <span class="font-medium text-gray-700">Fee Management</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-4 pt-4">
+            <button (click)="goToSignup()"
+              class="flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group">
+              <i class="fas fa-rocket text-lg"></i>
+              <span class="text-lg font-semibold">Get Started Free</span>
+              <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </button>
+
+            <button (click)="goToLogin()"
+              class="flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group">
+              <i class="fas fa-sign-in-alt"></i>
+              <span class="text-lg font-semibold">Existing User Login</span>
+            </button>
+          </div>
+
+          <p class="text-gray-500 text-sm pt-2">
+            Already have an account?
+            <button (click)="goToLogin()"
+              class="text-blue-600 hover:text-blue-800 font-medium underline decoration-2 underline-offset-2 ml-1">
+              Sign in here
+            </button>
+          </p>
+        </div>
+
+        <!-- Right Content - Illustration -->
+        <div class="relative">
+          <!-- Decorative Background -->
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl transform rotate-3">
+          </div>
+
+          <!-- Main Card -->
+          <div class="relative bg-white rounded-3xl border-2 border-blue-100 shadow-2xl p-8 transform -rotate-3">
+            <!-- Card Header -->
+            <div class="flex items-center gap-3 mb-6">
+              <div class="p-3 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl">
+                <i class="fas fa-graduation-cap text-white text-2xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">EDUTRACK Portal</h3>
+                <p class="text-sm text-gray-500">School Management System</p>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Students</p>
+                    <p class="text-2xl font-bold text-gray-800">1,250+</p>
+                  </div>
+                  <i class="fas fa-user-graduate text-blue-600 text-xl"></i>
+                </div>
+              </div>
+
+              <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Teachers</p>
+                    <p class="text-2xl font-bold text-gray-800">85+</p>
+                  </div>
+                  <i class="fas fa-chalkboard-teacher text-emerald-600 text-xl"></i>
+                </div>
+              </div>
+
+              <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Classes</p>
+                    <p class="text-2xl font-bold text-gray-800">32</p>
+                  </div>
+                  <i class="fas fa-users-class text-purple-600 text-xl"></i>
+                </div>
+              </div>
+
+              <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-600">Success Rate</p>
+                    <p class="text-2xl font-bold text-gray-800">98%</p>
+                  </div>
+                  <i class="fas fa-trophy text-amber-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Features List -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg transition-colors">
+                <div class="p-2 bg-green-100 rounded-lg">
+                  <i class="fas fa-check text-green-600"></i>
+                </div>
+                <span class="text-gray-700">Real-time Grading Analytics</span>
+              </div>
+
+              <div class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg transition-colors">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                  <i class="fas fa-check text-blue-600"></i>
+                </div>
+                <span class="text-gray-700">Automated Lessons Management</span>
+              </div>
+
+              <div class="flex items-center gap-3 p-3 hover:bg-blue-50 rounded-lg transition-colors">
+                <div class="p-2 bg-purple-100 rounded-lg">
+                  <i class="fas fa-check text-purple-600"></i>
+                </div>
+                <span class="text-gray-700">Secure communication portal</span>
+              </div>
+            </div>
+
+            <!-- Decorative Elements -->
+            <div
+              class="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+              <i class="fas fa-bolt text-white text-xl"></i>
+            </div>
+          </div>
+
+          <!-- Floating Elements -->
+          <div
+            class="absolute -bottom-6 -left-6 w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl transform rotate-12">
+            <i class="fas fa-shield-alt text-white text-2xl"></i>
+          </div>
+        </div>
       </div>
-
-      <p class="mt-4 text-sm text-gray-700">
-        Already have an account?
-        <button
-          class="text-blue-600 underline hover:text-blue-800 ml-1"
-          (click)="goToLogin()"
-        >
-          Login
-        </button>
-      </p>
     </div>
-
-    <!-- Optional: Illustration (mobile-optimized) -->
-    <!--
-    <div class="max-w-sm w-full">
-      <img
-        src="https://illustrations.popsy.co/gray/student-life.svg"
-        alt="School illustration"
-        class="w-full"
-      />
-    </div>
-    -->
   </main>
 
   <!-- Footer -->
-  <footer class="text-center text-sm text-gray-600 py-6 px-4">
-    &copy; 2025 Kitengela Boys High School. All rights reserved.
+  <footer class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- Logo & Info -->
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+            <i class="fas fa-school text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold">Edutrack School Management System</h3>
+            <p class="text-sm text-blue-200">Shaping Modern School Systems since 2025</p>
+          </div>
+        </div>
+
+
+
+        <!-- Copyright -->
+        <div class="text-center md:text-right">
+          <p class="text-sm text-blue-200">
+            <i class="fas fa-copyright mr-1"></i>
+            {{ currentYear }} Edutrack School Management System. All rights reserved.
+          </p>
+          <p class="text-xs text-blue-300 mt-1">Version 3.0 • Excellence in Education</p>
+        </div>
+      </div>
+    </div>
   </footer>
 </div>
