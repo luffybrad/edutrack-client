@@ -28,6 +28,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   modalMode: 'view' | 'edit' | null = null;
   guardian: Guardian | null = null;
   teacherClassId: string | null = null;
+  guardianId: string | null = null;
 
   loading = false;
   classes: Class[] = [];
@@ -58,7 +59,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     private classService: ClassService,
     private auth: AuthService,
     private toast: ToastService,
-    private guardianService: GuardianService
+    private guardianService: GuardianService,
   ) {
     this.role$ = this.auth
       .getProfile$()
@@ -71,6 +72,10 @@ export class StudentListComponent implements OnInit, OnDestroy {
     // Get teacher's classId from profile
     this.auth.getProfile$().subscribe((profile) => {
       this.teacherClassId = profile?.classId || null;
+      // Get guardian ID if user is a guardian
+      if (profile?.role === RoleType.Guardian) {
+        this.guardianId = profile.id;
+      }
     });
 
     this.fetchStudents();
@@ -138,8 +143,13 @@ export class StudentListComponent implements OnInit, OnDestroy {
           students = students.filter(
             (s) =>
               s.class?.id === this.teacherClassId ||
-              s.classId === this.teacherClassId
+              s.classId === this.teacherClassId,
           );
+        }
+
+        // Filter students by guardian ID (for guardians)
+        if (this.guardianId) {
+          students = students.filter((s) => s.guardianId === this.guardianId);
         }
 
         this.students = students.map((s) => ({

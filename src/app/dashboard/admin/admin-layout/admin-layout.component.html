@@ -7,8 +7,10 @@
           <i class="fas fa-graduation-cap text-xl"></i>
         </div>
         <div>
-          <h2 class="text-lg font-bold">KBHS Admin</h2>
-          <p class="text-xs text-blue-200">School Management</p>
+          <h2 class="text-lg font-bold">Admin Portal</h2>
+          <p class="text-xs text-blue-200">
+            {{ adminName$ | async }}
+          </p>
         </div>
       </div>
       <button (click)="toggleSidebar()" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
@@ -36,7 +38,7 @@
             <i class="fas fa-graduation-cap text-2xl"></i>
           </div>
           <div>
-            <h1 class="text-xl font-bold">KBHS Admin</h1>
+            <h1 class="text-xl font-bold">Edutrack Admin</h1>
             <p class="text-xs text-blue-300">Management Portal</p>
           </div>
         </div>
@@ -208,12 +210,17 @@
               <!-- User Profile -->
               <div class="flex items-center gap-3">
                 <div class="text-right hidden md:block">
-                  <div class="font-medium text-gray-800">Administrator</div>
+                  <div class="font-medium text-gray-800">
+                    {{ adminName$ | async }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ adminEmail$ | async }}
+                  </div>
 
                 </div>
                 <div
                   class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
-                  AD
+                  {{ adminInitials$ | async }}
                 </div>
               </div>
             </div>

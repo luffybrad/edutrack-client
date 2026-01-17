@@ -1,133 +1,215 @@
 <div
-  class="min-h-screen bg-gradient-to-tr from-blue-100 to-blue-200 flex items-center justify-center px-4 py-10 relative"
->
-  <!-- 🔙 Back to Home -->
-  <button
-    class="absolute top-4 right-4 text-sm text-blue-700 hover:underline font-medium"
-    (click)="goHome()"
-  >
-    ← Back to Home
+  class="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative overflow-hidden">
+  <!-- Background decorative elements -->
+  <div
+    class="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-100/50 to-transparent rounded-full -translate-x-32 -translate-y-32">
+  </div>
+  <div
+    class="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-indigo-100/40 to-transparent rounded-full translate-x-48 translate-y-48">
+  </div>
+
+  <!-- Back to Home Button -->
+  <button (click)="goHome()"
+    class="absolute top-6 right-6 flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-sm border border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group z-10">
+    <i class="fas fa-arrow-left text-sm group-hover:-translate-x-0.5 transition-transform"></i>
+    <span class="font-medium">Back to Home</span>
   </button>
 
-  <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-    <h2 class="text-3xl font-extrabold text-blue-700 mb-8 text-center">
-      Create an Account
-    </h2>
-
-    <!-- 👥 Role Tabs -->
+  <!-- Main Sign Up Card -->
+  <div class="w-full max-w-md z-20">
+    <!-- Card with subtle 3D effect -->
     <div
-      class="flex justify-between mb-6 bg-blue-100 rounded-lg overflow-hidden"
-    >
-      <button
-        *ngFor="let r of [RoleType.Admin, RoleType.Teacher, RoleType.Guardian]"
-        (click)="role = r"
-        class="flex-1 text-sm font-semibold py-2 transition text-center"
-        [ngClass]="{
-          'bg-blue-600 text-white': role === r,
-          'text-blue-700 hover:bg-blue-200': role !== r,
-          capitalize: r
-        }"
-      >
-        {{ r }}
-      </button>
+      class="bg-white rounded-3xl shadow-2xl shadow-blue-100/50 border border-blue-100 overflow-hidden transform hover:shadow-2xl hover:shadow-blue-200/50 transition-shadow duration-500">
+
+      <!-- Card Header with gradient -->
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
+            <i class="fas fa-user-plus text-white text-xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-white">Create Account</h2>
+            <p class="text-blue-100 text-sm">Join the school community</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="p-8">
+        <!-- Role Selection -->
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-gray-700 mb-3">
+            <i class="fas fa-user-tag text-blue-600 mr-2"></i>
+            Select Account Type
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <button *ngFor="let r of [RoleType.Admin, RoleType.Teacher, RoleType.Guardian]" (click)="role = r"
+              class="flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-300"
+              [ngClass]="{
+                'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-sm text-blue-700': role === r,
+                'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-600 hover:text-gray-800': role !== r
+              }">
+
+              <span class="text-sm font-medium capitalize">{{ r }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Email Input -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-envelope text-blue-600 mr-2"></i>
+            Email Address
+          </label>
+          <div class="relative">
+            <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input [(ngModel)]="form.email" type="email" placeholder="your.email@example.com"
+              class="w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300" />
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-key text-blue-600 mr-2"></i>
+            Password
+          </label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password"
+              placeholder="Create a strong password"
+              class="w-full pl-10 pr-12 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300" />
+            <button (click)="showPassword = !showPassword"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 transition-colors">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Admin Fields -->
+        <div *ngIf="role === RoleType.Admin" class="space-y-4 mb-6">
+          <!-- Name Input -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-user text-blue-600 mr-2"></i>
+              Full Name
+            </label>
+            <div class="relative">
+              <i class="fas fa-user-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <input [(ngModel)]="form.name" placeholder="John Doe"
+                class="w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300" />
+            </div>
+          </div>
+
+          <!-- Phone Input -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              <i class="fas fa-phone text-blue-600 mr-2"></i>
+              Phone Number
+            </label>
+            <div class="relative">
+              <i class="fas fa-mobile-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <input [(ngModel)]="form.phone" type="tel" placeholder="07XX XXX XXX"
+                class="w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300"
+                mask="0000 000 000" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher: Class Dropdown -->
+        <div *ngIf="role === RoleType.Teacher" class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-users-class text-blue-600 mr-2"></i>
+            Select Class
+          </label>
+          <div class="relative">
+            <i class="fas fa-school absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <select [(ngModel)]="form.classId"
+              class="w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:border-blue-300">
+              <option value="" selected>Choose a class to teach...</option>
+              <option *ngFor="let cls of classes" [ngValue]="cls.id">
+                Form {{ cls.form }}{{ cls.stream }} • {{ cls.year }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- Guardian: Student Dropdown -->
+        <div *ngIf="role === RoleType.Guardian" class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-user-graduate text-blue-600 mr-2"></i>
+            Select Student
+          </label>
+          <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <select [(ngModel)]="form.admNo"
+              class="w-full pl-10 pr-4 py-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition-all duration-300 hover:border-blue-300">
+              <option value="" selected>Choose your student...</option>
+              <option *ngFor="let student of students" [ngValue]="student.admNo">
+                {{ student.admNo }} - {{ student.name }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- Sign Up Button -->
+        <button (click)="submitSignup()"
+          class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-emerald-700 hover:to-teal-800 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 group mb-6">
+          <i class="fas fa-user-plus mr-2 group-hover:rotate-12 transition-transform"></i>
+          Create Account
+        </button>
+
+        <!-- Additional Actions -->
+        <div class="space-y-4 pt-6 border-t border-gray-100">
+          <!-- Login Prompt -->
+          <div class="text-center">
+            <p class="text-gray-600 text-sm">
+              Already have an account?
+              <button (click)="goToLogin()"
+                class="text-blue-600 hover:text-blue-800 font-semibold ml-1 inline-flex items-center gap-1 group">
+                <span>Login here</span>
+                <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+              </button>
+            </p>
+          </div>
+
+          <!-- Forgot Password -->
+          <div class="text-center">
+            <button (click)="goToForgotPassword()"
+              class="text-blue-600 hover:text-blue-800 font-medium transition-colors inline-flex items-center gap-2 group">
+              <i class="fas fa-question-circle"></i>
+              <span>Forgot Password?</span>
+              <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Security Note -->
+        <div class="mt-6 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+          <div class="flex items-start gap-2">
+            <i class="fas fa-shield-alt text-emerald-500 mt-0.5"></i>
+            <p class="text-xs text-gray-600">
+              <span class="font-medium text-emerald-700">Secure Registration:</span> Your information is protected with
+              industry-standard encryption.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="px-8 py-4 bg-gray-50 border-t border-gray-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-xs text-gray-500">System Status: Active</span>
+          </div>
+          <span class="text-xs text-gray-500">v3.2</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 📧 Email -->
-    <input
-      [(ngModel)]="form.email"
-      type="email"
-      placeholder="Email address"
-      class="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
 
-    <!-- 🔒 Password + Toggle -->
-    <div class="relative mb-4">
-      <input
-        [type]="showPassword ? 'text' : 'password'"
-        [(ngModel)]="form.password"
-        placeholder="Password"
-        class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <i
-        class="fa absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 cursor-pointer"
-        [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-        (click)="showPassword = !showPassword"
-      ></i>
-    </div>
-
-    <!-- 👩‍💼 Admin Fields -->
-    <div *ngIf="role === RoleType.Admin">
-      <input
-        [(ngModel)]="form.name"
-        placeholder="Full Name"
-        class="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <input
-        [(ngModel)]="form.phone"
-        type="tel"
-        placeholder="07XX XXX XXX"
-        class="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        mask="0000 000 000"
-      />
-    </div>
-
-    <!-- 🧑‍🏫 Teacher: Class Dropdown -->
-    <div *ngIf="role === RoleType.Teacher" class="mb-4">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">
-        Select Class
-      </label>
-      <select
-        [(ngModel)]="form.classId"
-        class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="" selected>-- Choose a class --</option>
-        <option *ngFor="let cls of classes" [ngValue]="cls.id">
-          {{ cls.form }}{{ cls.stream }} - {{ cls.year }}
-        </option>
-      </select>
-    </div>
-
-    <!-- 👨‍👧 Guardian: Student Dropdown -->
-    <div *ngIf="role === RoleType.Guardian" class="mb-4">
-      <label class="block text-sm font-semibold text-gray-700 mb-1">
-        Select Student
-      </label>
-      <select
-        [(ngModel)]="form.admNo"
-        class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">-- Choose a student --</option>
-        <option *ngFor="let student of students" [ngValue]="student.admNo">
-          {{ student.admNo }} - {{ student.name }}
-        </option>
-      </select>
-    </div>
-
-    <!-- ✅ Sign Up Button -->
-    <button
-      (click)="submitSignup()"
-      class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition shadow-md"
-    >
-      Sign Up
-    </button>
-
-    <!-- 🔁 Login & Forgot Password -->
-    <div class="text-center text-sm my-4">
-      Already have an account?
-      <a
-        class="text-blue-600 hover:underline cursor-pointer font-medium"
-        (click)="goToLogin()"
-      >
-        Login here
-      </a>
-    </div>
-    <div class="text-center text-sm mt-2">
-      <a
-        class="text-blue-600 hover:underline cursor-pointer font-medium"
-        (click)="goToForgotPassword()"
-      >
-        Forgot password?
-      </a>
-    </div>
   </div>
 </div>

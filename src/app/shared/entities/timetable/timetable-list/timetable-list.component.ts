@@ -9,6 +9,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastService } from '../../../utils/toast.service';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
+import { AuthService } from '../../../../auth/auth.service';
+import { RoleType } from '../../../../auth/auth.routes';
+import { map, Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-timetable-list',
@@ -24,6 +27,9 @@ export class TimetableListComponent implements OnInit {
   loading = false;
   error: string | null = null;
   timetableStatuses: Map<string, boolean> = new Map(); // Map classId -> hasTimetable
+  teacherClassId: string | null = null;
+  role$: Observable<RoleType | null>;
+  RoleType = RoleType;
 
   weekDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
 
@@ -31,19 +37,74 @@ export class TimetableListComponent implements OnInit {
     private classService: ClassService,
     private timetableService: TimetableService,
     private router: Router,
-    private toast: ToastService
-  ) {}
+    private toast: ToastService,
+    private auth: AuthService,
+  ) {
+    this.role$ = this.auth
+      .getProfile$()
+      .pipe(map((profile) => profile?.role ?? null));
+  }
 
   ngOnInit(): void {
+    this.auth.getProfile().subscribe();
+
+    // Get teacher's classId from profile
+    this.auth.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+    });
     this.loadClasses();
   }
 
   private loadClasses() {
     this.classService.getAll().subscribe({
       next: (res) => {
-        (this.classes = res.data), this.checkAllTimetableStatuses();
+        let classes = res.data || [];
+
+        // Filter classes by teacher's class
+        if (this.teacherClassId) {
+          classes = classes.filter((cls) => cls.id === this.teacherClassId);
+
+          // Auto-select teacher's class if they have one
+          if (classes.length > 0 && this.teacherClassId) {
+            this.selectedClassId = this.teacherClassId;
+            // Automatically load the timetable for teacher's class
+            this.loadTimetableForClass(this.teacherClassId);
+          }
+        }
+
+        this.classes = classes;
+        this.checkAllTimetableStatuses();
       },
       error: () => (this.error = 'Failed to load classes'),
+    });
+  }
+
+  private loadTimetableForClass(classId: string): void {
+    this.selectedClassId = classId;
+    this.selectedTimetable = null;
+    this.loading = true;
+    this.error = null;
+
+    this.timetableService.getByClass(classId).subscribe({
+      next: (res) => {
+        if (res?.data?.id) {
+          this.selectedTimetable = res.data;
+        } else {
+          this.selectedTimetable = null;
+          this.error = 'No timetable found for this class';
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        if (err?.status === 404) {
+          this.selectedTimetable = null;
+          this.error = 'No timetable found for this class';
+        } else {
+          this.selectedTimetable = null;
+          this.error = 'Failed to fetch timetable';
+        }
+        this.loading = false;
+      },
     });
   }
 
@@ -203,7 +264,7 @@ export class TimetableListComponent implements OnInit {
     if (!this.selectedClassId) return '--';
 
     const selectedClass = this.classes.find(
-      (c) => c.id === this.selectedClassId
+      (c) => c.id === this.selectedClassId,
     );
     if (!selectedClass) return '--';
 

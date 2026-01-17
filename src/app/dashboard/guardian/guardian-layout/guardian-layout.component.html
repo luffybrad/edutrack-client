@@ -8,7 +8,9 @@
         </div>
         <div>
           <h2 class="text-lg font-bold">Guardian Portal</h2>
-          <p class="text-xs text-blue-200">Monitor Your Children</p>
+          <p class="text-xs text-blue-200">
+            {{ guardianName$ | async }}
+          </p>
         </div>
       </div>
       <button (click)="toggleSidebar()" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
@@ -45,16 +47,16 @@
       <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto p-4 space-y-1">
         <!-- Dashboard -->
-        <a routerLink="/dashboard/guardian/overview" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- <a routerLink="/dashboard/guardian/overview" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-blue-600/30 group-hover:bg-blue-500">
             <i class="fas fa-chart-pie w-4"></i>
           </div>
           <span class="font-medium">Dashboard Overview</span>
-        </a>
+        </a> -->
 
         <!-- My Children -->
-        <a routerLink="/dashboard/guardian/children" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <a routerLink="/dashboard/guardian/students" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-emerald-600/30 group-hover:bg-emerald-500">
             <i class="fas fa-user-friends w-4"></i>
@@ -64,7 +66,7 @@
         </a>
 
         <!-- Academic Performance -->
-        <a routerLink="/dashboard/guardian/academics" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <a routerLink="/dashboard/guardian/results" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-violet-600/30 group-hover:bg-violet-500">
             <i class="fas fa-graduation-cap w-4"></i>
@@ -73,13 +75,13 @@
         </a>
 
         <!-- Attendance -->
-        <a routerLink="/dashboard/guardian/attendance" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- <a routerLink="/dashboard/guardian/attendance" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-amber-600/30 group-hover:bg-amber-500">
             <i class="fas fa-calendar-check w-4"></i>
           </div>
           <span class="font-medium">Attendance</span>
-        </a>
+        </a> -->
 
         <!-- Fee Status -->
         <a routerLink="/dashboard/guardian/fees" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
@@ -92,23 +94,23 @@
         </a>
 
         <!-- Timetable -->
-        <a routerLink="/dashboard/guardian/timetable" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- <a routerLink="/dashboard/guardian/timetable" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-rose-600/30 group-hover:bg-rose-500">
             <i class="fas fa-calendar-alt w-4"></i>
           </div>
           <span class="font-medium">School Timetable</span>
-        </a>
+        </a> -->
 
         <!-- Messages -->
-        <a routerLink="/dashboard/guardian/messages" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- <a routerLink="/dashboard/guardian/messages" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-indigo-600/30 group-hover:bg-indigo-500">
             <i class="fas fa-comments w-4"></i>
           </div>
           <span class="font-medium">Messages</span>
           <span class="ml-auto px-2 py-1 text-xs bg-red-600 rounded-full">3</span>
-        </a>
+        </a> -->
 
         <!-- Reports -->
         <a routerLink="/dashboard/guardian/reports" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
@@ -126,22 +128,22 @@
         <p class="px-4 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-6 mb-2">Support</p>
 
         <!-- Contact School -->
-        <a routerLink="/dashboard/guardian/contact" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- <a routerLink="/dashboard/guardian/contact" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-blue-600/30 group-hover:bg-blue-500">
-            <i class="fas fa-phone-alt w-4"></i>
+            <i class="fas fa-phone w-4"></i>
           </div>
           <span class="font-medium">Contact School</span>
-        </a>
+        </a> -->
 
         <!-- Help & FAQ -->
-        <a routerLink="/dashboard/guardian/help" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- <a routerLink="/dashboard/guardian/help" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
           <div class="p-2 rounded-lg bg-orange-600/30 group-hover:bg-orange-500">
             <i class="fas fa-question-circle w-4"></i>
           </div>
           <span class="font-medium">Help & FAQ</span>
-        </a>
+        </a> -->
       </nav>
 
       <!-- Logout Section -->
@@ -176,8 +178,7 @@
                 <a routerLink="/dashboard/guardian" class="hover:text-blue-600 transition-colors">
                   <i class="fas fa-home"></i> Dashboard
                 </a>
-                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-                <span class="text-gray-800 font-medium">Current Section</span>
+
               </nav>
             </div>
 
@@ -206,12 +207,17 @@
               <!-- User Profile -->
               <div class="flex items-center gap-3">
                 <div class="text-right hidden md:block">
-                  <div class="font-medium text-gray-800">Guardian</div>
-                  <div class="text-xs text-gray-500">Parent Access</div>
+                  <div class="font-medium text-gray-800">
+                    {{ guardianName$ | async }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ guardianEmail$ | async }}
+                  </div>
+
                 </div>
                 <div
                   class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
-                  <i class="fas fa-user-shield"></i>
+                  {{ guardianInitials$ | async }}
                 </div>
               </div>
             </div>
@@ -223,151 +229,15 @@
       <main class="flex-1 overflow-auto">
         <!-- Welcome Banner -->
         <div class="p-4 md:p-6">
-          <div class="bg-gradient-to-r from-blue-500 to-sky-500 rounded-xl shadow-lg p-6 mb-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div class="flex items-center gap-4">
-                <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <i class="fas fa-user-shield text-white text-2xl"></i>
-                </div>
-                <div>
-                  <h2 class="text-2xl font-bold text-white">Welcome Back!</h2>
-                  <p class="text-blue-100">Monitor your children's academic progress and school activities</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full">
-                  <span class="text-white text-sm font-medium">Last login: Today</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Page Content -->
-          <div class="bg-white rounded-xl border border-blue-100 shadow-lg">
-            <div class="p-6">
-              <router-outlet></router-outlet>
-            </div>
-          </div>
-
-          <!-- Quick Stats Cards -->
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-600">Active Children</p>
-                  <p class="text-3xl font-bold text-gray-800">2</p>
-                </div>
-                <div class="p-3 bg-blue-100 rounded-xl">
-                  <i class="fas fa-user-friends text-blue-600 text-xl"></i>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-600">Unread Messages</p>
-                  <p class="text-3xl font-bold text-red-800">3</p>
-                </div>
-                <div class="p-3 bg-red-100 rounded-xl">
-                  <i class="fas fa-envelope text-red-600 text-xl"></i>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-600">Fee Status</p>
-                  <p class="text-3xl font-bold text-green-800">87% Paid</p>
-                </div>
-                <div class="p-3 bg-green-100 rounded-xl">
-                  <i class="fas fa-file-invoice-dollar text-green-600 text-xl"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Actions & Information -->
-          <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Quick Links -->
-            <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-6">
-              <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-link text-blue-600"></i>
-                Quick Links
-              </h4>
-              <div class="space-y-3">
-                <a href="#"
-                  class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition-colors">
-                  <i class="fas fa-print"></i>
-                  Print Reports
-                </a>
-                <a href="#"
-                  class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition-colors">
-                  <i class="fas fa-calendar-plus"></i>
-                  Book Parent Meeting
-                </a>
-                <a href="#"
-                  class="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition-colors">
-                  <i class="fas fa-download"></i>
-                  Download School Calendar
-                </a>
-              </div>
-            </div>
-
-            <!-- Important Dates -->
-            <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-6">
-              <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-calendar-day text-amber-600"></i>
-                Important Dates
-              </h4>
-              <div class="space-y-3">
-                <div class="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                      <i class="fas fa-graduation-cap text-amber-600 text-sm"></i>
-                    </div>
-                    <span class="text-sm text-gray-700">Term Ends</span>
-                  </div>
-                  <span class="text-xs text-gray-500">Dec 15, 2024</span>
-                </div>
-                <div class="flex items-center justify-between p-2 hover:bg-blue-50 rounded-lg">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <i class="fas fa-chart-bar text-blue-600 text-sm"></i>
-                    </div>
-                    <span class="text-sm text-gray-700">Exam Results</span>
-                  </div>
-                  <span class="text-xs text-gray-500">Coming Soon</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- School Contact -->
-            <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-6">
-              <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-phone-alt text-green-600"></i>
-                School Contact
-              </h4>
-              <div class="space-y-3">
-                <div class="flex items-center gap-2 text-sm text-gray-600">
-                  <i class="fas fa-phone text-green-500"></i>
-                  <span>+254 700 000 000</span>
-                </div>
-
-                <div class="flex items-center gap-2 text-sm text-gray-600">
-                  <i class="fas fa-map-marker-alt text-green-500"></i>
-                  <span>Nairobi, Kenya</span>
-                </div>
-                <button
-                  class="w-full mt-4 px-4 py-2 text-sm bg-green-50 text-green-700 hover:bg-green-100 rounded-lg transition-colors flex items-center justify-center gap-2">
-                  <i class="fas fa-comment-alt"></i>
-                  Send Message
-                </button>
-              </div>
-            </div>
-          </div>
+          <router-outlet></router-outlet>
         </div>
+
+
+
+
+
+
 
         <!-- Footer -->
         <footer class="mt-8 border-t border-blue-100 bg-white/50 p-6">

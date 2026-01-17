@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-teacher-layout',
@@ -13,13 +14,38 @@ export class TeacherLayoutComponent {
   sidebarOpen = false;
   currentYear = new Date().getFullYear();
   currentDate = new Date();
-  notifications = [
-    { id: 1, title: 'New Student Enrolled', time: '2 hours ago', read: false },
-    { id: 2, title: 'Exam Results Published', time: '1 day ago', read: false },
-    { id: 3, title: 'Fee Payment Received', time: '2 days ago', read: true },
-  ];
+
+  // Add these properties
+  teacherName$!: Observable<string>;
+  teacherEmail$!: Observable<string>;
+  teacherInitials$!: Observable<string>;
 
   constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    // Get teacher profile data
+    this.teacherName$ = this.authService
+      .getProfile$()
+      .pipe(map((profile) => profile?.name || 'Teacher'));
+
+    this.teacherEmail$ = this.authService
+      .getProfile$()
+      .pipe(map((profile) => profile?.email || ''));
+
+    this.teacherInitials$ = this.authService.getProfile$().pipe(
+      map((profile) => {
+        if (!profile?.name) return 'T';
+        const names = profile.name.split(' ');
+        if (names.length === 1) return names[0].charAt(0).toUpperCase();
+        return (
+          names[0].charAt(0) + names[names.length - 1].charAt(0)
+        ).toUpperCase();
+      }),
+    );
+
+    // Fetch profile on initialization
+    this.authService.getProfile().subscribe();
+  }
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
@@ -27,9 +53,5 @@ export class TeacherLayoutComponent {
 
   logout() {
     this.authService.logout();
-  }
-
-  get unreadNotificationsCount(): number {
-    return this.notifications.filter((n) => !n.read).length;
   }
 }

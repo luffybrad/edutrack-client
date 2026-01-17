@@ -30,6 +30,7 @@
 
         <!-- Analytics Dashboard -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Classes -->
             <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -42,44 +43,75 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">With Timetable</p>
-                        <p class="text-3xl font-bold text-green-800">{{ getClassesWithTimetable() }}</p>
+            <!-- Admin-only stats and Teacher stat -->
+            <ng-container *ngIf="role$ | async as role">
+                <!-- Admin Stats -->
+                <ng-container *ngIf="role === RoleType.Admin">
+                    <!-- With Timetable -->
+                    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">With Timetable</p>
+                                <p class="text-3xl font-bold text-green-800">{{ getClassesWithTimetable() }}</p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-xl">
+                                <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-green-100 rounded-xl">
-                        <i class="fas fa-calendar-check text-green-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">Without Timetable</p>
-                        <p class="text-3xl font-bold text-amber-800">{{ classes.length - getClassesWithTimetable() }}
-                        </p>
+                    <!-- Without Timetable -->
+                    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Without Timetable</p>
+                                <p class="text-3xl font-bold text-amber-800">{{ classes.length -
+                                    getClassesWithTimetable() }}
+                                </p>
+                            </div>
+                            <div class="p-3 bg-amber-100 rounded-xl">
+                                <i class="fas fa-calendar-times text-amber-600 text-xl"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-amber-100 rounded-xl">
-                        <i class="fas fa-calendar-times text-amber-600 text-xl"></i>
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">Coverage Rate</p>
-                        <p class="text-3xl font-bold text-purple-800">
-                            {{ getTimetableCoverage() }}%
-                        </p>
+                    <!-- Coverage Rate -->
+                    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Coverage Rate</p>
+                                <p class="text-3xl font-bold text-purple-800">{{ getTimetableCoverage() }}%</p>
+                            </div>
+                            <div class="p-3 bg-purple-100 rounded-xl">
+                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-purple-100 rounded-xl">
-                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                </ng-container>
+
+                <!-- Teacher Stats -->
+                <ng-container *ngIf="role === RoleType.Teacher && teacherClassId">
+                    <!-- Teacher: Timetable Status -->
+                    <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Timetable Status</p>
+                                <p class="text-3xl font-bold text-emerald-800">
+                                    {{ hasTimetable(teacherClassId) ? 'Active' : 'Pending' }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">Your Class</p>
+                            </div>
+                            <div class="p-3 rounded-xl"
+                                [class]="hasTimetable(teacherClassId) ? 'bg-emerald-100' : 'bg-amber-100'">
+                                <i
+                                    [class]="hasTimetable(teacherClassId) ? 'fas fa-check-circle text-emerald-600 text-xl' : 'fas fa-clock text-amber-600 text-xl'"></i>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+
+
+                </ng-container>
+            </ng-container>
         </div>
 
         <!-- Classes Summary Grid -->

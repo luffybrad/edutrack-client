@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../auth/auth.service';
+import { Observable, map } from 'rxjs';
+import { RoleType } from '../../../auth/auth.routes';
 
 @Component({
   selector: 'app-admin-layout',
@@ -13,13 +15,38 @@ export class AdminLayoutComponent {
   sidebarOpen = false;
   currentYear = new Date().getFullYear();
   currentDate = new Date();
-  notifications = [
-    { id: 1, title: 'New Student Enrolled', time: '2 hours ago', read: false },
-    { id: 2, title: 'Exam Results Published', time: '1 day ago', read: false },
-    { id: 3, title: 'Fee Payment Received', time: '2 days ago', read: true },
-  ];
+
+  // Add these properties
+  adminName$!: Observable<string>;
+  adminEmail$!: Observable<string>;
+  adminInitials$!: Observable<string>;
 
   constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    // Get guardian profile data
+    this.adminName$ = this.authService
+      .getProfile$()
+      .pipe(map((profile) => profile?.name || 'Admin'));
+
+    this.adminEmail$ = this.authService
+      .getProfile$()
+      .pipe(map((profile) => profile?.email || ''));
+
+    this.adminInitials$ = this.authService.getProfile$().pipe(
+      map((profile) => {
+        if (!profile?.name) return 'A';
+        const names = profile.name.split(' ');
+        if (names.length === 1) return names[0].charAt(0).toUpperCase();
+        return (
+          names[0].charAt(0) + names[names.length - 1].charAt(0)
+        ).toUpperCase();
+      }),
+    );
+
+    // Fetch profile on initialization
+    this.authService.getProfile().subscribe();
+  }
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
@@ -27,9 +54,5 @@ export class AdminLayoutComponent {
 
   logout() {
     this.authService.logout();
-  }
-
-  get unreadNotificationsCount(): number {
-    return this.notifications.filter((n) => !n.read).length;
   }
 }

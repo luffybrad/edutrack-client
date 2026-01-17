@@ -11,6 +11,9 @@ import { UploadResultsSectionComponent } from '../upload-results-section/upload-
 import { ExamService, Exam } from '../../../../services/exam.service';
 import { StudentService, Student } from '../../../../services/student.service';
 import { ResultService, Result } from '../../../../services/result.service';
+import { AuthService } from '../../../../auth/auth.service';
+import { RoleType } from '../../../../auth/auth.routes';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-results-dashboard',
@@ -38,11 +41,19 @@ export class ResultsDashboardComponent implements OnInit {
   selectedSubject?: string;
   selectedClassId?: string;
 
+  role$!: Observable<RoleType | null>;
+  RoleType = RoleType;
+
   constructor(
     private examService: ExamService,
     private studentService: StudentService,
-    private resultService: ResultService
-  ) {}
+    private resultService: ResultService,
+    private authService: AuthService,
+  ) {
+    this.role$ = this.authService
+      .getProfile$()
+      .pipe(map((p) => p?.role ?? null));
+  }
 
   ngOnInit() {
     this.loadExams();
@@ -74,14 +85,25 @@ export class ResultsDashboardComponent implements OnInit {
       // Populate unique subjects
       const subjectSet = new Set<string>();
       results.forEach((r) =>
-        Object.keys(r.subjectScores).forEach((s) => subjectSet.add(s))
+        Object.keys(r.subjectScores).forEach((s) => subjectSet.add(s)),
       );
       this.subjects = Array.from(subjectSet).sort();
 
       // Populate unique classes
       const classSet = new Set<string>();
       results.forEach((r) => {
-        if (r.student?.class) classSet.add(r.student.class);
+        if (r.student?.class) {
+          if (typeof r.student.class === 'object') {
+            const cls = r.student.class as any;
+            if (cls.form && cls.stream) {
+              classSet.add(`Form ${cls.form}${cls.stream}`);
+            } else {
+              classSet.add(cls.name || cls.id || 'Unknown Class');
+            }
+          } else {
+            classSet.add(r.student.class as string);
+          }
+        }
       });
       this.classes = Array.from(classSet).sort();
     });

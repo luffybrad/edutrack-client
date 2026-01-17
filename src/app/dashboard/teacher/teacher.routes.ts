@@ -25,7 +25,7 @@ export const TEACHER_ROUTES: Routes = [
     children: [
       {
         path: '',
-        component: TeacherHomeComponent,
+        component: ClassListComponent,
       },
       { path: 'students', component: StudentListComponent },
       { path: 'students/add', component: StudentAddComponent },

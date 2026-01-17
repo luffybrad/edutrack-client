@@ -18,6 +18,9 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
+import { AuthService } from '../../../../auth/auth.service';
+import { RoleType } from '../../../../auth/auth.routes';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-fee-dashboard',
@@ -32,6 +35,10 @@ export class FeeDashboardComponent implements OnInit {
   transactions: FeeTransaction[] = [];
   auditLogs: FeeAuditLog[] = [];
   searchTerm = '';
+  guardianId: String | null = null;
+
+  role$: Observable<RoleType | null>;
+  RoleType = RoleType;
 
   // Modal controls
   showFeeModal = false;
@@ -54,10 +61,25 @@ export class FeeDashboardComponent implements OnInit {
   constructor(
     private feeService: FeeService,
     private studentService: StudentService,
-    private fb: FormBuilder
-  ) {}
+    private fb: FormBuilder,
+    private auth: AuthService,
+  ) {
+    this.role$ = this.auth
+      .getProfile$()
+      .pipe(map((profile) => profile?.role ?? null));
+  }
 
   ngOnInit() {
+    this.auth.getProfile().subscribe();
+
+    // Get teacher's classId from profile
+    this.auth.getProfile$().subscribe((profile) => {
+      // Get guardian ID if user is a guardian
+      if (profile?.role === RoleType.Guardian) {
+        this.guardianId = profile.id;
+      }
+    });
+
     this.loadStudents();
     this.loadFeeArrears();
     this.initForms();
@@ -80,7 +102,17 @@ export class FeeDashboardComponent implements OnInit {
   // -------------------
   private loadStudents() {
     this.studentService.getAll().subscribe({
-      next: (res) => (this.students = res.data),
+      next: (res) => {
+        let students = res.data || [];
+
+        if (this.guardianId) {
+          students = students.filter(
+            (std) => std.guardianId === this.guardianId,
+          );
+        }
+
+        this.students = students;
+      },
       error: () => this.showToast('error', 'Failed to load students'),
     });
   }
@@ -92,7 +124,22 @@ export class FeeDashboardComponent implements OnInit {
     this.loading = true;
     this.feeService.getAll().subscribe({
       next: (res) => {
-        this.feeArrears = res.data.map((a) => ({
+        let feeArrears = res.data || [];
+
+        // Filter fee arrears by guardian's students
+        if (this.guardianId) {
+          // First, get student IDs for this guardian
+          const guardianStudentIds = this.students
+            .filter((std) => std.guardianId === this.guardianId)
+            .map((std) => std.id);
+
+          // Filter fee arrears to only show those belonging to guardian's students
+          feeArrears = feeArrears.filter((arrear) =>
+            guardianStudentIds.includes(arrear.studentId),
+          );
+        }
+
+        this.feeArrears = feeArrears.map((a) => ({
           ...a,
           amountDue: Number(a.amountDue) || 0,
           totalPaid: Number(a.totalPaid) || 0,
@@ -134,7 +181,7 @@ export class FeeDashboardComponent implements OnInit {
   filteredArrears() {
     const term = this.searchTerm.toLowerCase();
     return this.feeArrears.filter((a) =>
-      this.getStudentName(a.studentId).toLowerCase().includes(term)
+      this.getStudentName(a.studentId).toLowerCase().includes(term),
     );
   }
 
@@ -262,7 +309,7 @@ export class FeeDashboardComponent implements OnInit {
   private updateChart() {
     const paid = this.feeArrears.reduce(
       (sum, f) => sum + (f.totalPaid || 0),
-      0
+      0,
     );
     const due = this.feeArrears.reduce((sum, f) => sum + (f.balance || 0), 0);
 
