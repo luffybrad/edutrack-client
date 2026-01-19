@@ -5,6 +5,8 @@ import { AuthEndpoints, RoleType } from './auth.routes';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { ApiResponse } from '../shared/utils/api-response';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -12,7 +14,10 @@ export class AuthService {
   private loggedIn$ = new BehaviorSubject<boolean>(false);
   private profile$ = new BehaviorSubject<any>(null);
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {
     this.restoreFromStorage();
   }
 
@@ -50,7 +55,7 @@ export class AuthService {
       .pipe(
         tap(() => {
           this.loggedIn$.next(true); // 🔐 optimistic
-        })
+        }),
       );
   }
 
@@ -64,7 +69,7 @@ export class AuthService {
     return this.http.post(
       AuthEndpoints.forgotPassword,
       { email, role },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
@@ -72,7 +77,7 @@ export class AuthService {
     return this.http.post(
       AuthEndpoints.resetPassword,
       { token, newPassword },
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
@@ -101,7 +106,7 @@ export class AuthService {
         catchError((err) => {
           this.loggedIn$.next(false);
           return of(null);
-        })
+        }),
       );
   }
 
@@ -109,6 +114,15 @@ export class AuthService {
     return this.http.put(AuthEndpoints.profile, data, {
       withCredentials: true,
     });
+  }
+
+  // In AuthService class
+  changePassword(data: { currentPassword: string; newPassword: string }) {
+    return this.http.post<ApiResponse<null>>(
+      AuthEndpoints.changePassword, // Use the defined endpoint
+      data,
+      { withCredentials: true },
+    );
   }
 
   logout() {

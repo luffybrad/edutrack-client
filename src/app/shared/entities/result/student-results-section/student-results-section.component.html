@@ -20,8 +20,159 @@
         No results available for the selected student.
     </div>
 
+    <!-- Tab Navigation -->
+    <div *ngIf="comparisons.length" class="mb-6 border-b border-gray-200">
+        <div class="flex flex-wrap -mb-px">
+            <button (click)="activeTab = 'overview'" [class]="activeTab === 'overview' ? 
+                'inline-block py-2 px-4 text-blue-600 border-b-2 border-blue-600 font-medium' : 
+                'inline-block py-2 px-4 text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium'">
+                <i class="fas fa-chart-line mr-2"></i>Overview
+            </button>
+            <button (click)="activeTab = 'progress'" [class]="activeTab === 'progress' ? 
+                'inline-block py-2 px-4 text-blue-600 border-b-2 border-blue-600 font-medium' : 
+                'inline-block py-2 px-4 text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium'">
+                <i class="fas fa-trend-up mr-2"></i>Progress
+            </button>
+            <button (click)="activeTab = 'improvement'" [class]="activeTab === 'improvement' ? 
+                'inline-block py-2 px-4 text-blue-600 border-b-2 border-blue-600 font-medium' : 
+                'inline-block py-2 px-4 text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium'">
+                <i class="fas fa-chart-bar mr-2"></i>Improvement
+            </button>
+            <button (click)="activeTab = 'details'" [class]="activeTab === 'details' ? 
+                'inline-block py-2 px-4 text-blue-600 border-b-2 border-blue-600 font-medium' : 
+                'inline-block py-2 px-4 text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium'">
+                <i class="fas fa-table mr-2"></i>Details
+            </button>
+        </div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview' && comparisons.length" class="mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Performance Card -->
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-blue-600 font-medium">Performance</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ studentStats.avgScore }}%</h3>
+                        <p class="text-sm text-gray-600">Average Score</p>
+                    </div>
+                    <div class="text-blue-500 text-2xl">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Best Subject Card -->
+            <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-emerald-600 font-medium">Best Subject</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ studentStats.bestSubject }}</h3>
+                        <p class="text-sm text-gray-600">{{ studentStats.highestScore }}% score</p>
+                    </div>
+                    <div class="text-emerald-500 text-2xl">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Card -->
+            <div class="bg-gradient-to-r from-amber-50 to-amber-100 p-4 rounded-xl border border-amber-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-amber-600 font-medium">Performance Trend</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1 capitalize">{{ studentStats.trend }}</h3>
+                        <div class="flex items-center gap-2 text-sm">
+                            <i [class]="getTrendIcon()"></i>
+                            <span class="text-gray-600">Last {{ comparisons.length }} exams</span>
+                        </div>
+                    </div>
+                    <div class="text-amber-500 text-2xl">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Grade Card -->
+            <div class="bg-gradient-to-r from-violet-50 to-violet-100 p-4 rounded-xl border border-violet-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-violet-600 font-medium">Latest Grade</p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                            <span
+                                class="px-3 py-1 rounded-full {{ getGradeColor(comparisons[comparisons.length - 1].grade) }}">
+                                {{ comparisons[comparisons.length - 1].grade }}
+                            </span>
+                        </h3>
+                        <p class="text-sm text-gray-600">Latest exam performance</p>
+                    </div>
+                    <div class="text-violet-500 text-2xl">
+                        <i class="fas fa-award"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini Charts Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-gray-200">
+                <h4 class="font-medium text-gray-700 mb-2">Mean Score Trend</h4>
+                <div class="h-48">
+                    <canvas baseChart [data]="meanTrendChartData" [options]="meanTrendChartOptions"
+                        [type]="'line'"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200">
+                <h4 class="font-medium text-gray-700 mb-2">Improvement Between Exams</h4>
+                <div class="h-48">
+                    <canvas baseChart [data]="improvementChartData" [options]="improvementChartOptions"
+                        [type]="'bar'"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Tab -->
+    <div *ngIf="activeTab === 'progress' && progressionChartData.datasets.length" class="mb-6">
+        <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-semibold text-gray-700 mb-4">Subject Progression Analysis</h3>
+            <div class="h-96">
+                <canvas baseChart [data]="progressionChartData" [options]="progressionChartOptions"
+                    [type]="'line'"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Improvement Tab -->
+    <div *ngIf="activeTab === 'improvement' && improvementChartData.datasets.length" class="mb-6">
+        <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-semibold text-gray-700 mb-4">Exam-to-Exam Improvement</h3>
+            <div class="h-80">
+                <canvas baseChart [data]="improvementChartData" [options]="improvementChartOptions"
+                    [type]="'bar'"></canvas>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <h4 class="font-medium text-blue-700 mb-1">Total Improvement</h4>
+                    <p class="text-2xl font-bold text-blue-600">
+                        {{ getTotalImprovement() }}%
+                    </p>
+                    <p class="text-sm text-blue-600">Cumulative change across all exams</p>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-lg">
+                    <h4 class="font-medium text-emerald-700 mb-1">Average Improvement</h4>
+                    <p class="text-2xl font-bold text-emerald-600">
+                        {{ getAverageImprovement() }}%
+                    </p>
+                    <p class="text-sm text-emerald-600">Per exam average</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Comparison Table -->
-    <div *ngIf="comparisons.length" class="mb-4 overflow-x-auto">
+    <div *ngIf="activeTab === 'details' && comparisons.length" class="mb-4 overflow-x-auto">
         <table class="w-full table-auto border border-blue-200">
             <thead class="bg-blue-100 text-blue-700">
                 <tr>

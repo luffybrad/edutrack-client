@@ -18,6 +18,7 @@ import { ResultsDashboardComponent } from '../../shared/entities/result/results-
 import { TimetableListComponent } from '../../shared/entities/timetable/timetable-list/timetable-list.component';
 import { TimetableGenerateComponent } from '../../shared/entities/timetable/timetable-generate/timetable-generate.component';
 import { FeeDashboardComponent } from '../../shared/entities/fee/fee-dashboard/fee-dashboard.component';
+import { ProfileManagementComponent } from '../../shared/entities/profile/profile-management/profile-management.component';
 export const GUARDIAN_ROUTES: Routes = [
   {
     path: '',
@@ -25,7 +26,7 @@ export const GUARDIAN_ROUTES: Routes = [
     children: [
       {
         path: '',
-        component: GuardianHomeComponent,
+        component: StudentListComponent,
       },
       { path: 'students', component: StudentListComponent },
       { path: 'students/add', component: StudentAddComponent },
@@ -57,6 +58,10 @@ export const GUARDIAN_ROUTES: Routes = [
       {
         path: 'fees',
         component: FeeDashboardComponent,
+      },
+      {
+        path: 'profile',
+        component: ProfileManagementComponent,
       },
     ],
     // Add more child routes here as needed

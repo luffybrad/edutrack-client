@@ -24,4 +24,5 @@ export const AuthEndpoints = {
   resetPassword: `${BASE}/reset-password`,
   profile: `${BASE}/profile`,
   logout: `${BASE}/logout`,
+  changePassword: `${BASE}/change-password`,
 };

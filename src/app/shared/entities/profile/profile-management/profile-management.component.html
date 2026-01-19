@@ -1,0 +1,285 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-8 px-4">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                        Profile Management
+                    </h1>
+                    <p class="text-gray-600">
+                        Manage your account settings and profile information
+                    </p>
+                </div>
+
+                <!-- Profile Status Badge -->
+                <div class="flex items-center gap-3">
+                    <div class="px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-medium text-sm">
+                        <i class="fas fa-user-shield mr-2"></i>
+                        {{ getRoleDisplayName(profile?.role) }}
+                    </div>
+                    <div class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-medium text-sm">
+                        <i class="fas fa-circle text-xs mr-2"></i>
+                        Active
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex items-center justify-center py-12">
+            <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <p class="text-gray-600">Loading profile information...</p>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div *ngIf="!loading && profile" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column: Profile Card & Activity -->
+            <div class="lg:col-span-1 space-y-8">
+
+                <!-- Profile Card -->
+                <div class="bg-white rounded-2xl border border-blue-100 shadow-lg p-6">
+                    <div class="text-center mb-6">
+                        <!-- Avatar -->
+                        <div class="relative inline-block">
+                            <div
+                                class="w-32 h-32 rounded-full bg-gradient-to-br {{ getRoleColor(profile.role) }} flex items-center justify-center text-white text-4xl font-bold shadow-xl mb-4 mx-auto">
+                                {{ getInitials(profile.name) }}
+                            </div>
+                            <button
+                                class="absolute bottom-4 right-0 p-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200">
+                                <i class="fas fa-camera text-blue-600 text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- User Info -->
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ profile.name }}</h2>
+                        <p class="text-gray-600 mb-1">{{ profile.email }}</p>
+                        <p *ngIf="profile.phone" class="text-gray-600 mb-4">{{ profile.phone }}</p>
+
+                        <!-- Role Badge -->
+                        <div
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r {{ getRoleColor(profile.role) }} text-white font-medium">
+                            <i class="fas fa-user-tag"></i>
+                            {{ getRoleDisplayName(profile.role) }}
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-blue-100">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600">1</div>
+                            <div class="text-sm text-gray-600">Active Session</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-emerald-600">{{ activityLogs.length }}</div>
+                            <div class="text-sm text-gray-600">Activities</div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <!-- Right Column: Forms -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Profile Information Form -->
+                <div class="bg-white rounded-2xl border border-blue-100 shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-user-edit text-blue-600"></i>
+                            Profile Information
+                        </h3>
+                        <div class="text-sm text-gray-500">
+                            <ng-container *ngIf="profile?.updatedAt; else todayTemplate">
+                                Last updated: {{ profile.updatedAt | date:'mediumDate' }}
+                            </ng-container>
+                            <ng-template #todayTemplate>
+                                Last updated: Today
+                            </ng-template>
+                        </div>
+                    </div>
+
+                    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="space-y-6">
+                        <!-- Name Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user text-blue-500 mr-2"></i>
+                                Full Name
+                            </label>
+                            <input type="text" formControlName="name"
+                                class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
+                                placeholder="Enter your full name">
+                            <div *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
+                                class="mt-2 text-sm text-red-600">
+                                <div *ngIf="profileForm.get('name')?.errors?.['required']">Name is required</div>
+                                <div *ngIf="profileForm.get('name')?.errors?.['minlength']">Name must be at least 2
+                                    characters</div>
+                            </div>
+                        </div>
+
+                        <!-- Email Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-envelope text-blue-500 mr-2"></i>
+                                Email Address
+                            </label>
+                            <input type="email" formControlName="email"
+                                class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
+                                placeholder="Enter your email address">
+                            <div *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+                                class="mt-2 text-sm text-red-600">
+                                <div *ngIf="profileForm.get('email')?.errors?.['required']">Email is required</div>
+                                <div *ngIf="profileForm.get('email')?.errors?.['email']">Please enter a valid email
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phone Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-phone text-blue-500 mr-2"></i>
+                                Phone Number
+                            </label>
+                            <input type="tel" formControlName="phone"
+                                class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
+                                placeholder="Enter your 10-digit phone number">
+                            <div *ngIf="profileForm.get('phone')?.invalid && profileForm.get('phone')?.touched"
+                                class="mt-2 text-sm text-red-600">
+                                <div *ngIf="profileForm.get('phone')?.errors?.['required']">Phone number is required
+                                </div>
+                                <div *ngIf="profileForm.get('phone')?.errors?.['pattern']">Please enter a valid 10-digit
+                                    phone number</div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex justify-end pt-6 border-t border-blue-100">
+                            <button type="button" (click)="profileForm.reset()"
+                                class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 font-medium mr-4">
+                                Cancel
+                            </button>
+                            <button type="submit" [disabled]="profileForm.invalid || updatingProfile"
+                                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <i *ngIf="!updatingProfile" class="fas fa-save"></i>
+                                <i *ngIf="updatingProfile" class="fas fa-spinner fa-spin"></i>
+                                {{ updatingProfile ? 'Saving...' : 'Save Changes' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change Password Form -->
+                <div class="bg-white rounded-2xl border border-blue-100 shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-lock text-blue-600"></i>
+                        Change Password
+                    </h3>
+
+                    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="space-y-6">
+                        <!-- Current Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-key text-blue-500 mr-2"></i>
+                                Current Password
+                            </label>
+                            <div class="relative">
+                                <input [type]="showCurrentPassword ? 'text' : 'password'"
+                                    formControlName="currentPassword"
+                                    class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white pr-12"
+                                    placeholder="Enter current password">
+                                <button type="button" (click)="togglePasswordVisibility('currentPassword')"
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <i [class]="showCurrentPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <div *ngIf="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
+                                class="mt-2 text-sm text-red-600">
+                                <div *ngIf="passwordForm.get('currentPassword')?.errors?.['required']">Current password
+                                    is required</div>
+                                <div *ngIf="passwordForm.get('currentPassword')?.errors?.['minlength']">Password must be
+                                    at least 6 characters</div>
+                            </div>
+                        </div>
+
+                        <!-- New Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-key text-blue-500 mr-2"></i>
+                                New Password
+                            </label>
+                            <div class="relative">
+                                <input [type]="showNewPassword ? 'text' : 'password'" formControlName="newPassword"
+                                    class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white pr-12"
+                                    placeholder="Enter new password">
+                                <button type="button" (click)="togglePasswordVisibility('newPassword')"
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <i [class]="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <div *ngIf="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+                                class="mt-2 text-sm text-red-600">
+                                <div *ngIf="passwordForm.get('newPassword')?.errors?.['required']">New password is
+                                    required</div>
+                                <div *ngIf="passwordForm.get('newPassword')?.errors?.['minlength']">Password must be at
+                                    least 8 characters</div>
+                                <div *ngIf="passwordForm.get('newPassword')?.errors?.['pattern']">Must include
+                                    uppercase, lowercase, number, and special character</div>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                Password must be at least 8 characters with uppercase, lowercase, number, and special
+                                character.
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-key text-blue-500 mr-2"></i>
+                                Confirm New Password
+                            </label>
+                            <div class="relative">
+                                <input [type]="showConfirmPassword ? 'text' : 'password'"
+                                    formControlName="confirmPassword"
+                                    class="w-full px-4 py-3 border-2 border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white pr-12"
+                                    placeholder="Confirm new password">
+                                <button type="button" (click)="togglePasswordVisibility('confirmPassword')"
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                                </button>
+                            </div>
+                            <div *ngIf="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched"
+                                class="mt-2 text-sm text-red-600">
+                                <div *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']">Please confirm
+                                    your password</div>
+                                <div
+                                    *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched">
+                                    Passwords do not match</div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex justify-end pt-6 border-t border-blue-100">
+                            <button type="button" (click)="passwordForm.reset()"
+                                class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors duration-200 font-medium mr-4">
+                                Clear
+                            </button>
+                            <button type="submit" [disabled]="passwordForm.invalid || updatingPassword"
+                                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <i *ngIf="!updatingPassword" class="fas fa-lock"></i>
+                                <i *ngIf="updatingPassword" class="fas fa-spinner fa-spin"></i>
+                                {{ updatingPassword ? 'Updating...' : 'Update Password' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
