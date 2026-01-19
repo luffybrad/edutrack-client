@@ -1,35 +1,585 @@
-<div class="bg-white p-6 rounded-lg shadow-md border border-blue-200 mt-4">
-    <h2 class="text-2xl font-semibold text-blue-600 mb-4 flex items-center gap-2">
-        <i class="fas fa-chart-bar"></i> Exam Analytics
-    </h2>
-
-    <!-- Exam selector -->
-    <div class="flex flex-col md:flex-row gap-3 mb-4">
-        <select [(ngModel)]="selectedExamId" (change)="onExamChange()"
-            class="border rounded-lg p-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <option value="" disabled selected>Select Exam</option>
-            <option *ngFor="let exam of exams" [value]="exam.id">{{ exam.name }}</option>
-        </select>
-    </div>
-
-    <!-- Loading -->
-    <div *ngIf="loading" class="text-blue-600 mb-2">Loading analytics...</div>
-
-    <!-- No data -->
-    <div *ngIf="!loading && (!analytics || !analytics.topPerformers.length)" class="text-gray-500">
-        No analytics available for the selected exam.
-    </div>
-
-    <!-- Charts -->
-    <div *ngIf="analytics" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div *ngIf="topPerformersChart.datasets.length">
-            <h3 class="font-semibold text-blue-700 mb-2">Top Performers</h3>
-            <canvas baseChart [data]="topPerformersChart" [options]="chartOptions" [type]="'bar'"></canvas>
+<div
+    class="bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-6 rounded-2xl shadow-xl border border-blue-200/50 mt-6">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                    Exam Analytics Dashboard
+                </h1>
+                <p class="text-gray-600 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-blue-500"></i>
+                    Analyze exam performance, track trends, and compare results
+                </p>
+            </div>
+            <div class="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white shadow-lg">
+                <i class="fas fa-analytics text-2xl"></i>
+            </div>
         </div>
 
-        <div *ngIf="weakSubjectsChart.datasets.length">
-            <h3 class="font-semibold text-blue-700 mb-2">Weak Subjects</h3>
-            <canvas baseChart [data]="weakSubjectsChart" [options]="chartOptions" [type]="'bar'"></canvas>
+        <!-- Exam Selector Card -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-blue-100 shadow-lg mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                        Select Exam to Analyze
+                    </label>
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400"></i>
+                        <select [(ngModel)]="selectedExamId" (change)="onExamChange()"
+                            class="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700">
+                            <option value="" disabled selected>Choose an exam...</option>
+                            <option *ngFor="let exam of exams" [value]="exam.id" class="py-2">
+                                {{ exam.name }}
+                            </option>
+                        </select>
+                        <i
+                            class="fas fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-400"></i>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500 bg-blue-50 px-4 py-3 rounded-lg">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    {{ exams.length }} exams available
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div *ngIf="analytics?.topPerformers?.length" class="mb-8">
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-2 border border-blue-100 shadow-lg">
+            <div class="flex flex-wrap gap-1">
+                <button (click)="activeTab = 'overview'"
+                    class="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200"
+                    [class]="activeTab === 'overview' 
+                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' 
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'">
+                    <i class="fas fa-chart-pie"></i>
+                    <span class="hidden sm:inline">Overview</span>
+                </button>
+                <button (click)="activeTab = 'performers'"
+                    class="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200"
+                    [class]="activeTab === 'performers' 
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg' 
+                        : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50'">
+                    <i class="fas fa-medal"></i>
+                    <span class="hidden sm:inline">Top Performers</span>
+                </button>
+                <button (click)="activeTab = 'subjects'"
+                    class="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200"
+                    [class]="activeTab === 'subjects' 
+                        ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' 
+                        : 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50'">
+                    <i class="fas fa-book"></i>
+                    <span class="hidden sm:inline">Subjects</span>
+                </button>
+                <button (click)="activeTab = 'comparison'"
+                    class="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-all duration-200"
+                    [class]="activeTab === 'comparison' 
+                        ? 'bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-lg' 
+                        : 'text-gray-600 hover:text-violet-600 hover:bg-violet-50'">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="hidden sm:inline">Compare</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p class="text-gray-600">Loading exam analytics...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && (!analytics || !analytics.topPerformers.length)"
+        class="text-center py-16 bg-white/80 backdrop-blur-sm rounded-2xl border border-blue-100 shadow-lg">
+        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-chart-bar text-4xl text-blue-500"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Analytics Available</h3>
+        <p class="text-gray-500 max-w-md mx-auto mb-6">
+            Select an exam to view performance analytics, top performers, and subject analysis.
+        </p>
+    </div>
+
+    <!-- Content Area -->
+    <div *ngIf="!loading && analytics?.topPerformers?.length">
+        <!-- Overview Tab -->
+        <!-- Update the Stats Grid in your HTML template -->
+        <div *ngIf="activeTab === 'overview'" class="space-y-8">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Average Score -->
+                <div
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium mb-2">Average Score</p>
+                            <h3 class="text-3xl font-bold text-gray-800">
+                                {{ getSafeAverageScore() | number:'1.0-1' }}%
+                            </h3>
+                            <div class="mt-2 flex items-center gap-2">
+                                <div class="w-full bg-blue-100 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" [style.width.%]="getSafeAverageScore()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl text-white shadow-lg">
+                            <i class="fas fa-chart-bar text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Highest Score (now Highest Mean Score) -->
+                <div
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-emerald-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium mb-2">Highest Score</p>
+                            <h3 class="text-3xl font-bold text-gray-800">{{ examStats.highestMeanScore | number:'1.0-1'
+                                }}%</h3>
+                            <p class="text-sm text-emerald-600 mt-2">
+                                <i class="fas fa-trophy mr-1"></i> Top performer
+                            </p>
+                        </div>
+                        <div
+                            class="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl text-white shadow-lg">
+                            <i class="fas fa-trophy text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pass Rate -->
+                <div
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-green-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium mb-2">Pass Rate</p>
+                            <h3 class="text-3xl font-bold text-gray-800">{{ examStats.passRate | number:'1.0-1' }}%</h3>
+                            <p class="text-sm text-green-600 mt-2">
+                                <i class="fas fa-users mr-1"></i> {{ examStats.totalStudents }} students
+                            </p>
+                        </div>
+                        <div class="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl text-white shadow-lg">
+                            <i class="fas fa-check-circle text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Students -->
+                <div
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-violet-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium mb-2">Total Students</p>
+                            <h3 class="text-3xl font-bold text-gray-800">{{ examStats.totalStudents }}</h3>
+                            <p class="text-sm text-violet-600 mt-2">
+                                <i class="fas fa-user-graduate mr-1"></i> Participated
+                            </p>
+                        </div>
+                        <div
+                            class="p-3 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl text-white shadow-lg">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rest of your HTML remains the same -->
+        </div>
+
+        <!-- Top Performers Tab -->
+        <div *ngIf="activeTab === 'performers'" class="space-y-8">
+            <!-- Top Performers Table -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-5 border-b border-blue-100">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                            <div class="p-2 bg-white rounded-lg shadow-sm">
+                                <i class="fas fa-medal text-amber-600"></i>
+                            </div>
+                            Top 5 Performers
+                            <span class="text-sm font-normal text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                {{ analytics?.topPerformers?.length || 0 }} students
+                            </span>
+                        </h3>
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-sort-amount-down-alt text-blue-500 mr-2"></i>
+                            Ranked by score
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-blue-50">
+                        <thead class="bg-blue-50/30">
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                    Rank
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                    Student
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                    Total Score
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                    Mean Score
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                    Grade
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-blue-50">
+                            <tr *ngFor="let performer of analytics!.topPerformers; let i = index"
+                                class="hover:bg-blue-50/30 transition-colors duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative">
+                                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold
+                                                {{ i === 0 ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' : 
+                                                   i === 1 ? 'bg-gray-100 text-gray-800 border-2 border-gray-300' : 
+                                                   i === 2 ? 'bg-amber-100 text-amber-800 border-2 border-amber-300' : 
+                                                   'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                                                {{ i + 1 }}
+                                            </div>
+                                            <div *ngIf="i < 3"
+                                                class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-current flex items-center justify-center">
+                                                <i class="fas fa-crown text-xs text-white"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-user text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-gray-900">{{ performer.student?.name || 'N/A'
+                                                }}</div>
+                                            <div class="text-sm text-gray-500">Student</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- Find this section in your HTML template -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-xl font-bold text-gray-900">
+                                        {{ parseTotalScore(performer.totalScore) | number:'1.0-1' }}
+                                        <!-- Removed the % symbol from total score -->
+                                    </div>
+                                    <div class="text-xs text-gray-500">Out of maximum marks</div>
+                                </td>
+
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-lg font-semibold text-gray-700">
+                                        {{ parseMeanScore(performer.meanScore) | number:'1.0-1' }}%
+                                        <!-- Keep % symbol for mean score -->
+                                    </div>
+                                    <div class="text-xs text-gray-500">Out of 100%</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-3 py-1.5 rounded-full {{ getGradeColor(performer.grade) }} font-medium text-sm">
+                                        {{ performer.grade || 'N/A' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Top Performers Chart -->
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <i class="fas fa-chart-bar text-blue-600"></i>
+                        </div>
+                        Performance Visualization
+                    </h3>
+                    <div class="h-64">
+                        <canvas baseChart [data]="topPerformersChart" [options]="chartOptions" [type]="'bar'"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stats Summary section - Update these lines -->
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <i class="fas fa-info-circle text-emerald-600"></i>
+                        </div>
+                        Performance Insights
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-blue-50/50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-blue-100 rounded-lg">
+                                    <i class="fas fa-bullseye text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-700">Score Range</div>
+                                    <div class="text-sm text-gray-500">{{ examStats.lowestMeanScore | number:'1.0-1' }}%
+                                        - {{
+                                        examStats.highestMeanScore | number:'1.0-1' }}%</div>
+                                </div>
+                            </div>
+                            <div class="text-lg font-bold text-blue-700">
+                                {{ (examStats.highestMeanScore - examStats.lowestMeanScore).toFixed(1) }}%
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-emerald-50/50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-emerald-100 rounded-lg">
+                                    <i class="fas fa-chart-line text-emerald-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-700">Average Performance</div>
+                                    <div class="text-sm text-gray-500">Mean score across all students</div>
+                                </div>
+                            </div>
+                            <div class="text-lg font-bold text-emerald-700">
+                                {{ examStats.averageMeanScore | number:'1.0-1' }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject Analysis Tab -->
+        <div *ngIf="activeTab === 'subjects'" class="space-y-8">
+            <!-- Subject Cards Grid -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <i class="fas fa-book text-emerald-600"></i>
+                        </div>
+                        Subject Performance Analysis
+                        <span class="text-sm font-normal text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                            {{ getSubjectKeys().length }} subjects
+                        </span>
+                    </h3>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-sort-alpha-down text-emerald-500 mr-2"></i>
+                        Sorted alphabetically
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div *ngFor="let subject of getSubjectKeys()"
+                        class="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-bold text-gray-800 text-lg">{{ subject }}</h4>
+                            <span
+                                class="px-3 py-1 rounded-full {{ getWeakSubjectColor(getSubjectScore(subject)) }} font-medium">
+                                {{ getSubjectScore(subject) }}%
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                                <span>Performance</span>
+                                <span>{{ getSubjectScore(subject) }}%</span>
+                            </div>
+                            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500" [ngClass]="{
+                                         'bg-emerald-500': getSubjectScore(subject) >= 70,
+                                         'bg-amber-500': getSubjectScore(subject) >= 50 && getSubjectScore(subject) < 70,
+                                         'bg-red-500': getSubjectScore(subject) < 50
+                                     }" [style.width.%]="getSubjectScore(subject)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Indicator -->
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm">
+                                <span *ngIf="getSubjectScore(subject) >= 70" class="text-emerald-600 font-medium">
+                                    <i class="fas fa-check-circle mr-1"></i> Strong
+                                </span>
+                                <span *ngIf="getSubjectScore(subject) >= 50 && getSubjectScore(subject) < 70"
+                                    class="text-amber-600 font-medium">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Average
+                                </span>
+                                <span *ngIf="getSubjectScore(subject) < 50" class="text-red-600 font-medium">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Needs Improvement
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                Class average
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Comparison Chart -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-chart-bar text-blue-600"></i>
+                    </div>
+                    Subject Score Comparison
+                </h3>
+                <div class="h-80">
+                    <canvas baseChart [data]="weakSubjectsChart" [options]="chartOptions" [type]="'bar'"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exam Comparison Tab -->
+        <div *ngIf="activeTab === 'comparison'" class="space-y-8">
+            <!-- Comparison Selection Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <div class="p-2 bg-violet-100 rounded-lg">
+                        <i class="fas fa-chart-line text-violet-600"></i>
+                    </div>
+                    Compare Across Multiple Exams
+                </h3>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-layer-group text-violet-500 mr-2"></i>
+                        Select Exams to Compare (minimum 2 required)
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+                        <div *ngFor="let exam of exams" class="relative group cursor-pointer">
+                            <input type="checkbox" [id]="'compare-' + exam.id"
+                                [checked]="comparisonExams.includes(exam.id)" (change)="toggleExamComparison(exam.id)"
+                                class="sr-only peer">
+                            <label [for]="'compare-' + exam.id"
+                                class="flex flex-col items-center justify-center p-4 border-2 border-gray-200 rounded-xl bg-white hover:border-violet-300 hover:bg-violet-50 peer-checked:border-violet-500 peer-checked:bg-violet-50 peer-checked:shadow-lg transition-all duration-200">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center mb-2 group-hover:bg-violet-200 peer-checked:bg-violet-500 transition-colors">
+                                    <i
+                                        class="fas fa-file-alt text-violet-600 group-hover:text-violet-700 peer-checked:text-white"></i>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700 text-center truncate w-full">
+                                    {{ exam.name }}
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-gray-200">
+                        <div class="text-sm text-gray-600 flex items-center gap-2">
+                            <span class="px-3 py-1.5 bg-violet-100 text-violet-700 rounded-full font-medium">
+                                {{ comparisonExams.length }} exam(s) selected
+                            </span>
+                            <span *ngIf="comparisonExams.length < 2" class="text-amber-600">
+                                <i class="fas fa-exclamation-circle"></i> Select 2 or more exams
+                            </span>
+                        </div>
+                        <button (click)="compareSelectedExams()"
+                            [disabled]="comparisonExams.length < 2 || comparisonLoading"
+                            class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-violet-500 to-violet-600 text-white px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:from-violet-600 hover:to-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium">
+                            <i *ngIf="!comparisonLoading" class="fas fa-chart-line"></i>
+                            <i *ngIf="comparisonLoading" class="fas fa-spinner fa-spin"></i>
+                            {{ comparisonLoading ? 'Comparing...' : 'Compare Selected Exams' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Results -->
+            <div *ngIf="hasComparisonData()" class="space-y-8">
+                <!-- Chart Card -->
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <i class="fas fa-chart-line text-blue-600"></i>
+                        </div>
+                        Performance Trends Across Exams
+                    </h3>
+                    <div class="h-96">
+                        <canvas baseChart [data]="comparisonChartData" [options]="comparisonChartOptions"
+                            [type]="'line'"></canvas>
+                    </div>
+                </div>
+
+                <!-- Comparison Table -->
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 px-6 py-5 border-b border-blue-100">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-3">
+                                <div class="p-2 bg-white rounded-lg shadow-sm">
+                                    <i class="fas fa-table text-blue-600"></i>
+                                </div>
+                                Detailed Comparison
+                                <span class="text-sm font-normal text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                                    {{ getComparisonClassKeys().length }} classes
+                                </span>
+                            </h3>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-filter text-blue-500 mr-2"></i>
+                                Class-wise average scores
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-blue-50">
+                            <thead class="bg-blue-50/30">
+                                <tr>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                        Class
+                                    </th>
+                                    <th *ngFor="let examId of comparisonExams"
+                                        class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                                        {{ getExamName(examId) }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-blue-50">
+                                <tr *ngFor="let className of getComparisonClassKeys()"
+                                    class="hover:bg-blue-50/30 transition-colors duration-150">
+                                    <td class="px-6 py-4 font-medium text-gray-900">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-10 h-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-school text-blue-600"></i>
+                                            </div>
+                                            <span>{{ className }}</span>
+                                        </div>
+                                    </td>
+                                    <td *ngFor="let examId of comparisonExams" class="px-6 py-4">
+                                        <div *ngIf="getClassExamData(className, examId)" class="space-y-2">
+                                            <div class="text-xl font-bold text-gray-900">
+                                                {{ getClassExamData(className, examId).average }}%
+                                            </div>
+                                            <div class="flex items-center gap-2 text-sm text-gray-500">
+                                                <i class="fas fa-users"></i>
+                                                <span>{{ getClassExamData(className, examId).count }} students</span>
+                                            </div>
+                                        </div>
+                                        <div *ngIf="!getClassExamData(className, examId)" class="text-center py-3">
+                                            <div class="text-gray-400">
+                                                <i class="fas fa-ban text-lg mb-1"></i>
+                                                <div class="text-sm">No data</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

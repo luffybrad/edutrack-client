@@ -89,7 +89,7 @@ export class ResultService {
   /** Upload Excel Results */
   uploadResults(
     examId: string,
-    file: File
+    file: File,
   ): Observable<
     ApiResponse<{ created: number; updated: number; deleted: number }>
   > {
@@ -105,7 +105,7 @@ export class ResultService {
   /** Get results per exam */
   getByExam(
     examId: string,
-    classId?: string
+    classId?: string,
   ): Observable<ApiResponse<ExamResultsResponse>> {
     const url = classId
       ? `${this.baseUrl}/exam/${examId}/class/${classId}`
@@ -121,48 +121,37 @@ export class ResultService {
       `${this.baseUrl}/student/${studentId}`,
       {
         withCredentials: true,
-      }
+      },
     );
   }
 
   /** Compare student results across exams */
   compareStudent(
-    studentId: string
+    studentId: string,
   ): Observable<ApiResponse<StudentComparison[]>> {
     return this.http.get<ApiResponse<StudentComparison[]>>(
       `${this.baseUrl}/student/${studentId}/compare`,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
   /** Track student subject progression */
   trackSubjectProgression(
-    studentId: string
+    studentId: string,
   ): Observable<ApiResponse<SubjectProgression>> {
     return this.http.get<ApiResponse<SubjectProgression>>(
       `${this.baseUrl}/student/${studentId}/progression`,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
   /** Student improvement (exam-to-exam mean score delta) */
   studentImprovement(
-    studentId: string
+    studentId: string,
   ): Observable<ApiResponse<StudentImprovement[] | null>> {
     return this.http.get<ApiResponse<StudentImprovement[] | null>>(
       `${this.baseUrl}/student/${studentId}/improvement`,
-      { withCredentials: true }
-    );
-  }
-
-  /** Analyze a subject in an exam */
-  analyzeSubject(
-    examId: string,
-    subject: string
-  ): Observable<ApiResponse<SubjectAnalysis>> {
-    return this.http.get<ApiResponse<SubjectAnalysis>>(
-      `${this.baseUrl}/analyze/${examId}/${subject}`,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
@@ -170,28 +159,39 @@ export class ResultService {
   getExamAnalytics(examId: string): Observable<ApiResponse<ExamAnalytics>> {
     return this.http.get<ApiResponse<ExamAnalytics>>(
       `${this.baseUrl}/analytics/${examId}`,
-      { withCredentials: true }
-    );
-  }
-
-  /** Subject difficulty index across all exams */
-  getSubjectDifficulty(
-    subject: string
-  ): Observable<ApiResponse<number | null>> {
-    return this.http.get<ApiResponse<number | null>>(
-      `${this.baseUrl}/subject/${subject}/difficulty`,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
   /** Compare classes across multiple exams */
   compareClassesAcrossExams(
-    examIds: string[]
+    examIds: string[],
   ): Observable<ApiResponse<Record<string, any>>> {
     return this.http.post<ApiResponse<Record<string, any>>>(
       `${this.baseUrl}/classes/compare`,
       { examIds },
-      { withCredentials: true }
+      { withCredentials: true },
+    );
+  }
+
+  /** Analyze a subject in an exam */
+  analyzeSubject(
+    examId: string,
+    subject: string,
+  ): Observable<ApiResponse<SubjectAnalysis>> {
+    return this.http.get<ApiResponse<SubjectAnalysis>>(
+      `${this.baseUrl}/analyze/${examId}/${subject}`,
+      { withCredentials: true },
+    );
+  }
+
+  /** Subject difficulty index across all exams */
+  getSubjectDifficulty(
+    subject: string,
+  ): Observable<ApiResponse<number | null>> {
+    return this.http.get<ApiResponse<number | null>>(
+      `${this.baseUrl}/subject/${subject}/difficulty`,
+      { withCredentials: true },
     );
   }
 
@@ -213,7 +213,7 @@ export class ResultService {
   downloadStudentReportPDF(studentId: string, fileName?: string): void {
     this.downloadFile(
       `${this.baseUrl}/report/student/${studentId}/pdf`,
-      fileName || `Student-${studentId}-Report.pdf`
+      fileName || `Student-${studentId}-Report.pdf`,
     );
   }
 
@@ -221,7 +221,7 @@ export class ResultService {
   downloadExamSummaryExcel(examId: string, fileName?: string): void {
     this.downloadFile(
       `${this.baseUrl}/report/exam/${examId}/summary/excel`,
-      fileName || `Exam-${examId}-Summary.xlsx`
+      fileName || `Exam-${examId}-Summary.xlsx`,
     );
   }
 
@@ -229,7 +229,7 @@ export class ResultService {
   downloadSubjectAnalysisExcel(examId: string, fileName?: string): void {
     this.downloadFile(
       `${this.baseUrl}/report/exam/${examId}/subjects/excel`,
-      fileName || `Exam-${examId}-Subjects.xlsx`
+      fileName || `Exam-${examId}-Subjects.xlsx`,
     );
   }
 
@@ -237,7 +237,7 @@ export class ResultService {
   downloadClassPerformancePDF(examId: string, fileName?: string): void {
     this.downloadFile(
       `${this.baseUrl}/report/exam/${examId}/class/pdf`,
-      fileName || `Exam-${examId}-Class-Performance.pdf`
+      fileName || `Exam-${examId}-Class-Performance.pdf`,
     );
   }
 }
