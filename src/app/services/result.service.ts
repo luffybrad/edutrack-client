@@ -195,49 +195,177 @@ export class ResultService {
     );
   }
 
-  /** ================= File Downloads ================= */
-  private downloadFile(url: string, fileName: string): void {
-    this.http
-      .get(url, { responseType: 'blob', withCredentials: true })
-      .subscribe((blob) => {
-        const a = document.createElement('a');
-        const objectUrl = URL.createObjectURL(blob);
-        a.href = objectUrl;
-        a.download = fileName;
-        a.click();
-        URL.revokeObjectURL(objectUrl);
-      });
+  /** Generate Student Report PDF */
+  generateStudentReportPDF(studentId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/students/${studentId}/report-pdf`, {
+      responseType: 'blob',
+      withCredentials: true,
+    });
   }
 
-  /** Generate and download student report PDF */
-  downloadStudentReportPDF(studentId: string, fileName?: string): void {
-    this.downloadFile(
-      `${this.baseUrl}/report/student/${studentId}/pdf`,
-      fileName || `Student-${studentId}-Report.pdf`,
+  /** Generate Exam Summary PDF */
+  generateExamSummaryPDF(examId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/exams/${examId}/summary-pdf`, {
+      responseType: 'blob',
+      withCredentials: true,
+    });
+  }
+
+  /** Generate Subject Analysis PDF */
+  generateSubjectAnalysisPDF(examId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/exams/${examId}/subject-analysis-pdf`,
+      {
+        responseType: 'blob',
+        withCredentials: true,
+      },
     );
   }
 
-  /** Generate and download exam summary Excel */
-  downloadExamSummaryExcel(examId: string, fileName?: string): void {
-    this.downloadFile(
-      `${this.baseUrl}/report/exam/${examId}/summary/excel`,
-      fileName || `Exam-${examId}-Summary.xlsx`,
+  /** Generate Class Performance PDF */
+  generateClassPerformancePDF(examId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/exams/${examId}/class-performance-pdf`,
+      {
+        responseType: 'blob',
+        withCredentials: true,
+      },
     );
   }
 
-  /** Generate and download subject analysis Excel */
-  downloadSubjectAnalysisExcel(examId: string, fileName?: string): void {
-    this.downloadFile(
-      `${this.baseUrl}/report/exam/${examId}/subjects/excel`,
-      fileName || `Exam-${examId}-Subjects.xlsx`,
+  /** Generate Comprehensive Performance PDF */
+  generateComprehensivePerformancePDF(examId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/exams/${examId}/comprehensive-pdf`, {
+      responseType: 'blob',
+      withCredentials: true,
+    });
+  }
+
+  /** Generate Bulk Exam Reports (metadata) */
+  generateBulkExamReportsPDF(examIds: string[]): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.baseUrl}/exams/bulk-reports-pdf`,
+      { examIds },
+      { withCredentials: true },
     );
   }
 
-  /** Generate and download class performance PDF */
-  downloadClassPerformancePDF(examId: string, fileName?: string): void {
-    this.downloadFile(
-      `${this.baseUrl}/report/exam/${examId}/class/pdf`,
-      fileName || `Exam-${examId}-Class-Performance.pdf`,
+  /** Generate Combined Exam Reports PDF */
+  generateCombinedExamReportsPDF(examIds: string[]): Observable<Blob> {
+    return this.http.post(
+      `${this.baseUrl}/exams/combined-reports-pdf`,
+      { examIds },
+      {
+        responseType: 'blob',
+        withCredentials: true,
+      },
+    );
+  }
+
+  /** Helper method to download PDF blob */
+  downloadPDF(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+
+    // Append to body, click, and remove
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up URL object
+    window.URL.revokeObjectURL(url);
+  }
+
+  /** Helper method to handle PDF download with loading state */
+  downloadPDFWithLoading(
+    pdfObservable: Observable<Blob>,
+    filename: string,
+    loadingCallback?: (isLoading: boolean) => void,
+  ): void {
+    if (loadingCallback) loadingCallback(true);
+
+    pdfObservable.subscribe({
+      next: (blob) => {
+        this.downloadPDF(blob, filename);
+        if (loadingCallback) loadingCallback(false);
+      },
+      error: (error) => {
+        console.error('Failed to download PDF:', error);
+        if (loadingCallback) loadingCallback(false);
+        // You might want to show an error toast here
+      },
+    });
+  }
+
+  /** Convenience method to download student report */
+  downloadStudentReport(
+    studentId: string,
+    studentName?: string,
+    loadingCallback?: (isLoading: boolean) => void,
+  ): void {
+    const filename = `student-report-${studentName || studentId}.pdf`;
+    this.downloadPDFWithLoading(
+      this.generateStudentReportPDF(studentId),
+      filename,
+      loadingCallback,
+    );
+  }
+
+  /** Convenience method to download exam summary */
+  downloadExamSummary(
+    examId: string,
+    examName?: string,
+    loadingCallback?: (isLoading: boolean) => void,
+  ): void {
+    const filename = `exam-summary-${examName || examId}.pdf`;
+    this.downloadPDFWithLoading(
+      this.generateExamSummaryPDF(examId),
+      filename,
+      loadingCallback,
+    );
+  }
+
+  /** Convenience method to download subject analysis */
+  downloadSubjectAnalysis(
+    examId: string,
+    examName?: string,
+    loadingCallback?: (isLoading: boolean) => void,
+  ): void {
+    const filename = `subject-analysis-${examName || examId}.pdf`;
+    this.downloadPDFWithLoading(
+      this.generateSubjectAnalysisPDF(examId),
+      filename,
+      loadingCallback,
+    );
+  }
+
+  /** Convenience method to download class performance report */
+  downloadClassPerformance(
+    examId: string,
+    examName?: string,
+    loadingCallback?: (isLoading: boolean) => void,
+  ): void {
+    const filename = `class-performance-${examName || examId}.pdf`;
+    this.downloadPDFWithLoading(
+      this.generateClassPerformancePDF(examId),
+      filename,
+      loadingCallback,
+    );
+  }
+
+  /** Convenience method to download comprehensive report */
+  downloadComprehensiveReport(
+    examId: string,
+    examName?: string,
+    loadingCallback?: (isLoading: boolean) => void,
+  ): void {
+    const filename = `comprehensive-report-${examName || examId}.pdf`;
+    this.downloadPDFWithLoading(
+      this.generateComprehensivePerformancePDF(examId),
+      filename,
+      loadingCallback,
     );
   }
 }

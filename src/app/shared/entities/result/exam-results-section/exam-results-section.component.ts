@@ -28,7 +28,7 @@ export class ExamResultsSectionComponent implements OnInit {
 
   constructor(
     private resultService: ResultService,
-    private examService: ExamService
+    private examService: ExamService,
   ) {}
 
   ngOnInit() {
@@ -67,13 +67,13 @@ export class ExamResultsSectionComponent implements OnInit {
 
   downloadSummary() {
     if (this.selectedExamId) {
-      this.resultService.downloadExamSummaryExcel(this.selectedExamId);
+      this.resultService.downloadExamSummary(this.selectedExamId);
     }
   }
 
   downloadClassPerformance() {
     if (this.selectedExamId) {
-      this.resultService.downloadClassPerformancePDF(this.selectedExamId);
+      this.resultService.downloadClassPerformance(this.selectedExamId);
     }
   }
 }
