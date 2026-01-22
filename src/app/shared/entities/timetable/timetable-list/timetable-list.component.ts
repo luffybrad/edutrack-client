@@ -127,7 +127,17 @@ export class TimetableListComponent implements OnInit {
   }
 
   goToGenerate() {
-    this.router.navigate(['/dashboard/admin/timetables/generate']);
+    const currentUrl = this.router.url;
+
+    // Check if we're in admin or teacher dashboard
+    if (currentUrl.includes('/dashboard/admin')) {
+      this.router.navigate(['/dashboard/admin/timetables/generate']);
+    } else if (currentUrl.includes('/dashboard/teacher')) {
+      this.router.navigate(['/dashboard/teacher/timetables/generate']);
+    } else {
+      // Default fallback
+      this.router.navigate(['/dashboard/admin/timetables/generate']);
+    }
   }
 
   selectClass(event: Event) {

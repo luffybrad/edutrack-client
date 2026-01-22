@@ -17,6 +17,9 @@ import { ClassService, Class } from '../../../../services/class.service';
 import { SubjectService, Subject } from '../../../../services/subject.service';
 import { ToastService } from '../../../utils/toast.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../../auth/auth.service';
+import { RoleType } from '../../../../auth/auth.routes';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-timetable-generate',
@@ -33,6 +36,10 @@ export class TimetableGenerateComponent implements OnInit {
   loading = false;
   error: string | null = null;
   saving = false;
+  teacherClassId: string | null = null;
+
+  role$: Observable<RoleType | null>;
+  RoleType = RoleType;
 
   readonly weekDays: (keyof TimetableSchedule)[] = [
     'MONDAY',
@@ -48,8 +55,13 @@ export class TimetableGenerateComponent implements OnInit {
     private classService: ClassService,
     private subjectService: SubjectService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
   ) {
+    this.role$ = this.authService
+      .getProfile$()
+      .pipe(map((profile) => profile?.role ?? null));
+
     this.generateForm = this.fb.group({
       classId: [''],
       subjectIds: [[]], // array of selected subject IDs
@@ -76,6 +88,13 @@ export class TimetableGenerateComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authService.getProfile().subscribe();
+
+    // Get teacher's classId from profile
+    this.authService.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+    });
+
     this.loadClasses();
 
     // Whenever class selection changes, fetch subjects
@@ -90,7 +109,16 @@ export class TimetableGenerateComponent implements OnInit {
 
   private loadClasses() {
     this.classService.getAll().subscribe({
-      next: (res) => (this.classes = res.data),
+      next: (res) => {
+        let classes = res.data || [];
+
+        // Filter classes by teacher's class
+        if (this.teacherClassId) {
+          classes = classes.filter((cls) => cls.id === this.teacherClassId);
+        }
+
+        this.classes = classes;
+      },
       error: () => (this.error = 'Failed to load classes'),
     });
   }

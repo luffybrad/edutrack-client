@@ -44,6 +44,10 @@ export class ResultsDashboardComponent implements OnInit {
   role$!: Observable<RoleType | null>;
   RoleType = RoleType;
 
+  guardianId: string | null = null;
+  teacherClassId: string | null = null;
+  filteredStudents: Student[] = [];
+
   constructor(
     private examService: ExamService,
     private studentService: StudentService,
@@ -56,6 +60,17 @@ export class ResultsDashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.authService.getProfile().subscribe();
+
+    // Get teacher's classId from profile
+    this.authService.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+      // Get guardian ID if user is a guardian
+      if (profile?.role === RoleType.Guardian) {
+        this.guardianId = profile.id;
+      }
+    });
+
     this.loadExams();
     this.loadStudents();
   }
@@ -68,7 +83,25 @@ export class ResultsDashboardComponent implements OnInit {
 
   loadStudents() {
     this.studentService.getAll().subscribe((res) => {
-      this.students = res.data || [];
+      let students = res.data || [];
+
+      // Filter students by teacher's class
+      if (this.teacherClassId) {
+        students = students.filter(
+          (s) =>
+            s.class?.id === this.teacherClassId ||
+            s.classId === this.teacherClassId,
+        );
+      }
+
+      // Filter students by guardian ID (for guardians)
+      if (this.guardianId) {
+        students = students.filter((s) => s.guardianId === this.guardianId);
+      }
+
+      this.students = students.map((s) => ({
+        ...s,
+      }));
     });
   }
 
@@ -96,7 +129,20 @@ export class ResultsDashboardComponent implements OnInit {
           if (typeof r.student.class === 'object') {
             const cls = r.student.class as any;
             if (cls.form && cls.stream) {
-              classSet.add(`Form ${cls.form}${cls.stream}`);
+              const className = `Form ${cls.form} ${cls.stream}`;
+
+              // If teacher is logged in, only add their class
+              if (this.teacherClassId) {
+                if (
+                  cls.id === this.teacherClassId ||
+                  cls.id === this.teacherClassId
+                ) {
+                  classSet.add(className);
+                }
+              } else {
+                // Admin or guardian - add all classes
+                classSet.add(className);
+              }
             } else {
               classSet.add(cls.name || cls.id || 'Unknown Class');
             }
@@ -105,6 +151,7 @@ export class ResultsDashboardComponent implements OnInit {
           }
         }
       });
+
       this.classes = Array.from(classSet).sort();
     });
   }

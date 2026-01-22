@@ -33,6 +33,8 @@
         </div>
     </div>
 
+
+
     <!-- Individual Report Actions -->
     <div class="bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-blue-100 shadow-sm mb-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Individual Reports</h3>
@@ -69,197 +71,211 @@
             </div>
 
             <!-- Exam Summary -->
-            <div
-                class="bg-gradient-to-br from-white to-emerald-50 border border-emerald-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-emerald-100 rounded-lg">
-                        <i class="fas fa-chart-bar text-emerald-600"></i>
+            <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                <div
+                    class="bg-gradient-to-br from-white to-emerald-50 border border-emerald-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <i class="fas fa-chart-bar text-emerald-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Exam Summary</h4>
+                            <p class="text-sm text-gray-600">Overall exam statistics</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-800">Exam Summary</h4>
-                        <p class="text-sm text-gray-600">Overall exam statistics</p>
+                    <div class="flex gap-2">
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="downloadExamSummary()" [disabled]="!examId || loading"
+                            title="Download exam summary">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg hover:bg-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="previewExamSummary()" [disabled]="!examId || loading" title="Preview exam summary">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                    <div *ngIf="examName" class="text-xs text-gray-500 mt-2 truncate">
+                        {{ examName }}
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="downloadExamSummary()" [disabled]="!examId || loading" title="Download exam summary">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg hover:bg-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="previewExamSummary()" [disabled]="!examId || loading" title="Preview exam summary">
-                        <i class="fas fa-eye"></i> Preview
-                    </button>
-                </div>
-                <div *ngIf="examName" class="text-xs text-gray-500 mt-2 truncate">
-                    {{ examName }}
-                </div>
-            </div>
+            </ng-container>
 
-            <!-- Subject Analysis -->
-            <div
-                class="bg-gradient-to-br from-white to-amber-50 border border-amber-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-amber-100 rounded-lg">
-                        <i class="fas fa-book text-amber-600"></i>
+            <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                <!-- Subject Analysis -->
+                <div
+                    class="bg-gradient-to-br from-white to-amber-50 border border-amber-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-amber-100 rounded-lg">
+                            <i class="fas fa-book text-amber-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Subject Analysis</h4>
+                            <p class="text-sm text-gray-600">Detailed subject performance</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-800">Subject Analysis</h4>
-                        <p class="text-sm text-gray-600">Detailed subject performance</p>
+                    <div class="flex gap-2">
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-amber-600 text-white px-3 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="downloadSubjectAnalysis()" [disabled]="!examId || loading"
+                            title="Download subject analysis">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-amber-100 text-amber-700 px-3 py-2 rounded-lg hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="previewSubjectAnalysis()" [disabled]="!examId || loading"
+                            title="Preview subject analysis">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                    <div *ngIf="examName" class="text-xs text-gray-500 mt-2 truncate">
+                        {{ examName }}
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-amber-600 text-white px-3 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="downloadSubjectAnalysis()" [disabled]="!examId || loading"
-                        title="Download subject analysis">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-amber-100 text-amber-700 px-3 py-2 rounded-lg hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="previewSubjectAnalysis()" [disabled]="!examId || loading"
-                        title="Preview subject analysis">
-                        <i class="fas fa-eye"></i> Preview
-                    </button>
-                </div>
-                <div *ngIf="examName" class="text-xs text-gray-500 mt-2 truncate">
-                    {{ examName }}
-                </div>
-            </div>
+            </ng-container>
 
-            <!-- Class Performance -->
-            <div
-                class="bg-gradient-to-br from-white to-purple-50 border border-purple-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-purple-100 rounded-lg">
-                        <i class="fas fa-school text-purple-600"></i>
+            <ng-container *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) == RoleType.Teacher">
+                <!-- Class Performance -->
+                <div
+                    class="bg-gradient-to-br from-white to-purple-50 border border-purple-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <i class="fas fa-school text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Class Performance</h4>
+                            <p class="text-sm text-gray-600">Class-wise performance analysis</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-800">Class Performance</h4>
-                        <p class="text-sm text-gray-600">Class-wise performance analysis</p>
+                    <div class="flex gap-2">
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="downloadClassPerformance()" [disabled]="!examId || !selectedClassId || loading"
+                            title="Download class performance report">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-purple-100 text-purple-700 px-3 py-2 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="previewClassPerformance()" [disabled]="!examId || !selectedClassId || loading"
+                            title="Preview class performance report">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                    <div *ngIf="className" class="text-xs text-gray-500 mt-2 truncate">
+                        {{ className }}
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="downloadClassPerformance()" [disabled]="!examId || !selectedClassId || loading"
-                        title="Download class performance report">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-purple-100 text-purple-700 px-3 py-2 rounded-lg hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="previewClassPerformance()" [disabled]="!examId || !selectedClassId || loading"
-                        title="Preview class performance report">
-                        <i class="fas fa-eye"></i> Preview
-                    </button>
-                </div>
-                <div *ngIf="className" class="text-xs text-gray-500 mt-2 truncate">
-                    {{ className }}
-                </div>
-            </div>
+            </ng-container>
 
             <!-- Comprehensive Report -->
-            <div
-                class="bg-gradient-to-br from-white to-violet-50 border border-violet-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-violet-100 rounded-lg">
-                        <i class="fas fa-chart-pie text-violet-600"></i>
+            <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+
+                <div
+                    class="bg-gradient-to-br from-white to-violet-50 border border-violet-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-violet-100 rounded-lg">
+                            <i class="fas fa-chart-pie text-violet-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Comprehensive Report</h4>
+                            <p class="text-sm text-gray-600">Complete exam analysis</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-800">Comprehensive Report</h4>
-                        <p class="text-sm text-gray-600">Complete exam analysis</p>
+                    <div class="flex gap-2">
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="downloadComprehensiveReport()" [disabled]="!examId || loading"
+                            title="Download comprehensive report">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button
+                            class="flex-1 inline-flex items-center justify-center gap-2 bg-violet-100 text-violet-700 px-3 py-2 rounded-lg hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="previewComprehensiveReport()" [disabled]="!examId || loading"
+                            title="Preview comprehensive report">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                    <div *ngIf="examName" class="text-xs text-gray-500 mt-2 truncate">
+                        {{ examName }}
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="downloadComprehensiveReport()" [disabled]="!examId || loading"
-                        title="Download comprehensive report">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                    <button
-                        class="flex-1 inline-flex items-center justify-center gap-2 bg-violet-100 text-violet-700 px-3 py-2 rounded-lg hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="previewComprehensiveReport()" [disabled]="!examId || loading"
-                        title="Preview comprehensive report">
-                        <i class="fas fa-eye"></i> Preview
-                    </button>
-                </div>
-                <div *ngIf="examName" class="text-xs text-gray-500 mt-2 truncate">
-                    {{ examName }}
-                </div>
-            </div>
+            </ng-container>
 
             <!-- Quick Actions -->
-            <div
-                class="bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-gray-100 rounded-lg">
-                        <i class="fas fa-bolt text-gray-600"></i>
+            <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                <div
+                    class="bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-gray-100 rounded-lg">
+                            <i class="fas fa-bolt text-gray-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Quick Actions</h4>
+                            <p class="text-sm text-gray-600">Batch operations</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-800">Quick Actions</h4>
-                        <p class="text-sm text-gray-600">Batch operations</p>
+                    <div class="space-y-2">
+                        <button
+                            class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="downloadBulkReports()" [disabled]="selectedExamIds.length === 0 || loading"
+                            title="Download selected reports">
+                            <i class="fas fa-download"></i> Bulk Download ({{ getSelectedExamsCount() }})
+                        </button>
+                        <button
+                            class="w-full inline-flex items-center justify-center gap-2 bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                            (click)="downloadCombinedReport()" [disabled]="selectedExamIds.length === 0 || loading"
+                            title="Download combined report">
+                            <i class="fas fa-file-archive"></i> Combined Report
+                        </button>
                     </div>
                 </div>
-                <div class="space-y-2">
-                    <button
-                        class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="downloadBulkReports()" [disabled]="selectedExamIds.length === 0 || loading"
-                        title="Download selected reports">
-                        <i class="fas fa-download"></i> Bulk Download ({{ getSelectedExamsCount() }})
-                    </button>
-                    <button
-                        class="w-full inline-flex items-center justify-center gap-2 bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-                        (click)="downloadCombinedReport()" [disabled]="selectedExamIds.length === 0 || loading"
-                        title="Download combined report">
-                        <i class="fas fa-file-archive"></i> Combined Report
-                    </button>
-                </div>
-            </div>
+            </ng-container>
         </div>
     </div>
 
     <!-- Bulk Operations -->
-    <div class="bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-blue-100 shadow-sm">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Bulk Operations</h3>
+    <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+        <div class="bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-blue-100 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Bulk Operations</h3>
 
-        <div class="mb-4">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-gray-700">Select Exams:</span>
-                    <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                        {{ getSelectedExamsCount() }} of {{ bulkExamIds.length }} selected
-                    </span>
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-700">Select Exams:</span>
+                        <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                            {{ getSelectedExamsCount() }} of {{ bulkExamIds.length }} selected
+                        </span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded"
+                            (click)="selectAllExams()">
+                            Select All
+                        </button>
+                        <button class="text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-1 rounded"
+                            (click)="clearAllExams()">
+                            Clear All
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button class="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded"
-                        (click)="selectAllExams()">
-                        Select All
-                    </button>
-                    <button class="text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-1 rounded"
-                        (click)="clearAllExams()">
-                        Clear All
-                    </button>
-                </div>
-            </div>
 
-            <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
-                <div *ngFor="let examId of bulkExamIds"
-                    class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
-                    <input type="checkbox" [id]="'exam-' + examId" [checked]="selectedExamIds.includes(examId)"
-                        (change)="toggleExamSelection(examId)"
-                        class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    <label [for]="'exam-' + examId" class="text-sm text-gray-700 cursor-pointer">
-                        {{ examId }}
-                    </label>
-                </div>
-                <div *ngIf="bulkExamIds.length === 0" class="text-sm text-gray-500 text-center py-4">
-                    No exams available
+                <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                    <div *ngFor="let examId of bulkExamIds"
+                        class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0">
+                        <input type="checkbox" [id]="'exam-' + examId" [checked]="selectedExamIds.includes(examId)"
+                            (change)="toggleExamSelection(examId)"
+                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <label [for]="'exam-' + examId" class="text-sm text-gray-700 cursor-pointer">
+                            {{ examId }}
+                        </label>
+                    </div>
+                    <div *ngIf="bulkExamIds.length === 0" class="text-sm text-gray-500 text-center py-4">
+                        No exams available
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </ng-container>
 
     <!-- PDF Preview Modal -->
     <div *ngIf="previewMode" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

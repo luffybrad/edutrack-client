@@ -7,6 +7,9 @@ import { ExamService } from '../../../../services/exam.service';
 import { StudentService } from '../../../../services/student.service';
 import { ClassService } from '../../../../services/class.service';
 import { SubjectService } from '../../../../services/subject.service';
+import { AuthService } from '../../../../auth/auth.service';
+import { RoleType } from '../../../../auth/auth.routes';
+import { Observable, map } from 'rxjs';
 
 @Component({
   selector: 'app-reports-section',
@@ -19,6 +22,10 @@ export class ReportsSectionComponent implements OnInit {
   @Input() examId?: string;
   @Input() selectedSubject?: string;
   @Input() selectedClassId?: string;
+
+  guardianId: string | null = null;
+  RoleType = RoleType;
+  role$!: Observable<RoleType | null>;
 
   // Additional data for better UX
   studentName?: string;
@@ -46,9 +53,15 @@ export class ReportsSectionComponent implements OnInit {
     private studentService: StudentService,
     private classService: ClassService,
     private subjectService: SubjectService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
+    this.authService.getProfile().subscribe();
+    this.role$ = this.authService
+      .getProfile$()
+      .pipe(map((p) => p?.role ?? null));
+
     this.loadAdditionalData();
     this.loadAvailableExams();
   }

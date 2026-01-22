@@ -132,7 +132,7 @@
 
 
             <!-- Filters Section -->
-            <ng-container *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher">
+            <ng-container>
                 <div class="bg-white rounded-2xl border border-blue-100 shadow-lg p-6 mb-8">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
@@ -191,52 +191,57 @@
                         </div>
 
                         <!-- Subject Filter -->
-                        <div class="space-y-2" *ngIf="subjects.length">
-                            <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                <i class="fas fa-book text-blue-500"></i>
-                                Subject
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-book-open text-blue-400"></i>
-                                </div>
-                                <select
-                                    class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
-                                    [(ngModel)]="selectedSubject">
-                                    <option [ngValue]="undefined">-- All Subjects --</option>
-                                    <option *ngFor="let sub of subjects" [value]="sub">
-                                        {{ sub }}
-                                    </option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-chevron-down text-blue-400"></i>
+                        <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                            <div class="space-y-2" *ngIf="subjects.length">
+                                <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-book text-blue-500"></i>
+                                    Subject
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-book-open text-blue-400"></i>
+                                    </div>
+                                    <select
+                                        class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
+                                        [(ngModel)]="selectedSubject">
+                                        <option [ngValue]="undefined">-- All Subjects --</option>
+                                        <option *ngFor="let sub of subjects" [value]="sub">
+                                            {{ sub }}
+                                        </option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-blue-400"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </ng-container>
 
                         <!-- Class Filter -->
-                        <div class="space-y-2" *ngIf="classes.length">
-                            <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                <i class="fas fa-school text-blue-500"></i>
-                                Class
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-users-class text-blue-400"></i>
-                                </div>
-                                <select
-                                    class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
-                                    [(ngModel)]="selectedClassId">
-                                    <option [ngValue]="undefined">-- All Classes --</option>
-                                    <option *ngFor="let c of classes" [value]="c">
-                                        {{ c }}
-                                    </option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-chevron-down text-blue-400"></i>
+                        <ng-container
+                            *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher">
+                            <div class="space-y-2" *ngIf="classes.length">
+                                <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-school text-blue-500"></i>
+                                    Class
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-users-class text-blue-400"></i>
+                                    </div>
+                                    <select
+                                        class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
+                                        [(ngModel)]="selectedClassId">
+                                        <option [ngValue]="undefined">-- All Classes --</option>
+                                        <option *ngFor="let c of classes" [value]="c">
+                                            {{ c }}
+                                        </option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-blue-400"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </ng-container>
                     </div>
 
                     <!-- Filter Summary -->
@@ -317,7 +322,7 @@
             </ng-container>
 
             <!-- Reports Section (Full Width) -->
-            <ng-container *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher">
+            <ng-container>
                 <div class="bg-white rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
                     <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-6 py-5 border-b border-blue-100">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -331,10 +336,7 @@
                                     <div class="text-sm text-gray-600">Generate comprehensive reports and exports</div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg">
-                                <i class="fas fa-info-circle"></i>
-                                <span class="text-sm font-medium">Available for all roles</span>
-                            </div>
+
                         </div>
                     </div>
                     <div class="p-6 md:p-8">
