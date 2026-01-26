@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../shared/utils/api-response';
+import { Class } from './class.service';
 
 /* =======================
    Interfaces
@@ -20,7 +21,8 @@ export interface Result {
     id: string;
     admNo: string;
     name: string;
-    class?: string;
+    classId?: string;
+    class?: Class;
   };
 }
 

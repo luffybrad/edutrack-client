@@ -208,21 +208,24 @@
               </div>
 
               <!-- User Profile -->
-              <div class="flex items-center gap-3">
-                <div class="text-right hidden md:block">
-                  <div class="font-medium text-gray-800">
-                    {{ adminName$ | async }}
-                  </div>
-                  <div class="text-xs text-gray-500">
-                    {{ adminEmail$ | async }}
-                  </div>
+              <a routerLink="/dashboard/admin/profile">
+                <div class="flex items-center gap-3">
+                  <div class="text-right hidden md:block">
+                    <div class="font-medium text-gray-800">
+                      {{ adminName$ | async }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ adminEmail$ | async }}
+                    </div>
 
+                  </div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
+                    {{ adminInitials$ | async }}
+                  </div>
                 </div>
-                <div
-                  class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
-                  {{ adminInitials$ | async }}
-                </div>
-              </div>
+              </a>
+
             </div>
           </div>
         </div>

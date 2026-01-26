@@ -76,4 +76,26 @@ export class ExamResultsSectionComponent implements OnInit {
       this.resultService.downloadClassPerformance(this.selectedExamId);
     }
   }
+
+  getGradeColor(grade: string): string {
+    const gradeColors: Record<string, string> = {
+      A: 'bg-emerald-100 text-emerald-800',
+      B: 'bg-blue-100 text-blue-800',
+      C: 'bg-amber-100 text-amber-800',
+      D: 'bg-orange-100 text-orange-800',
+      E: 'bg-red-100 text-red-800',
+      F: 'bg-red-200 text-red-900',
+    };
+    return gradeColors[grade] || 'bg-gray-100 text-gray-800';
+  }
+
+  getSubjectCount(): number {
+    return this.results.length > 0
+      ? Object.keys(this.results[0].subjectScores).length
+      : 0;
+  }
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }

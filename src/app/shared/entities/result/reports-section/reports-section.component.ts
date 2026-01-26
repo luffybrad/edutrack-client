@@ -10,6 +10,8 @@ import { SubjectService } from '../../../../services/subject.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { RoleType } from '../../../../auth/auth.routes';
 import { Observable, map } from 'rxjs';
+import { Exam } from '../../../../services/exam.service';
+import { Student } from '../../../../services/student.service';
 
 @Component({
   selector: 'app-reports-section',
@@ -24,6 +26,9 @@ export class ReportsSectionComponent implements OnInit {
   @Input() selectedClassId?: string;
 
   guardianId: string | null = null;
+  teacherClassId: string | null = null;
+  filteredStudents: Student[] = [];
+
   RoleType = RoleType;
   role$!: Observable<RoleType | null>;
 
@@ -38,14 +43,18 @@ export class ReportsSectionComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
-  // Preview state
-  previewMode = false;
-  previewUrl?: string;
-  previewFilename = '';
-
   // Bulk operations
   bulkExamIds: string[] = [];
   selectedExamIds: string[] = [];
+
+  // Add these new properties for filtering
+  exams: Exam[] = [];
+  students: Student[] = [];
+  subjects: string[] = [];
+  selectedStudentId?: string;
+  classes: Array<{ id: string; displayName: string }> = [];
+
+  selectedExamId: string | undefined;
 
   constructor(
     private resultService: ResultService,
@@ -62,11 +71,208 @@ export class ReportsSectionComponent implements OnInit {
       .getProfile$()
       .pipe(map((p) => p?.role ?? null));
 
+    // Get teacher's classId from profile
+    this.authService.getProfile$().subscribe((profile) => {
+      this.teacherClassId = profile?.classId || null;
+      // Get guardian ID if user is a guardian
+      if (profile?.role === RoleType.Guardian) {
+        this.guardianId = profile.id;
+      }
+
+      // Load data after getting profile
+      this.loadAllData();
+    });
+
     this.loadAdditionalData();
     this.loadAvailableExams();
   }
 
   ngOnChanges() {
+    this.loadAdditionalData();
+  }
+
+  private loadAllData() {
+    this.loadExams();
+    this.loadStudents();
+    this.loadClasses();
+    this.loadSubjects();
+  }
+
+  private loadExams() {
+    this.examService.getAll().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.exams = response.data;
+
+          this.bulkExamIds = this.exams.map((exam) => exam.id!).filter(Boolean);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading exams:', error);
+      },
+    });
+  }
+
+  private loadStudents() {
+    this.studentService.getAll().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          let students = response.data;
+
+          // Filter students by teacher's class
+          if (this.teacherClassId) {
+            students = students.filter(
+              (s) =>
+                s.class?.id === this.teacherClassId ||
+                s.classId === this.teacherClassId,
+            );
+          }
+
+          // Filter students by guardian ID (for guardians)
+          if (this.guardianId) {
+            students = students.filter((s) => s.guardianId === this.guardianId);
+          }
+
+          this.students = students.map((s) => ({
+            ...s,
+          }));
+          this.filteredStudents = [...this.students]; // Keep a copy if needed
+        }
+      },
+      error: (error) => {
+        console.error('Error loading students:', error);
+      },
+    });
+  }
+
+  private loadClasses() {
+    this.classService.getAll().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          let allClasses = response.data;
+
+          // Filter classes for teachers
+          if (this.teacherClassId) {
+            allClasses = allClasses.filter(
+              (cls) => cls.id === this.teacherClassId,
+            );
+          }
+
+          // Store both ID and display name
+          this.classes = allClasses.map((cls) => ({
+            id: cls.id!,
+            displayName: `${cls.form}${cls.stream}`,
+          }));
+        }
+      },
+      error: (error) => {
+        console.error('Error loading classes:', error);
+      },
+    });
+  }
+
+  private loadSubjects() {
+    this.subjectService.getAll().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Assuming subjects have a 'name' property
+          this.subjects = response.data.map((sub) => sub.name);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading subjects:', error);
+      },
+    });
+  }
+
+  onExamChange() {
+    this.examId = this.selectedExamId;
+
+    if (!this.selectedExamId) {
+      this.loadAdditionalData();
+      return;
+    }
+
+    this.selectedSubject = undefined;
+    this.selectedClassId = undefined;
+
+    // Fetch results for this exam to populate subjects and classes dynamically
+    this.resultService.getByExam(this.selectedExamId).subscribe((res) => {
+      const results: any[] = res.data?.results || [];
+
+      // Populate unique subjects
+      const subjectSet = new Set<string>();
+      results.forEach((r) =>
+        Object.keys(r.subjectScores || {}).forEach((s) => subjectSet.add(s)),
+      );
+      this.subjects = Array.from(subjectSet).sort();
+
+      // Populate unique classes - filter by teacher's class if applicable
+      const classSet = new Set<{ id: string; displayName: string }>();
+      results.forEach((r) => {
+        if (r.student?.class) {
+          if (typeof r.student.class === 'object') {
+            const cls = r.student.class;
+            if (cls.form && cls.stream && cls.id) {
+              const classInfo = {
+                id: cls.id,
+                displayName: `${cls.form}${cls.stream}`,
+              };
+
+              // If teacher is logged in, only add their class
+              if (this.teacherClassId) {
+                if (cls.id === this.teacherClassId) {
+                  classSet.add(classInfo);
+                }
+              } else {
+                // Admin or guardian - add all classes
+                classSet.add(classInfo);
+              }
+            }
+          }
+        }
+      });
+
+      this.classes = Array.from(classSet);
+      this.loadAdditionalData();
+    });
+  }
+
+  onStudentChange() {
+    this.studentId = this.selectedStudentId;
+
+    // Also update selected class based on student's class
+    if (this.selectedStudentId && this.students.length > 0) {
+      const selectedStudent = this.students.find(
+        (s) => s.id === this.selectedStudentId,
+      );
+      if (selectedStudent?.class) {
+        if (typeof selectedStudent.class === 'object') {
+          const cls = selectedStudent.class as any;
+          this.selectedClassId = `${cls.form}${cls.stream}`;
+        }
+      }
+    }
+
+    this.loadAdditionalData();
+  }
+
+  onClassChange() {
+    this.loadAdditionalData();
+  }
+
+  onSubjectChange() {
+    this.loadAdditionalData();
+  }
+
+  // Add method to clear all filters
+  clearFilters() {
+    this.examId = undefined;
+    this.selectedExamId = undefined;
+    this.studentId = undefined;
+    this.selectedStudentId = undefined;
+    this.selectedClassId = undefined;
+    this.selectedSubject = undefined;
     this.loadAdditionalData();
   }
 
@@ -115,13 +321,51 @@ export class ReportsSectionComponent implements OnInit {
     });
   }
 
+  // Add this method to calculate active filters
+  getActiveFilterCount(): number {
+    let count = 0;
+    if (this.studentId) count++;
+    if (this.examId) count++;
+    if (this.selectedClassId) count++;
+    if (this.selectedSubject) count++;
+    return count;
+  }
+
+  // Add this method to clear all filters
+  clearAllFilters(): void {
+    this.clearFilters?.();
+    // Reset local properties if needed
+    this.studentId = undefined;
+    this.examId = undefined;
+    this.selectedClassId = undefined;
+    this.selectedSubject = undefined;
+  }
+
   private loadClassDetails() {
     if (!this.selectedClassId) return;
 
-    this.classService.getById(this.selectedClassId).subscribe({
+    // Find the actual class object to get its ID
+    this.classService.getAll().subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.className = `${response.data.form}${response.data.stream} (${response.data.year})`;
+          // Find the class that matches the display name
+          const foundClass = response.data.find(
+            (cls) => `${cls.form}${cls.stream}` === this.selectedClassId,
+          );
+
+          if (foundClass) {
+            // Now get the class details using the actual ID
+            this.classService.getById(foundClass.id!).subscribe({
+              next: (classResponse) => {
+                if (classResponse.success && classResponse.data) {
+                  this.className = `${classResponse.data.form}${classResponse.data.stream} (${classResponse.data.year})`;
+                }
+              },
+              error: () => {
+                this.className = undefined;
+              },
+            });
+          }
         }
       },
       error: () => {
@@ -254,149 +498,6 @@ export class ReportsSectionComponent implements OnInit {
     );
   }
 
-  // Preview Methods
-  previewStudentPDF() {
-    if (!this.studentId) return;
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.resultService.generateStudentReportPDF(this.studentId).subscribe({
-      next: (blob) => {
-        this.createPreview(
-          blob,
-          `student-report-${this.studentName || this.studentId}.pdf`,
-        );
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = 'Failed to load PDF preview';
-        this.loading = false;
-        console.error('Preview error:', error);
-      },
-    });
-  }
-
-  previewExamSummary() {
-    if (!this.examId) return;
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.resultService.generateExamSummaryPDF(this.examId).subscribe({
-      next: (blob) => {
-        this.createPreview(
-          blob,
-          `exam-summary-${this.examName || this.examId}.pdf`,
-        );
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = 'Failed to load PDF preview';
-        this.loading = false;
-        console.error('Preview error:', error);
-      },
-    });
-  }
-
-  previewSubjectAnalysis() {
-    if (!this.examId) return;
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.resultService.generateSubjectAnalysisPDF(this.examId).subscribe({
-      next: (blob) => {
-        this.createPreview(
-          blob,
-          `subject-analysis-${this.examName || this.examId}.pdf`,
-        );
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = 'Failed to load PDF preview';
-        this.loading = false;
-        console.error('Preview error:', error);
-      },
-    });
-  }
-
-  previewClassPerformance() {
-    if (!this.examId || !this.selectedClassId) return;
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.resultService.generateClassPerformancePDF(this.examId).subscribe({
-      next: (blob) => {
-        this.createPreview(
-          blob,
-          `class-performance-${this.examName || this.examId}.pdf`,
-        );
-        this.loading = false;
-      },
-      error: (error) => {
-        this.errorMessage = 'Failed to load PDF preview';
-        this.loading = false;
-        console.error('Preview error:', error);
-      },
-    });
-  }
-
-  previewComprehensiveReport() {
-    if (!this.examId) return;
-
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.resultService
-      .generateComprehensivePerformancePDF(this.examId)
-      .subscribe({
-        next: (blob) => {
-          this.createPreview(
-            blob,
-            `comprehensive-report-${this.examName || this.examId}.pdf`,
-          );
-          this.loading = false;
-        },
-        error: (error) => {
-          this.errorMessage = 'Failed to load PDF preview';
-          this.loading = false;
-          console.error('Preview error:', error);
-        },
-      });
-  }
-
-  private createPreview(blob: Blob, filename: string) {
-    const url = window.URL.createObjectURL(blob);
-    this.previewUrl = url;
-    this.previewFilename = filename;
-    this.previewMode = true;
-  }
-
-  closePreview() {
-    if (this.previewUrl) {
-      window.URL.revokeObjectURL(this.previewUrl);
-    }
-    this.previewMode = false;
-    this.previewUrl = undefined;
-    this.previewFilename = '';
-  }
-
-  downloadFromPreview() {
-    if (!this.previewUrl || !this.previewFilename) return;
-
-    const link = document.createElement('a');
-    link.href = this.previewUrl;
-    link.download = this.previewFilename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    this.successMessage = 'Report downloaded successfully!';
-    setTimeout(() => (this.successMessage = ''), 3000);
-  }
-
   // Bulk operations
   toggleExamSelection(examId: string) {
     const index = this.selectedExamIds.indexOf(examId);
@@ -494,5 +595,11 @@ export class ReportsSectionComponent implements OnInit {
   clearMessages() {
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  // In your component class, add this method to get exam name by ID
+  getExamName(examId: string): string {
+    const exam = this.exams.find((e) => e.id === examId);
+    return exam ? exam.name : examId; // Fallback to ID if not found
   }
 }

@@ -98,10 +98,15 @@
             <div class="bg-gradient-to-r from-blue-50 to-sky-50 px-4 py-3 border-b border-blue-100">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                  <div class="relative">
-                    <input type="checkbox" [checked]="isClassFullyAssigned(cls)" (change)="toggleClass(cls, $event)"
-                      class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
-                  </div>
+                  <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
+                    <div class="relative">
+
+                      <input type="checkbox" [checked]="isClassFullyAssigned(cls)"
+                        [disabled]="(role$ | async) === RoleType.Admin" (change)="toggleClass(cls, $event)"
+                        class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+
+                    </div>
+                  </ng-container>
                   <div>
                     <h4 class="font-bold text-gray-800">FORM {{ cls.form }} - {{ cls.stream }}</h4>
                     <p class="text-xs text-gray-600">{{ cls.year }}</p>
@@ -118,10 +123,12 @@
               <div *ngIf="getStudentsForClass(cls.id!).length > 0; else noStudents" class="space-y-3">
                 <label *ngFor="let student of getStudentsForClass(cls.id!)"
                   class="flex items-center gap-3 p-3 hover:bg-blue-50/50 rounded-lg transition-colors cursor-pointer group">
-                  <div class="relative flex items-center">
-                    <input type="checkbox" [checked]="isAssigned(student)" (change)="toggleStudent(student, $event)"
-                      class="w-4 h-4 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-1" />
-                  </div>
+                  <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
+                    <div class="relative flex items-center">
+                      <input type="checkbox" [checked]="isAssigned(student)" (change)="toggleStudent(student, $event)"
+                        class="w-4 h-4 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-1" />
+                    </div>
+                  </ng-container>
                   <div class="flex items-center gap-3 flex-1">
                     <div
                       class="w-10 h-10 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
@@ -192,19 +199,23 @@
             </div>
           </div>
 
-          <div class="flex gap-3">
-            <button (click)="navigateToSubjects()"
-              class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
-              Cancel
-            </button>
-            <button (click)="save()" [disabled]="getTotalAssigned() === 0"
-              [class]="getTotalAssigned() === 0 
+
+          <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
+            <div class="flex gap-3">
+              <button (click)="navigateToSubjects()"
+                class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium">
+                Cancel
+              </button>
+              <button (click)="save()" [disabled]="getTotalAssigned() === 0"
+                [class]="getTotalAssigned() === 0 
                 ? 'px-6 py-2.5 bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed font-medium'
                 : 'px-6 py-2.5 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5 font-medium'">
-              <i class="fas fa-save mr-2"></i>
-              Save Assignments
-            </button>
-          </div>
+                <i class="fas fa-save mr-2"></i>
+                Save Assignments
+              </button>
+            </div>
+          </ng-container>
+
         </div>
       </div>
     </div>

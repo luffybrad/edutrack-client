@@ -43,7 +43,7 @@ export class SubjectListComponent implements OnInit {
     private toast: ToastService,
     private router: Router,
     private classService: ClassService,
-    private studentService: StudentService
+    private studentService: StudentService,
   ) {
     this.role$ = this.auth.getProfile$().pipe(map((p) => p?.role ?? null));
   }
@@ -75,7 +75,7 @@ export class SubjectListComponent implements OnInit {
         this.studentsInClass = res.data.filter(
           (s) =>
             s.class?.id === this.teacherClassId ||
-            s.classId === this.teacherClassId
+            s.classId === this.teacherClassId,
         );
         // Re-fetch subjects to apply filtering
         this.fetchSubjects();
@@ -88,27 +88,30 @@ export class SubjectListComponent implements OnInit {
     this.loading = true;
     this.subjectService.getAll().subscribe({
       next: (res) => {
-        let subjects = res.data;
-
-        // If teacher, filter subjects to those taken by students in their class
-        if (this.teacherClassId && this.studentsInClass.length > 0) {
-          // Get unique subject IDs from students' subjects
-          const subjectIds = new Set<string>();
-          this.studentsInClass.forEach((student) => {
-            if (student.subjects && student.subjects.length > 0) {
-              student.subjects.forEach((subject: any) => {
-                if (subject.id) subjectIds.add(subject.id);
-              });
-            }
-          });
-
-          // Filter subjects to only those that students in class are taking
-          subjects = subjects.filter((s) => subjectIds.has(s.id!));
-        }
-
-        // subjects now contain totalStudents property
-        this.subjects = subjects.map((s) => ({ ...s, selected: false }));
+        // Assign the fetched subjects directly without filtering
+        this.subjects = res.data.map((s) => ({ ...s, selected: false }));
         this.applySearch();
+        // let subjects = res.data;
+
+        // // If teacher, filter subjects to those taken by students in their class
+        // if (this.teacherClassId && this.studentsInClass.length > 0) {
+        //   // Get unique subject IDs from students' subjects
+        //   const subjectIds = new Set<string>();
+        //   this.studentsInClass.forEach((student) => {
+        //     if (student.subjects && student.subjects.length > 0) {
+        //       student.subjects.forEach((subject: any) => {
+        //         if (subject.id) subjectIds.add(subject.id);
+        //       });
+        //     }
+        //   });
+
+        //   // Filter subjects to only those that students in class are taking
+        //   subjects = subjects.filter((s) => subjectIds.has(s.id!));
+        // }
+
+        // // subjects now contain totalStudents property
+        // this.subjects = subjects.map((s) => ({ ...s, selected: false }));
+        // this.applySearch();
       },
       error: (err) => this.toast.apiError('Failed to fetch subjects', err),
       complete: () => (this.loading = false),
@@ -122,7 +125,7 @@ export class SubjectListComponent implements OnInit {
   applySearch(): void {
     const term = this.searchTerm.trim().toLowerCase();
     this.filteredSubjects = this.subjects.filter((s) =>
-      s.name.toLowerCase().includes(term)
+      s.name.toLowerCase().includes(term),
     );
   }
 
@@ -138,11 +141,28 @@ export class SubjectListComponent implements OnInit {
   }
 
   assignStudents(subject: Subject): void {
-    this.router.navigate([
-      '/dashboard/admin/subjects',
-      subject.id,
-      'assign-students',
-    ]);
+    const currentUrl = this.router.url;
+
+    if (currentUrl.includes('/dashboard/admin/')) {
+      this.router.navigate([
+        '/dashboard/admin/subjects',
+        subject.id,
+        'assign-students',
+      ]);
+    } else if (currentUrl.includes('/dashboard/teacher/')) {
+      this.router.navigate([
+        '/dashboard/teacher/subjects',
+        subject.id,
+        'assign-students',
+      ]);
+    } else {
+      // Default fallback
+      this.router.navigate([
+        '/dashboard/admin/subjects',
+        subject.id,
+        'assign-students',
+      ]);
+    }
   }
 
   openModal(mode: 'add' | 'edit', subject?: Subject): void {

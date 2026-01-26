@@ -16,7 +16,7 @@
       </div>
 
       <!-- Add Subject Button -->
-      <button *ngIf="(role$ | async) === RoleType.Admin" (click)="openModal('add')"
+      <button *ngIf="(role$ | async) === RoleType.Teacher" (click)="openModal('add')"
         class="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-sky-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5">
         <i class="fas fa-plus-circle text-lg"></i>
         <span class="font-medium">Add New Subject</span>
@@ -86,15 +86,18 @@
       <table class="min-w-full divide-y divide-blue-50">
         <thead>
           <tr class="bg-blue-50/50">
-            <th class="w-16 px-6 py-4">
-              <div class="flex items-center">
-                <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)"
-                  class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
-              </div>
-            </th>
+            <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
+
+              <th class="w-16 px-6 py-4">
+                <div class="flex items-center">
+
+                  <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)"
+                    class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+                </div>
+              </th>
+            </ng-container>
             <th class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
               <div class="flex items-center gap-2">
-                <i class="fas fa-font text-blue-500"></i>
                 <span>Subject Name</span>
               </div>
             </th>
@@ -121,10 +124,13 @@
         <tbody class="divide-y divide-blue-50">
           <tr *ngFor="let subject of filteredSubjects" class="hover:bg-blue-50/30 transition-colors duration-150 group">
             <!-- Checkbox Column -->
-            <td class="px-6 py-4">
-              <input type="checkbox" [(ngModel)]="subject.selected"
-                class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
-            </td>
+            <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
+
+              <td class="px-6 py-4">
+                <input type="checkbox" [(ngModel)]="subject.selected"
+                  class="w-5 h-5 text-blue-600 rounded border-blue-300 focus:ring-blue-500 focus:ring-2" />
+              </td>
+            </ng-container>
 
             <!-- Subject Name Column -->
             <td class="px-6 py-4 whitespace-nowrap">
@@ -135,7 +141,7 @@
                 </div>
                 <div>
                   <div class="font-bold text-gray-900 text-lg">{{ subject.name.toUpperCase() }}</div>
-                  <div class="text-sm text-gray-500">Subject ID: {{ subject.id?.slice(0, 8) || 'N/A' }}</div>
+
                 </div>
               </div>
             </td>
@@ -173,7 +179,7 @@
             <!-- Actions Column -->
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex gap-2">
-                <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
                   <!-- Edit Button -->
                   <button (click)="openModal('edit', subject)"
                     class="p-2.5 text-amber-600 hover:text-white hover:bg-amber-500 rounded-xl transition-all duration-200 group/btn relative"
@@ -184,7 +190,9 @@
                       Edit
                     </span>
                   </button>
+                </ng-container>
 
+                <ng-container *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher">
                   <!-- Assign Students Button -->
                   <button (click)="assignStudents(subject)"
                     class="p-2.5 text-green-600 hover:text-white hover:bg-green-500 rounded-xl transition-all duration-200 group/btn relative"
@@ -195,7 +203,11 @@
                       Assign Students
                     </span>
                   </button>
+                </ng-container>
 
+
+
+                <ng-container *ngIf="(role$ | async) === RoleType.Teacher">
                   <!-- Delete Button -->
                   <button (click)="deleteSubject(subject.id!)"
                     class="p-2.5 text-red-600 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-200 group/btn relative"

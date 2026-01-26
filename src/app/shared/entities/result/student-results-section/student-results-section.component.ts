@@ -22,14 +22,20 @@ import { RoleType } from '../../../../auth/auth.routes';
   templateUrl: './student-results-section.component.html',
 })
 export class StudentResultsSectionComponent implements OnInit {
-  students: { id: string; name: string }[] = [];
+  students: { id: string; name: string; admNo: string }[] = [];
   selectedStudentId?: string;
   guardianId: string | null = null;
+  teacherClassId: string | null = null;
   RoleType: RoleType | null = null;
 
   comparisons: StudentComparison[] = [];
   progression?: SubjectProgression;
   improvement: StudentImprovement[] = [];
+
+  searchFilter: string = '';
+  filteredStudents: { id: string; name: string; admNo: string }[] = [];
+  showDropdown: boolean = false;
+  selectedIndex: number = 0;
 
   loading = false;
 
@@ -57,6 +63,9 @@ export class StudentResultsSectionComponent implements OnInit {
         if (profile.role === RoleType.Guardian) {
           this.guardianId = profile.id;
         }
+        if (profile.role === RoleType.Teacher) {
+          this.teacherClassId = profile.classId;
+        }
       }
     });
   }
@@ -72,11 +81,105 @@ export class StudentResultsSectionComponent implements OnInit {
         );
       }
 
+      // Filter students by respective class if user is a teacher
+      if (this.RoleType === RoleType.Teacher && this.teacherClassId) {
+        filteredStudents = filteredStudents.filter(
+          (s) => s.classId === this.teacherClassId,
+        );
+      }
+
       this.students = filteredStudents.map((s) => ({
         id: s.id!,
         name: s.name,
+        admNo: s.admNo,
       }));
+
+      this.filteredStudents = []; // Start empty, not with all students
     });
+  }
+
+  // New methods for the search functionality
+  onSearchInput() {
+    this.showDropdown = true;
+
+    if (!this.searchFilter.trim()) {
+      // When search is empty, show the "Start typing" hint
+      this.filteredStudents = [];
+      return;
+    }
+
+    const query = this.searchFilter.toLowerCase();
+    this.filteredStudents = this.students
+      .filter(
+        (student) =>
+          student.name.toLowerCase().includes(query) ||
+          student.admNo.toLowerCase().includes(query),
+      )
+      .slice(0, 10); // Limit results for better UX
+  }
+
+  // For avatar initials
+  getSelectedStudentInitial(): string {
+    const selected = this.students.find((s) => s.id === this.selectedStudentId);
+    return selected ? selected.name.charAt(0).toUpperCase() : '';
+  }
+
+  getSelectedStudentName(): string {
+    const selected = this.students.find((s) => s.id === this.selectedStudentId);
+    return selected ? selected.name : '';
+  }
+
+  getSelectedStudentAdmNo(): string {
+    const selected = this.students.find((s) => s.id === this.selectedStudentId);
+    return selected ? selected.admNo : '';
+  }
+
+  // Clear search without clearing selection
+  clearSearch() {
+    this.searchFilter = '';
+    this.filteredStudents = [];
+    this.selectedIndex = -1;
+  }
+
+  selectStudent(student: { id: string; name: string; admNo: string }) {
+    this.selectedStudentId = student.id;
+    this.searchFilter = `${student.name} (${student.admNo})`; // Show selected student in input
+    this.showDropdown = false;
+
+    // Load data for the selected student
+    this.loadStudentData();
+  }
+
+  // Add a computed property for empty state logic
+  get showEmptyState(): boolean {
+    return this.filteredStudents.length === 0 && this.showDropdown;
+  }
+
+  get showStartTypingHint(): boolean {
+    return this.showEmptyState && !this.searchFilter.trim();
+  }
+
+  get showNoResultsFound(): boolean {
+    return this.showEmptyState && this.searchFilter.trim().length > 0;
+  }
+
+  onInputBlur() {
+    // Small delay to allow click event to register
+    setTimeout(() => {
+      this.showDropdown = false;
+    }, 200);
+  }
+
+  clearSelection() {
+    this.selectedStudentId = undefined;
+    this.searchFilter = '';
+    this.filteredStudents = [];
+    this.showDropdown = false;
+
+    // Clear any loaded data
+    this.comparisons = [];
+    this.progression = undefined;
+    this.improvement = [];
   }
 
   onStudentChange() {
