@@ -250,27 +250,6 @@ export class ResultService {
     });
   }
 
-  /** Generate Bulk Exam Reports (metadata) */
-  generateBulkExamReportsPDF(examIds: string[]): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(
-      `${this.baseUrl}/exams/bulk-reports-pdf`,
-      { examIds },
-      { withCredentials: true },
-    );
-  }
-
-  /** Generate Combined Exam Reports PDF */
-  generateCombinedExamReportsPDF(examIds: string[]): Observable<Blob> {
-    return this.http.post(
-      `${this.baseUrl}/exams/combined-reports-pdf`,
-      { examIds },
-      {
-        responseType: 'blob',
-        withCredentials: true,
-      },
-    );
-  }
-
   /** Helper method to download PDF blob */
   downloadPDF(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);

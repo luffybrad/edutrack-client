@@ -14,6 +14,7 @@ import { StudentService, Student } from '../../../../services/student.service';
 import { map } from 'rxjs';
 import { AuthService } from '../../../../auth/auth.service';
 import { RoleType } from '../../../../auth/auth.routes';
+import { Subject, SubjectService } from '../../../../services/subject.service';
 
 @Component({
   selector: 'app-student-results-section',
@@ -37,23 +38,63 @@ export class StudentResultsSectionComponent implements OnInit {
   showDropdown: boolean = false;
   selectedIndex: number = 0;
 
+  allSubjects: Subject[] = [];
+  subjectColorMap: Record<string, string> = {};
+
   loading = false;
 
   progressionChartData: ChartData<'line'> = { labels: [], datasets: [] };
   progressionChartOptions: ChartOptions<'line'> = {
     responsive: true,
-    plugins: { tooltip: { enabled: true }, legend: { position: 'top' } },
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
+      legend: {
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 20,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          callback: function (value) {
+            return value + '%';
+          },
+        },
+      },
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false,
+    },
   };
 
   constructor(
     private resultService: ResultService,
     private studentService: StudentService,
     private authService: AuthService,
+    private subjectService: SubjectService,
   ) {}
 
   ngOnInit() {
     this.loadStudents();
     this.loadUserProfile();
+    this.loadSubjects(); // Add this
   }
 
   loadUserProfile() {
@@ -68,6 +109,66 @@ export class StudentResultsSectionComponent implements OnInit {
         }
       }
     });
+  }
+
+  loadSubjects() {
+    this.subjectService.getAll().subscribe((res) => {
+      if (res.success && res.data) {
+        this.allSubjects = res.data;
+        this.generateSubjectColors(); // Create colors dynamically
+      }
+    });
+  }
+
+  private generateDistinctColors(): string[] {
+    // Generate distinct colors using HSL color wheel
+    const colors: string[] = [];
+    const hueStep = 360 / 20; // 20 distinct hues
+
+    for (let i = 0; i < 20; i++) {
+      const hue = i * hueStep;
+      // Use high saturation and medium lightness for bright, distinct colors
+      const saturation = 70 + Math.random() * 20; // 70-90%
+      const lightness = 50 + Math.random() * 10; // 50-60%
+
+      const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      colors.push(color);
+    }
+
+    return colors;
+  }
+
+  private generateSubjectColors() {
+    const colors = this.generateDistinctColors();
+
+    this.subjectColorMap = {};
+
+    // Get all subjects from multiple sources
+    const allChartSubjects = new Set<string>();
+
+    // Add subjects from progression chart
+    if (this.progression?.progression) {
+      Object.keys(this.progression.progression).forEach((subject) => {
+        allChartSubjects.add(subject);
+      });
+    }
+
+    // Add subjects from comparisons table
+    const tableSubjects = this.getTableSubjects();
+    tableSubjects.forEach((subject) => {
+      allChartSubjects.add(subject);
+    });
+
+    // Assign colors
+    const subjectsArray = Array.from(allChartSubjects).sort();
+    subjectsArray.forEach((subject, index) => {
+      this.subjectColorMap[subject] = colors[index % colors.length];
+    });
+  }
+
+  // Update getColor to use dynamic map
+  private getColor(subject: string): string {
+    return this.subjectColorMap[subject] || '#BFDBFE';
   }
 
   loadStudents() {
@@ -127,6 +228,32 @@ export class StudentResultsSectionComponent implements OnInit {
   getSelectedStudentName(): string {
     const selected = this.students.find((s) => s.id === this.selectedStudentId);
     return selected ? selected.name : '';
+  }
+
+  getTableSubjects(): string[] {
+    // Collect all subjects from ALL comparisons
+    const allSubjectsSet = new Set<string>();
+
+    // Add subjects from comparisons
+    if (this.comparisons.length > 0) {
+      this.comparisons.forEach((comparison) => {
+        if (comparison.subjectScores) {
+          Object.keys(comparison.subjectScores).forEach((subject) => {
+            allSubjectsSet.add(subject);
+          });
+        }
+      });
+    }
+
+    // Add subjects from database as fallback
+    if (this.allSubjects.length > 0 && allSubjectsSet.size === 0) {
+      this.allSubjects.forEach((subject) => {
+        allSubjectsSet.add(subject.name);
+      });
+    }
+
+    // Convert to array and sort
+    return Array.from(allSubjectsSet).sort();
   }
 
   getSelectedStudentAdmNo(): string {
@@ -228,28 +355,27 @@ export class StudentResultsSectionComponent implements OnInit {
     if (!this.progression) return;
 
     const labels = this.progression.meanTrend.map((t) => t.examName);
-    const datasets = Object.keys(this.progression.progression).map(
-      (subject) => ({
-        data: this.progression!.progression[subject].map((p) => p.score),
-        label: subject,
-        fill: false,
-        tension: 0.3,
-        borderColor: this.getColor(subject),
-      }),
-    );
+
+    // Get all subjects from progression data
+    const allProgressionSubjects = Object.keys(this.progression.progression);
+
+    // Sort subjects for consistent order
+    const sortedSubjects = allProgressionSubjects.sort();
+
+    const datasets = sortedSubjects.map((subject) => ({
+      data: this.progression!.progression[subject].map((p) => p.score ?? null),
+      label: subject,
+      fill: false,
+      tension: 0.3,
+      borderColor: this.getColor(subject),
+      backgroundColor: this.getColor(subject) + '20', // Add transparency
+      pointBackgroundColor: this.getColor(subject),
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+    }));
 
     this.progressionChartData = { labels, datasets };
-  }
-
-  private getColor(subject: string): string {
-    const colorMap: Record<string, string> = {
-      Math: '#0C66EC',
-      English: '#3B82F6',
-      Science: '#60A5FA',
-      History: '#93C5FD',
-      default: '#BFDBFE',
-    };
-    return colorMap[subject] || colorMap['default'];
   }
 
   // Add after existing properties

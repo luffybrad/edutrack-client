@@ -13,6 +13,7 @@ import {
 import { ExamService, Exam } from '../../../../services/exam.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { StudentService } from '../../../../services/student.service';
+import { Subject, SubjectService } from '../../../../services/subject.service';
 
 @Component({
   selector: 'app-subject-analysis-section',
@@ -31,13 +32,53 @@ export class SubjectAnalysisSectionComponent implements OnInit {
   selectedSubject?: string;
   selectedClassId?: string;
 
+  allSubjects: Subject[] = [];
+
   analysis?: SubjectAnalysis;
   loading = false;
 
   gradeChartData: ChartData<'bar'> = { labels: [], datasets: [] };
   chartOptions: ChartOptions<'bar'> = {
     responsive: true,
-    plugins: { legend: { position: 'top' }, tooltip: { enabled: true } },
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const total = context.dataset.data.reduce(
+              (a: number, b: number) => a + b,
+              0,
+            );
+            const percentage = (
+              ((context.raw as number) / total) *
+              100
+            ).toFixed(1);
+            return `${context.dataset.label}: ${context.raw} students (${percentage}%)`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Students',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Grades',
+        },
+      },
+    },
   };
 
   constructor(
@@ -45,11 +86,13 @@ export class SubjectAnalysisSectionComponent implements OnInit {
     private examService: ExamService,
     private classService: ClassService,
     private studentService: StudentService,
+    private subjectService: SubjectService,
   ) {}
 
   ngOnInit() {
     this.loadExams();
     this.loadClasses();
+    this.loadSubjects();
   }
 
   loadExams() {
@@ -61,6 +104,15 @@ export class SubjectAnalysisSectionComponent implements OnInit {
   loadClasses() {
     this.classService.getAll().subscribe((res) => {
       this.classes = res.data || [];
+    });
+  }
+
+  loadSubjects() {
+    this.subjectService.getAll().subscribe((res) => {
+      if (res.success && res.data) {
+        // Store subjects from database
+        this.allSubjects = res.data;
+      }
     });
   }
 
@@ -77,16 +129,49 @@ export class SubjectAnalysisSectionComponent implements OnInit {
       const examResults = res.data as ExamResultsResponse;
       this.examResults = examResults.results || [];
 
-      // collect unique subjects across all students
-      const subjectsSet = new Set<string>();
+      // Collect unique subjects from exam results
+      const subjectsFromResults = new Set<string>();
       this.examResults.forEach((r) =>
-        Object.keys(r.subjectScores).forEach((s) => subjectsSet.add(s)),
+        Object.keys(r.subjectScores).forEach((s) => subjectsFromResults.add(s)),
       );
-      this.subjects = Array.from(subjectsSet).sort();
+
+      // Combine subjects from results AND database (avoid duplicates)
+      const combinedSubjects = new Set<string>();
+
+      // Add subject NAMES from database (complete list)
+      this.allSubjects.forEach((subject) => combinedSubjects.add(subject.name));
+
+      // Add subjects from results (in case some subjects are in results but not in database)
+      subjectsFromResults.forEach((subject) => combinedSubjects.add(subject));
+
+      // Convert to sorted array
+      this.subjects = Array.from(combinedSubjects).sort();
 
       // Load all students for class filtering
       this.loadAllStudents();
     });
+  }
+
+  getAvailableSubjects(): string[] {
+    // Priority 1: Subjects from current exam results
+    if (this.examResults.length > 0) {
+      const subjectsFromResults = new Set<string>();
+      this.examResults.forEach((r) =>
+        Object.keys(r.subjectScores).forEach((s) => subjectsFromResults.add(s)),
+      );
+
+      if (subjectsFromResults.size > 0) {
+        return Array.from(subjectsFromResults).sort();
+      }
+    }
+
+    // Priority 2: Subject NAMES from database
+    if (this.allSubjects.length > 0) {
+      return this.allSubjects.map((s) => s.name).sort();
+    }
+
+    // Priority 3: Return whatever is in this.subjects
+    return this.subjects;
   }
 
   loadAllStudents() {
@@ -97,6 +182,17 @@ export class SubjectAnalysisSectionComponent implements OnInit {
 
   loadAnalysis() {
     if (!this.selectedExamId || !this.selectedSubject) return;
+
+    // Check if the selected subject has data in this exam
+    const hasData = this.checkSubjectHasData();
+
+    if (!hasData) {
+      // Show an error or empty state
+      this.analysis = undefined;
+      this.gradeChartData = { labels: [], datasets: [] };
+      this.showNoDataMessage();
+      return;
+    }
 
     this.loading = true;
 
@@ -109,15 +205,48 @@ export class SubjectAnalysisSectionComponent implements OnInit {
         .analyzeSubject(this.selectedExamId, this.selectedSubject)
         .subscribe({
           next: (res) => {
-            this.analysis = res.data;
-            this.updateGradeChart();
+            if (res.success && res.data) {
+              this.analysis = res.data;
+              this.updateGradeChart();
+            } else {
+              this.handleNoData();
+            }
             this.loading = false;
           },
           error: () => {
+            this.handleNoData();
             this.loading = false;
           },
         });
     }
+  }
+
+  // Helper method to check if subject has data
+  private checkSubjectHasData(): boolean {
+    if (!this.selectedSubject || this.examResults.length === 0) {
+      return false;
+    }
+
+    // Check if any student has a score for this subject
+    return this.examResults.some((result) => {
+      const score = result.subjectScores?.[this.selectedSubject!];
+      return score !== null && score !== undefined;
+    });
+  }
+
+  // Handle no data scenario
+  private handleNoData() {
+    this.analysis = undefined;
+    this.gradeChartData = { labels: [], datasets: [] };
+    // You could show a toast or message here
+  }
+
+  // Optional: Show a message when no data
+  private showNoDataMessage() {
+    // You could implement a toast or notification system
+    console.warn(
+      `No data available for subject "${this.selectedSubject}" in the selected exam`,
+    );
   }
 
   // New method for local filtering
@@ -128,6 +257,15 @@ export class SubjectAnalysisSectionComponent implements OnInit {
       !this.selectedClassId
     ) {
       this.loading = false;
+      return;
+    }
+
+    // First check if subject has any data in this exam
+    if (!this.checkSubjectHasData()) {
+      this.analysis = undefined;
+      this.gradeChartData = { labels: [], datasets: [] };
+      this.loading = false;
+      this.showNoDataMessage();
       return;
     }
 
@@ -219,7 +357,16 @@ export class SubjectAnalysisSectionComponent implements OnInit {
     const labels = Object.keys(this.analysis.gradeDistribution);
     const data = Object.values(this.analysis.gradeDistribution);
 
-    const colors = ['#0C66EC', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
+    // Use more distinct colors
+    const colors = [
+      '#0C66EC', // Blue
+      '#10B981', // Green
+      '#F59E0B', // Orange
+      '#EF4444', // Red
+      '#8B5CF6', // Purple
+      '#EC4899', // Pink
+      '#14B8A6', // Teal
+    ];
 
     this.gradeChartData = {
       labels,
@@ -228,14 +375,37 @@ export class SubjectAnalysisSectionComponent implements OnInit {
           data,
           label: `Students per Grade${this.selectedClassId ? ' (Filtered)' : ''}`,
           backgroundColor: labels.map((_, i) => colors[i % colors.length]),
+          borderColor: labels.map((_, i) => colors[i % colors.length]),
+          borderWidth: 1,
         },
       ],
     };
   }
-
   // Add this method to your component class
   getClassName(classId: string): string {
     const cls = this.classes.find((c) => c.id === classId);
     return cls ? `${cls.form}${cls.stream}` : 'Unknown Class';
+  }
+
+  getSubjectsWithData(): string[] {
+    if (!this.selectedExamId || this.examResults.length === 0) {
+      return [];
+    }
+
+    // Get subjects that actually have scores in this exam
+    const subjectsWithData = new Set<string>();
+
+    this.examResults.forEach((result) => {
+      if (result.subjectScores) {
+        Object.entries(result.subjectScores).forEach(([subject, score]) => {
+          // Only include subjects with valid scores (not null/undefined)
+          if (score !== null && score !== undefined) {
+            subjectsWithData.add(subject);
+          }
+        });
+      }
+    });
+
+    return Array.from(subjectsWithData).sort();
   }
 }

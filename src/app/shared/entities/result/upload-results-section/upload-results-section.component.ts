@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ResultService } from '../../../../services/result.service';
 import { ExamService } from '../../../../services/exam.service';
+import { ToastService } from '../../../utils/toast.service';
 
 @Component({
   selector: 'app-upload-results-section',
@@ -23,7 +24,8 @@ export class UploadResultsSectionComponent implements OnInit {
 
   constructor(
     private resultService: ResultService,
-    private examService: ExamService
+    private examService: ExamService,
+    private toast: ToastService,
   ) {}
 
   ngOnInit() {
@@ -54,10 +56,11 @@ export class UploadResultsSectionComponent implements OnInit {
         this.successMessage = `✅ Created: ${res.data.created}, Updated: ${res.data.updated}, Deleted: ${res.data.deleted}`;
         this.uploaded.emit();
         this.file = undefined; // reset file input
+        this.ngOnInit();
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = `❌ ${err.message || 'Upload failed'}`;
+        this.toast.apiError('Error uploading exam', err);
       },
     });
   }

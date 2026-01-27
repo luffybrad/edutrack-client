@@ -16,7 +16,8 @@
       </div>
 
       <!-- Add Exam Button -->
-      <button *ngIf="(role$ | async) === RoleType.Admin" (click)="openModal('add')"
+      <button *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher"
+        (click)="openModal('add')"
         class="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-sky-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5">
         <i class="fas fa-plus-circle text-lg"></i>
         <span class="font-medium">Schedule New Exam</span>
@@ -47,7 +48,7 @@
     </div>
 
     <!-- Bulk Delete Section -->
-    <div *ngIf="(role$ | async) === RoleType.Admin && selectedIds.length"
+    <div *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher  && selectedIds.length"
       class="mb-6 bg-gradient-to-r from-red-50 to-orange-50 p-5 rounded-xl border border-red-100">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
@@ -127,7 +128,7 @@
                 </div>
                 <div>
                   <div class="font-bold text-gray-900 text-lg">{{ exam.name }}</div>
-                  <div class="text-sm text-gray-500">ID: {{ exam.id?.slice(0, 8) || 'N/A' }}</div>
+
                 </div>
               </div>
             </td>
@@ -162,7 +163,7 @@
                   </span>
                 </button>
 
-                <ng-container *ngIf="(role$ | async) === RoleType.Admin">
+                <ng-container *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher">
                   <!-- Edit Button -->
                   <button (click)="openModal('edit', exam)"
                     class="p-2.5 text-amber-600 hover:text-white hover:bg-amber-500 rounded-xl transition-all duration-200 group/btn relative"

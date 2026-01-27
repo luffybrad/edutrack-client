@@ -53,7 +53,12 @@
                                text-gray-800 font-medium appearance-none
                                disabled:bg-gray-100 disabled:text-gray-500 capitalize">
                         <option value="" disabled selected class="text-gray-400">Choose a subject</option>
-                        <option *ngFor="let subject of subjects" [value]="subject" class="py-2 capitalize">{{ subject }}
+                        <option *ngFor="let subject of getAvailableSubjects()" [value]="subject" class="py-2 capitalize"
+                            [disabled]="!getSubjectsWithData().includes(subject)">
+                            {{ subject }}
+                            <span *ngIf="!getSubjectsWithData().includes(subject)" class="text-gray-400 text-xs ml-2">
+                                (No data)
+                            </span>
                         </option>
                     </select>
                     <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500">
@@ -279,5 +284,16 @@
             <i class="fas fa-arrow-up"></i>
             <span>Use the filter section to get started</span>
         </div>
+    </div>
+
+    <div *ngIf="selectedExamId && getSubjectsWithData().length === 0 && !loading"
+        class="text-center py-4 text-amber-600 text-sm">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        No subject data available for this exam. Try selecting a different exam.
+    </div>
+
+    <div *ngIf="selectedExamId && getSubjectsWithData().length > 0" class="text-center py-2 text-emerald-600 text-sm">
+        <i class="fas fa-check-circle mr-2"></i>
+        {{ getSubjectsWithData().length }} subject(s) with data available
     </div>
 </div>

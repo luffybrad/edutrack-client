@@ -7,33 +7,35 @@
                 <div class="p-2.5 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg shadow">
                     <i class="fas fa-filter text-white text-lg"></i>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800">Filter Analysis</h3>
+                <h3 class="text-xl font-bold text-gray-800">Filter</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Exam Filter -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                        <i class="fas fa-file-alt text-blue-500"></i>
-                        Exam
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-graduation-cap text-blue-400"></i>
-                        </div>
-                        <select
-                            class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
-                            [(ngModel)]="selectedExamId" (change)="onExamChange()">
-                            <option [ngValue]="undefined">-- All Exams --</option>
-                            <option *ngFor="let e of exams" [value]="e.id">
-                                {{ e.name }}
-                            </option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fas fa-chevron-down text-blue-400"></i>
+                <ng-container *ngIf="(role$ | async) === RoleType.Admin || (role$ | async) === RoleType.Teacher">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-file-alt text-blue-500"></i>
+                            Exam
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-graduation-cap text-blue-400"></i>
+                            </div>
+                            <select
+                                class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
+                                [(ngModel)]="selectedExamId" (change)="onExamChange()">
+                                <option [ngValue]="undefined">-- All Exams --</option>
+                                <option *ngFor="let e of exams" [value]="e.id">
+                                    {{ e.name }}
+                                </option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-chevron-down text-blue-400"></i>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </ng-container>
 
                 <!-- Student Filter -->
                 <div class="space-y-2">
@@ -71,7 +73,7 @@
                                 <i class="fas fa-book-open text-blue-400"></i>
                             </div>
                             <select
-                                class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700"
+                                class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700 capitalize"
                                 [(ngModel)]="selectedSubject" (change)="onSubjectChange()">
                                 <option [ngValue]="undefined">-- All Subjects --</option>
                                 <option *ngFor="let sub of subjects" [value]="sub">
@@ -338,76 +340,11 @@
                 </div>
             </ng-container>
 
-            <!-- Quick Actions -->
-            <ng-container *ngIf="(role$ | async) === RoleType.Admin">
-                <div
-                    class="bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="p-2.5 bg-gray-100 rounded-lg">
-                            <i class="fas fa-bolt text-gray-600 text-lg"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-800">Bulk Operations</h4>
-                            <p class="text-sm text-gray-600">Generate multiple reports</p>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <button
-                            class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-violet-700 text-white px-4 py-3 rounded-lg hover:from-violet-700 hover:to-violet-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-sm hover:shadow"
-                            (click)="downloadCombinedReport()" [disabled]="selectedExamIds.length === 0 || loading"
-                            title="Download combined report">
-                            <i class="fas fa-file-archive"></i> Combined Report
-                        </button>
-                    </div>
-                </div>
-            </ng-container>
+
         </div>
     </div>
 
-    <!-- Bulk Operations -->
-    <ng-container *ngIf="(role$ | async) === RoleType.Admin">
-        <div class="bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-blue-100 shadow-sm mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Bulk Report Selection</h3>
 
-            <div class="mb-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-gray-700">Select Exams:</span>
-                        <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                            {{ getSelectedExamsCount() }} of {{ bulkExamIds.length }} selected
-                        </span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button
-                            class="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded transition-colors"
-                            (click)="selectAllExams()">
-                            <i class="fas fa-check-circle mr-1"></i> Select All
-                        </button>
-                        <button
-                            class="text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-1 rounded transition-colors"
-                            (click)="clearAllExams()">
-                            <i class="fas fa-times-circle mr-1"></i> Clear All
-                        </button>
-                    </div>
-                </div>
-
-                <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
-                    <div *ngFor="let examId of bulkExamIds"
-                        class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-100 transition-colors">
-                        <input type="checkbox" [id]="'exam-' + examId" [checked]="selectedExamIds.includes(examId)"
-                            (change)="toggleExamSelection(examId)"
-                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
-                        <label [for]="'exam-' + examId" class="text-sm text-gray-700 cursor-pointer flex-1">
-                            <span class="font-medium">{{ getExamName( examId) }}</span>
-                        </label>
-                    </div>
-                    <div *ngIf="bulkExamIds.length === 0" class="text-sm text-gray-500 text-center py-4">
-                        <i class="fas fa-info-circle mr-1"></i> No exams available
-                    </div>
-                </div>
-            </div>
-        </div>
-    </ng-container>
 
     <!-- Instructions -->
     <div *ngIf="!studentId && !examId"
