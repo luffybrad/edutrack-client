@@ -225,16 +225,23 @@ export class ResultService {
   }
 
   /** Generate Class Performance PDF */
-  generateClassPerformancePDF(examId: string): Observable<Blob> {
-    return this.http.get(
-      `${this.baseUrl}/exams/${examId}/class-performance-pdf`,
-      {
-        responseType: 'blob',
-        withCredentials: true,
-      },
-    );
-  }
+  generateClassPerformancePDF(
+    examId: string,
+    classId?: string,
+  ): Observable<Blob> {
+    // Build URL with optional query parameter
+    let url = `${this.baseUrl}/exams/${examId}/class-performance-pdf`;
 
+    if (classId) {
+      // Add classId as query parameter
+      url += `?classId=${encodeURIComponent(classId)}`;
+    }
+
+    return this.http.get(url, {
+      responseType: 'blob',
+      withCredentials: true,
+    });
+  }
   /** Generate Comprehensive Performance PDF */
   generateComprehensivePerformancePDF(examId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/exams/${examId}/comprehensive-pdf`, {
@@ -346,12 +353,21 @@ export class ResultService {
   /** Convenience method to download class performance report */
   downloadClassPerformance(
     examId: string,
+    classId?: string,
     examName?: string,
+    className?: string,
     loadingCallback?: (isLoading: boolean) => void,
   ): void {
-    const filename = `class-performance-${examName || examId}.pdf`;
+    // Generate filename with safe defaults
+    const safeExamName = examName || examId;
+    const safeClassName = className || classId || 'class';
+
+    const filename = classId
+      ? `class-performance-${safeClassName}-${safeExamName}.pdf`
+      : `classes-comparison-${safeExamName}.pdf`;
+
     this.downloadPDFWithLoading(
-      this.generateClassPerformancePDF(examId),
+      this.generateClassPerformancePDF(examId, classId),
       filename,
       loadingCallback,
     );

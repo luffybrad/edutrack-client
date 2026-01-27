@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ResultService } from '../../../../services/result.service';
 import { ExamService } from '../../../../services/exam.service';
 import { StudentService } from '../../../../services/student.service';
-import { ClassService } from '../../../../services/class.service';
+import { ClassService, Class } from '../../../../services/class.service';
 import { SubjectService } from '../../../../services/subject.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { RoleType } from '../../../../auth/auth.routes';
@@ -52,7 +52,7 @@ export class ReportsSectionComponent implements OnInit {
   students: Student[] = [];
   subjects: string[] = [];
   selectedStudentId?: string;
-  classes: Array<{ id: string; displayName: string }> = [];
+  classes: Class[] = [];
 
   selectedExamId: string | undefined;
 
@@ -158,11 +158,7 @@ export class ReportsSectionComponent implements OnInit {
             );
           }
 
-          // Store both ID and display name
-          this.classes = allClasses.map((cls) => ({
-            id: cls.id!,
-            displayName: `${cls.form}${cls.stream}`,
-          }));
+          this.classes = allClasses;
         }
       },
       error: (error) => {
@@ -185,59 +181,6 @@ export class ReportsSectionComponent implements OnInit {
     });
   }
 
-  onExamChange() {
-    this.examId = this.selectedExamId;
-
-    if (!this.selectedExamId) {
-      this.loadAdditionalData();
-      return;
-    }
-
-    this.selectedSubject = undefined;
-    this.selectedClassId = undefined;
-
-    // Fetch results for this exam to populate subjects and classes dynamically
-    this.resultService.getByExam(this.selectedExamId).subscribe((res) => {
-      const results: any[] = res.data?.results || [];
-
-      // Populate unique subjects
-      const subjectSet = new Set<string>();
-      results.forEach((r) =>
-        Object.keys(r.subjectScores || {}).forEach((s) => subjectSet.add(s)),
-      );
-      this.subjects = Array.from(subjectSet).sort();
-
-      // Populate unique classes - filter by teacher's class if applicable
-      const classSet = new Set<{ id: string; displayName: string }>();
-      results.forEach((r) => {
-        if (r.student?.class) {
-          if (typeof r.student.class === 'object') {
-            const cls = r.student.class;
-            if (cls.form && cls.stream && cls.id) {
-              const classInfo = {
-                id: cls.id,
-                displayName: `${cls.form}${cls.stream}`,
-              };
-
-              // If teacher is logged in, only add their class
-              if (this.teacherClassId) {
-                if (cls.id === this.teacherClassId) {
-                  classSet.add(classInfo);
-                }
-              } else {
-                // Admin or guardian - add all classes
-                classSet.add(classInfo);
-              }
-            }
-          }
-        }
-      });
-
-      this.classes = Array.from(classSet);
-      this.loadAdditionalData();
-    });
-  }
-
   onStudentChange() {
     this.studentId = this.selectedStudentId;
 
@@ -248,8 +191,9 @@ export class ReportsSectionComponent implements OnInit {
       );
       if (selectedStudent?.class) {
         if (typeof selectedStudent.class === 'object') {
-          const cls = selectedStudent.class as any;
-          this.selectedClassId = `${cls.form}${cls.stream}`;
+          const cls = selectedStudent.class as Class;
+          // Set to the class ID, not a formatted string
+          this.selectedClassId = cls.id; // Changed from `${cls.form}${cls.stream}`
         }
       }
     }
@@ -263,6 +207,11 @@ export class ReportsSectionComponent implements OnInit {
 
   onSubjectChange() {
     this.loadAdditionalData();
+  }
+
+  // Helper method to format class name
+  formatClassName(cls: Class): string {
+    return `Form ${cls.form} ${cls.stream} (${cls.year})`;
   }
 
   // Add method to clear all filters
@@ -306,6 +255,32 @@ export class ReportsSectionComponent implements OnInit {
     });
   }
 
+  private loadClassDetails() {
+    if (!this.selectedClassId) return;
+
+    // Find the class from our classes array
+    const foundClass = this.classes.find(
+      (cls) => cls.id === this.selectedClassId,
+    );
+
+    if (foundClass) {
+      this.className = this.formatClassName(foundClass); // Use helper
+    } else {
+      // Fallback: try to fetch from API
+      this.classService.getById(this.selectedClassId).subscribe({
+        next: (classResponse) => {
+          if (classResponse.success && classResponse.data) {
+            const cls = classResponse.data;
+            this.className = this.formatClassName(cls); // Use helper
+          }
+        },
+        error: () => {
+          this.className = undefined;
+        },
+      });
+    }
+  }
+
   private loadExamDetails() {
     if (!this.examId) return;
 
@@ -341,36 +316,73 @@ export class ReportsSectionComponent implements OnInit {
     this.selectedSubject = undefined;
   }
 
-  private loadClassDetails() {
-    if (!this.selectedClassId) return;
+  onExamChange() {
+    this.examId = this.selectedExamId;
 
-    // Find the actual class object to get its ID
-    this.classService.getAll().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          // Find the class that matches the display name
-          const foundClass = response.data.find(
-            (cls) => `${cls.form}${cls.stream}` === this.selectedClassId,
-          );
+    if (!this.selectedExamId) {
+      this.loadAdditionalData();
+      return;
+    }
 
-          if (foundClass) {
-            // Now get the class details using the actual ID
-            this.classService.getById(foundClass.id!).subscribe({
-              next: (classResponse) => {
-                if (classResponse.success && classResponse.data) {
-                  this.className = `${classResponse.data.form}${classResponse.data.stream} (${classResponse.data.year})`;
-                }
-              },
-              error: () => {
-                this.className = undefined;
-              },
-            });
+    this.selectedSubject = undefined;
+    this.selectedClassId = undefined;
+
+    this.resultService.getByExam(this.selectedExamId).subscribe((res) => {
+      const results: any[] = res.data?.results || [];
+
+      // Populate unique subjects
+      const subjectSet = new Set<string>();
+      results.forEach((r) =>
+        Object.keys(r.subjectScores || {}).forEach((s) => subjectSet.add(s)),
+      );
+      this.subjects = Array.from(subjectSet).sort();
+
+      // Create a Set to track unique class IDs
+      const uniqueClassIds = new Set<string>();
+      const tempClasses: Class[] = [];
+
+      results.forEach((r) => {
+        if (r.student?.class && typeof r.student.class === 'object') {
+          const cls = r.student.class as any;
+
+          // Check if we already have this class
+          if (cls.id && !uniqueClassIds.has(cls.id)) {
+            uniqueClassIds.add(cls.id);
+
+            // If teacher is logged in, only add their class
+            if (this.teacherClassId) {
+              if (cls.id === this.teacherClassId) {
+                tempClasses.push({
+                  id: cls.id,
+                  form: cls.form,
+                  stream: cls.stream,
+                  year: cls.year,
+                  studentsCount: cls.studentsCount || 0,
+                  // Add optional properties if needed
+                  teacherId: cls.teacherId,
+                  createdAt: cls.createdAt,
+                  updatedAt: cls.updatedAt,
+                });
+              }
+            } else {
+              // Admin or guardian - add all classes
+              tempClasses.push({
+                id: cls.id,
+                form: cls.form,
+                stream: cls.stream,
+                year: cls.year,
+                studentsCount: cls.studentsCount || 0,
+                teacherId: cls.teacherId,
+                createdAt: cls.createdAt,
+                updatedAt: cls.updatedAt,
+              });
+            }
           }
         }
-      },
-      error: () => {
-        this.className = undefined;
-      },
+      });
+
+      this.classes = tempClasses;
+      this.loadAdditionalData();
     });
   }
 
@@ -460,19 +472,30 @@ export class ReportsSectionComponent implements OnInit {
   }
 
   downloadClassPerformance() {
-    if (!this.examId || !this.selectedClassId) return;
+    if (!this.examId) return;
 
     this.loading = true;
     this.errorMessage = '';
 
+    // Find the selected class to get its details
+    const selectedClass = this.classes.find(
+      (c) => c.id === this.selectedClassId,
+    );
+    const className = selectedClass
+      ? this.formatClassName(selectedClass) // Use helper
+      : undefined;
+
     this.resultService.downloadClassPerformance(
       this.examId,
+      this.selectedClassId,
       this.examName,
+      className,
       (isLoading) => {
         this.loading = isLoading;
         if (!isLoading) {
-          this.successMessage =
-            'Class performance report downloaded successfully!';
+          this.successMessage = this.selectedClassId
+            ? 'Class performance report downloaded successfully!'
+            : 'Classes comparison report downloaded successfully!';
           setTimeout(() => (this.successMessage = ''), 3000);
         }
       },
