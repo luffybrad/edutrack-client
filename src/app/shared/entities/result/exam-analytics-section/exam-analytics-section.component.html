@@ -8,7 +8,7 @@
                 <div class="space-y-2">
                     <div class="flex items-center gap-3">
                         <div class="p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl shadow-lg">
-                            <i class="fas fa-chart-network text-white text-2xl"></i>
+                            <i class="fas fa-chart-simple text-white text-2xl"></i>
                         </div>
                         <h1
                             class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
@@ -30,7 +30,7 @@
                     </div>
                     <div
                         class="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg shadow-blue-200/50">
-                        <i class="fas fa-analytics text-white text-2xl"></i>
+                        <i class="fas fa-chart-area text-white text-2xl"></i>
                     </div>
                 </div>
             </div>
@@ -434,20 +434,48 @@
                                                     class="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                                                     <i class="fas fa-user-graduate text-blue-500 text-lg"></i>
                                                 </div>
-                                                <div>
-                                                    <div class="font-semibold text-gray-900 text-lg">{{
-                                                        performer.student?.name || 'N/A' }}</div>
-                                                    <div class="text-sm text-gray-500 flex items-center gap-2">
-                                                        <span class="flex items-center gap-1">
-                                                            <i class="fas fa-id-card text-blue-400"></i>
-                                                            {{ performer.student?.admNo || 'N/A' }}
-                                                        </span>
-                                                        <span *ngIf="performer.student?.class"
-                                                            class="flex items-center gap-1">
-                                                            <i class="fas fa-school text-cyan-400"></i>
-                                                            Class {{ performer.student?.class?.form }}{{
-                                                            performer.student?.class?.stream }}
-                                                        </span>
+                                                <div
+                                                    class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                                    <div class="flex items-start justify-between">
+                                                        <div class="flex-1">
+                                                            <!-- Name with subtle accent -->
+                                                            <div
+                                                                class="font-semibold text-gray-900 text-lg mb-1 pb-1 border-b border-gray-100">
+                                                                {{ performer.student?.name || 'N/A' }}
+                                                            </div>
+
+                                                            <!-- Details container -->
+                                                            <div class=" mt-3">
+                                                                <!-- Admission number -->
+                                                                <div class="flex items-center gap-2 text-gray-700">
+                                                                    <div
+                                                                        class="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center">
+                                                                        <i
+                                                                            class="fas fa-id-card text-blue-500 text-xs"></i>
+                                                                    </div>
+                                                                    <span class="font-medium text-sm">{{
+                                                                        performer.student?.admNo || 'N/A' }}</span>
+
+                                                                </div>
+
+                                                                <!-- Class information - only show if exists -->
+                                                                <div *ngIf="performer.student?.class"
+                                                                    class="flex items-center gap-2 text-gray-700">
+                                                                    <div
+                                                                        class="w-6 h-6 rounded-md bg-cyan-50 flex items-center justify-center">
+                                                                        <i
+                                                                            class="fas fa-school text-cyan-500 text-xs"></i>
+                                                                    </div>
+                                                                    <span class="font-medium text-sm">
+                                                                        {{ performer.student?.class?.form }}{{
+                                                                        performer.student?.class?.stream }}
+                                                                    </span>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -457,10 +485,7 @@
                                                 <div class="text-2xl font-bold text-gray-900">
                                                     {{ parseTotalScore(performer.totalScore) | number:'1.0-1' }}
                                                 </div>
-                                                <div class="text-xs text-gray-500 flex items-center gap-1">
-                                                    <i class="fas fa-ruler-combined text-blue-400"></i>
-                                                    Total marks achieved
-                                                </div>
+
                                             </div>
                                         </td>
                                         <td class="px-8 py-5">
@@ -468,10 +493,7 @@
                                                 <div class="text-xl font-bold text-gray-900">
                                                     {{ parseMeanScore(performer.meanScore) | number:'1.1-1' }}%
                                                 </div>
-                                                <div class="text-xs text-gray-500 flex items-center gap-1">
-                                                    <i class="fas fa-percentage text-cyan-400"></i>
-                                                    Average percentage
-                                                </div>
+
                                             </div>
                                         </td>
                                         <td class="px-8 py-5">
@@ -480,9 +502,7 @@
                                                     class="px-4 py-2.5 rounded-lg {{ getGradeColor(performer.grade) }} font-semibold text-sm shadow-sm">
                                                     {{ performer.grade || 'N/A' }}
                                                 </span>
-                                                <div class="text-xs text-gray-500">
-                                                    Performance Grade
-                                                </div>
+
                                             </div>
                                         </td>
                                     </tr>
