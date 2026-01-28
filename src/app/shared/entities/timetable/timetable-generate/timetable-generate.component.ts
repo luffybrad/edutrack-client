@@ -13,6 +13,7 @@ import {
   Timetable,
   TimetableSchedule,
   TeacherInfo,
+  ClassScheduleData,
 } from '../../../../services/timetable.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { SubjectService, Subject } from '../../../../services/subject.service';
@@ -70,9 +71,14 @@ export class TimetableGenerateComponent implements OnInit {
       .pipe(map((profile) => profile?.role ?? null));
 
     this.generateForm = this.fb.group({
+      timetableName: ['', [Validators.required, Validators.minLength(3)]],
+      description: [''],
       classId: [''],
-      subjectIds: [[]], // array of selected subject IDs
-      lessonsPerDay: [5],
+      subjectIds: [[]],
+      lessonsPerDay: [
+        5,
+        [Validators.required, Validators.min(1), Validators.max(10)],
+      ],
     });
   }
 
@@ -143,19 +149,32 @@ export class TimetableGenerateComponent implements OnInit {
   generateTimetable() {
     console.log('Form value before submit:', this.generateForm.value);
 
-    if (this.generateForm.invalid) return;
+    if (this.generateForm.invalid) {
+      // Show specific validation errors
+      if (!this.generateForm.get('timetableName')?.valid) {
+        this.toast.error('Please enter a timetable name (min 3 characters)');
+      }
+      if (!this.generateForm.get('lessonsPerDay')?.valid) {
+        this.toast.error('Please enter valid lessons per day (1-10)');
+      }
+      return;
+    }
 
     this.loading = true;
     this.error = null;
     this.generatedTimetable = null;
 
-    const dto: GenerateTimetableDto = this.generateForm.value;
+    const dto: GenerateTimetableDto = {
+      timetableName: this.generateForm.get('timetableName')?.value,
+      description: this.generateForm.get('description')?.value,
+      lessonsPerDay: this.generateForm.get('lessonsPerDay')?.value,
+    };
 
-    this.timetableService.generate(dto).subscribe({
+    this.timetableService.generateForAllClasses(dto).subscribe({
       next: (res) => {
         this.generatedTimetable = res.data;
         this.loading = false;
-        this.toast.success('Timetable generated successfully!');
+        this.toast.success('Timetable generated successfully for all classes!');
       },
       error: (err) => {
         this.loading = false;
@@ -169,10 +188,11 @@ export class TimetableGenerateComponent implements OnInit {
 
     this.saving = true;
 
-    this.timetableService.save(this.generatedTimetable).subscribe({
+    // Change from save() to saveTimetable()
+    this.timetableService.saveTimetable(this.generatedTimetable).subscribe({
       next: (res) => {
         this.toast.success('Timetable saved successfully!');
-        this.generatedTimetable = res.data; // update with saved timetable if returned
+        this.generatedTimetable = res.data;
         this.saving = false;
         this.router.navigate(['/dashboard/admin/timetables']);
       },
@@ -188,7 +208,21 @@ export class TimetableGenerateComponent implements OnInit {
   }
 
   getLessons(day: keyof TimetableSchedule): string[] {
-    return this.generatedTimetable?.schedule?.[day] || [];
+    if (!this.generatedTimetable || !this.generatedTimetable.classSchedules)
+      return [];
+
+    // Get the selected class schedule
+    const selectedClassId = this.generateForm.get('classId')?.value;
+    if (
+      !selectedClassId ||
+      !this.generatedTimetable.classSchedules[selectedClassId]
+    ) {
+      return [];
+    }
+
+    const classSchedule =
+      this.generatedTimetable.classSchedules[selectedClassId];
+    return classSchedule.schedule[day] || [];
   }
 
   getSelectedClassInfo(): { form: string | number; stream: string } {
@@ -217,5 +251,25 @@ export class TimetableGenerateComponent implements OnInit {
         console.warn('Could not load class teachers:', err);
       },
     });
+  }
+
+  hasGeneratedTimetableForSelectedClass(): boolean {
+    if (!this.generatedTimetable || !this.generatedTimetable.classSchedules) {
+      return false;
+    }
+
+    const selectedClassId = this.generateForm.get('classId')?.value;
+    if (!selectedClassId) {
+      return false;
+    }
+
+    return !!this.generatedTimetable.classSchedules[selectedClassId];
+  }
+
+  getTotalClasses(): number {
+    if (!this.generatedTimetable || !this.generatedTimetable.classSchedules) {
+      return 0;
+    }
+    return Object.keys(this.generatedTimetable.classSchedules).length;
   }
 }

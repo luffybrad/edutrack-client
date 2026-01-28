@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   TimetableService,
   Timetable,
+  ClassScheduleData,
 } from '../../../../services/timetable.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { CommonModule } from '@angular/common';
@@ -33,6 +34,10 @@ export class TimetableListComponent implements OnInit {
 
   weekDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
 
+  isSelectingTimetable = false;
+  allTimetables: Timetable[] = [];
+  selectedTimetableId: string | null = null;
+
   constructor(
     private classService: ClassService,
     private timetableService: TimetableService,
@@ -53,6 +58,7 @@ export class TimetableListComponent implements OnInit {
       this.teacherClassId = profile?.classId || null;
     });
     this.loadClasses();
+    this.loadAllTimetables();
   }
 
   private loadClasses() {
@@ -63,16 +69,11 @@ export class TimetableListComponent implements OnInit {
         // Filter classes by teacher's class
         if (this.teacherClassId) {
           classes = classes.filter((cls) => cls.id === this.teacherClassId);
-
-          // Auto-select teacher's class if they have one
-          if (classes.length > 0 && this.teacherClassId) {
-            this.selectedClassId = this.teacherClassId;
-            // Automatically load the timetable for teacher's class
-            this.loadTimetableForClass(this.teacherClassId);
-          }
         }
 
         this.classes = classes;
+
+        // Check timetable statuses for each class
         this.checkAllTimetableStatuses();
       },
       error: () => (this.error = 'Failed to load classes'),
@@ -85,10 +86,18 @@ export class TimetableListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.timetableService.getByClass(classId).subscribe({
+    // This needs to be rewritten - we need to find a timetable that contains this class
+    // First get all timetables
+    this.timetableService.getAllTimetables().subscribe({
       next: (res) => {
-        if (res?.data?.id) {
-          this.selectedTimetable = res.data;
+        const timetables = res.data || [];
+        // Find a timetable that has this class in its classSchedules
+        const timetableWithClass = timetables.find(
+          (t) => t.classSchedules && t.classSchedules[classId],
+        );
+
+        if (timetableWithClass) {
+          this.selectedTimetable = timetableWithClass;
         } else {
           this.selectedTimetable = null;
           this.error = 'No timetable found for this class';
@@ -96,33 +105,35 @@ export class TimetableListComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        if (err?.status === 404) {
-          this.selectedTimetable = null;
-          this.error = 'No timetable found for this class';
-        } else {
-          this.selectedTimetable = null;
-          this.error = 'Failed to fetch timetable';
-        }
+        this.selectedTimetable = null;
+        this.error = 'Failed to fetch timetable';
         this.loading = false;
       },
     });
   }
 
   private checkAllTimetableStatuses(): void {
-    this.classes.forEach((cls) => {
-      if (cls.id) {
-        this.timetableService.getByClass(cls.id).subscribe({
-          next: (res) => {
-            this.timetableStatuses.set(cls.id!, !!res?.data?.id);
-          },
-          error: (err) => {
-            // If 404, no timetable exists
-            if (err?.status === 404) {
-              this.timetableStatuses.set(cls.id!, false);
-            }
-          },
+    // First get all timetables
+    this.timetableService.getAllTimetables().subscribe({
+      next: (res) => {
+        const allTimetables = res.data || [];
+
+        // Reset statuses
+        this.timetableStatuses.clear();
+
+        // Check each class against all timetables
+        this.classes.forEach((cls) => {
+          if (cls.id) {
+            const hasTimetable = allTimetables.some(
+              (t) => t.classSchedules && t.classSchedules[cls.id!],
+            );
+            this.timetableStatuses.set(cls.id!, hasTimetable);
+          }
         });
-      }
+      },
+      error: (err) => {
+        console.error('Failed to check timetable statuses:', err);
+      },
     });
   }
 
@@ -141,24 +152,29 @@ export class TimetableListComponent implements OnInit {
   }
 
   selectClass(event: Event) {
-    const classId = (event.target as HTMLSelectElement).value.trim();
+    const selectElement = event.target as HTMLSelectElement;
+    const classId = selectElement.value;
 
     if (!classId) {
       this.selectedClassId = null;
       this.selectedTimetable = null;
-      this.error = 'Please select a valid class';
       return;
     }
 
     this.selectedClassId = classId;
-    this.selectedTimetable = null;
     this.loading = true;
     this.error = null;
 
-    this.timetableService.getByClass(classId).subscribe({
+    // Find timetable containing this class
+    this.timetableService.getAllTimetables().subscribe({
       next: (res) => {
-        if (res?.data?.id) {
-          this.selectedTimetable = res.data;
+        const timetables = res.data || [];
+        const timetableWithClass = timetables.find(
+          (t) => t.classSchedules && t.classSchedules[classId],
+        );
+
+        if (timetableWithClass) {
+          this.selectedTimetable = timetableWithClass;
         } else {
           this.selectedTimetable = null;
           this.error = 'No timetable found for this class';
@@ -166,71 +182,90 @@ export class TimetableListComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        if (err?.status === 404) {
-          this.selectedTimetable = null;
-          this.error = 'No timetable found for this class';
-        } else {
-          this.selectedTimetable = null;
-          this.error = 'Failed to fetch timetable';
-        }
+        this.selectedTimetable = null;
+        this.error = 'Failed to fetch timetable';
         this.loading = false;
       },
     });
   }
-
   // Safe getter for lessons
   getLessons(day: string): string[] {
-    if (!this.selectedTimetable?.schedule) return [];
+    if (
+      !this.selectedTimetable ||
+      !this.selectedClassId ||
+      !this.selectedTimetable.classSchedules
+    )
+      return [];
+
+    const classSchedule =
+      this.selectedTimetable.classSchedules[this.selectedClassId];
+    if (!classSchedule) return [];
+
     const key = day.toUpperCase();
-    return this.selectedTimetable.schedule[key] || [];
+    return classSchedule.schedule[key] || [];
   }
 
   deleteTimetable() {
-    if (!this.selectedClassId) return;
+    if (!this.selectedTimetable || !this.selectedTimetable.name) return;
     if (!confirm('Are you sure you want to delete this timetable?')) return;
 
     this.loading = true;
     this.error = null;
 
-    this.timetableService.deleteByClass(this.selectedClassId).subscribe({
-      next: () => {
-        this.selectedTimetable = null;
-        this.loading = false;
-        this.toast.success('Timetable deleted successfully!');
-        (this, this.ngOnInit());
-      },
-      error: () => {
-        this.error = 'Failed to delete timetable';
-        this.loading = false;
-      },
-    });
+    // Use delete by name instead of by class
+    this.timetableService
+      .deleteTimetableByName(this.selectedTimetable.name)
+      .subscribe({
+        next: () => {
+          this.selectedTimetable = null;
+          this.loading = false;
+          this.toast.success('Timetable deleted successfully!');
+          // Refresh the list
+          this.loadClasses();
+          this.loadAllTimetables();
+        },
+        error: () => {
+          this.error = 'Failed to delete timetable';
+          this.loading = false;
+        },
+      });
   }
 
   downloadPDF() {
-    if (!this.selectedClassId) return;
+    if (
+      !this.selectedTimetable ||
+      !this.selectedClassId ||
+      !this.selectedTimetable.name
+    )
+      return;
 
     this.loading = true;
     this.error = null;
 
-    this.timetableService.downloadPDF(this.selectedClassId).subscribe({
-      next: (blob: Blob) => {
-        this.loading = false;
+    // Use new download method with timetable name and class ID
+    this.timetableService
+      .downloadClassTimetablePDF(
+        this.selectedTimetable.name,
+        this.selectedClassId,
+      )
+      .subscribe({
+        next: (blob: Blob) => {
+          this.loading = false;
 
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `timetable-${this.selectedClassId}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.error = 'Failed to download PDF';
-        console.error(err);
-      },
-    });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `timetable-${this.selectedClassId}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          this.loading = false;
+          this.error = 'Failed to download PDF';
+          console.error(err);
+        },
+      });
   }
-
   trackByIndex(index: number) {
     return index;
   }
@@ -246,9 +281,11 @@ export class TimetableListComponent implements OnInit {
 
   // Get number of classes with timetables
   getClassesWithTimetable(): number {
-    // This would ideally come from an API that returns count
-    // For now, we'll return a placeholder
-    return Math.floor(this.classes.length * 0.6); // Example: 60% have timetables
+    let count = 0;
+    this.timetableStatuses.forEach((hasTimetable) => {
+      if (hasTimetable) count++;
+    });
+    return count;
   }
 
   // Select class from card click
@@ -303,5 +340,176 @@ export class TimetableListComponent implements OnInit {
     const coverage =
       (this.getClassesWithTimetable() / this.classes.length) * 100;
     return Math.round(coverage);
+  }
+
+  hasTimetableForSelectedClass(): boolean {
+    if (
+      !this.selectedTimetable ||
+      !this.selectedClassId ||
+      !this.selectedTimetable.classSchedules
+    ) {
+      return false;
+    }
+    return !!this.selectedTimetable.classSchedules[this.selectedClassId];
+  }
+
+  get currentClassSchedule(): ClassScheduleData | null {
+    if (
+      !this.selectedTimetable ||
+      !this.selectedClassId ||
+      !this.selectedTimetable.classSchedules
+    ) {
+      return null;
+    }
+    return this.selectedTimetable.classSchedules[this.selectedClassId] || null;
+  }
+
+  getSelectedTimetableName(): string {
+    return this.selectedTimetable?.name || '--';
+  }
+
+  getTimetableDescription(): string {
+    return this.selectedTimetable?.description || 'No description';
+  }
+
+  getTimetableCreatedDate(): string {
+    if (!this.selectedTimetable?.createdAt) return '--';
+    return new Date(this.selectedTimetable.createdAt).toLocaleDateString();
+  }
+
+  isTimetableActive(): boolean {
+    return this.selectedTimetable?.isActive || false;
+  }
+
+  setAsActiveTimetable() {
+    if (!this.selectedTimetable) return;
+
+    this.loading = true;
+    this.timetableService
+      .setActiveTimetable(this.selectedTimetable.id)
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.toast.success('Timetable set as active successfully!');
+          // Refresh to show updated status
+          this.loadClasses();
+        },
+        error: (err) => {
+          this.loading = false;
+          this.toast.apiError('Failed to set timetable as active', err);
+        },
+      });
+  }
+
+  downloadCompleteTimetablePDF() {
+    if (!this.selectedTimetable?.name) return;
+
+    this.loading = true;
+    this.error = null;
+
+    this.timetableService
+      .downloadCompleteTimetablePDF(this.selectedTimetable.name)
+      .subscribe({
+        next: (blob: Blob) => {
+          this.loading = false;
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `complete-timetable-${this.selectedTimetable?.name}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          this.loading = false;
+          this.error = 'Failed to download complete PDF';
+          console.error(err);
+        },
+      });
+  }
+
+  loadAllTimetables() {
+    this.timetableService.getAllTimetables().subscribe({
+      next: (res) => {
+        this.allTimetables = res.data || [];
+
+        // Auto-select the active timetable if available
+        const activeTimetable = this.allTimetables.find((t) => t.isActive);
+        if (activeTimetable) {
+          this.selectedTimetableId = activeTimetable.id;
+          this.selectedTimetable = activeTimetable;
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load timetables:', err);
+      },
+    });
+  }
+
+  selectTimetableById(timetableId: string) {
+    this.timetableService.getTimetableById(timetableId).subscribe({
+      next: (res) => {
+        this.selectedTimetable = res.data;
+      },
+      error: (err) => {
+        this.toast.apiError('Failed to load timetable', err);
+      },
+    });
+  }
+
+  getTotalClassesInTimetable(): number {
+    if (!this.selectedTimetable?.classSchedules) return 0;
+    return Object.keys(this.selectedTimetable.classSchedules).length;
+  }
+
+  getActiveTimetableName(): string {
+    const activeTimetable = this.allTimetables.find((t) => t.isActive);
+    return activeTimetable?.name || '--';
+  }
+
+  getTimetableCount(): number {
+    return this.allTimetables.length;
+  }
+
+  onTimetableSelect() {
+    if (!this.selectedTimetableId) {
+      this.selectedTimetable = null;
+      this.selectedClassId = null;
+      return;
+    }
+
+    this.isSelectingTimetable = true;
+    this.loading = true;
+    this.error = null;
+
+    this.timetableService.getTimetableById(this.selectedTimetableId).subscribe({
+      next: (res) => {
+        this.selectedTimetable = res.data;
+
+        // If teacher is viewing, auto-select their class if it exists in this timetable
+        if (
+          this.teacherClassId &&
+          this.selectedTimetable?.classSchedules?.[this.teacherClassId]
+        ) {
+          this.selectedClassId = this.teacherClassId;
+        } else {
+          // Otherwise, select the first class in the timetable
+          const classIds = this.selectedTimetable?.classSchedules
+            ? Object.keys(this.selectedTimetable.classSchedules)
+            : [];
+          this.selectedClassId = classIds.length > 0 ? classIds[0] : null;
+        }
+
+        this.loading = false;
+        this.isSelectingTimetable = false;
+      },
+      error: (err) => {
+        this.selectedTimetable = null;
+        this.selectedClassId = null;
+        this.error = 'Failed to load timetable';
+        this.loading = false;
+        this.isSelectingTimetable = false;
+        this.toast.apiError('Failed to load timetable', err);
+      },
+    });
   }
 }

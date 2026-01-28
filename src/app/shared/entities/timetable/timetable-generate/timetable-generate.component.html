@@ -29,144 +29,38 @@
 
                     <form [formGroup]="generateForm" (ngSubmit)="generateTimetable()" class="space-y-8">
 
-                        <!-- Class Selection -->
+                        <!-- Timetable Name Input -->
                         <div class="bg-gradient-to-b from-blue-50 to-white p-5 rounded-xl border border-blue-100">
                             <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                <i class="fas fa-school text-blue-500"></i>
-                                Select Class
+                                <i class="fas fa-tag text-blue-500"></i>
+                                Timetable Name
                             </label>
-                            <div class="relative group">
+                            <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <div class="p-2 bg-blue-50 rounded-lg">
-                                        <i class="fas fa-users text-blue-500"></i>
+                                        <i class="fas fa-file-signature text-blue-500"></i>
                                     </div>
                                 </div>
-                                <select formControlName="classId"
-                                    class="w-full pl-16 pr-4 py-3.5 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none cursor-pointer text-gray-700">
-                                    <option value="">-- Select a class --</option>
-                                    <option *ngFor="let cls of classes" [value]="cls.id">
-                                        FORM {{ cls.form }} - {{ cls.stream }} ({{ cls.year }})
-                                    </option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-chevron-down text-blue-400"></i>
-                                </div>
+                                <input type="text" formControlName="timetableName"
+                                    class="w-full pl-16 pr-4 py-3.5 bg-white border-2 border-blue-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 text-gray-700"
+                                    placeholder="e.g., Spring 2024 Timetable" />
                             </div>
                             <div class="mt-3 text-xs text-gray-500 flex items-center gap-2">
                                 <i class="fas fa-info-circle text-blue-400"></i>
-                                Select the class for which you want to generate a timetable
+                                Enter a descriptive name for this timetable
                             </div>
                         </div>
 
-                        <!-- Subjects Section -->
-                        <div class="bg-gradient-to-b from-blue-50 to-white p-5 rounded-xl border border-blue-100">
-                            <div class="flex items-center justify-between mb-3">
-                                <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <i class="fas fa-book text-blue-500"></i>
-                                    Available Subjects
-                                </label>
-                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                    {{ subjects.length }} subjects
-                                </span>
+                        <div *ngIf="generateForm.get('timetableName')?.touched && generateForm.get('timetableName')?.errors"
+                            class="mt-2">
+                            <div *ngIf="generateForm.get('timetableName')?.errors?.['required']"
+                                class="text-red-500 text-xs">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Timetable name is required
                             </div>
-
-                            <!-- Loading State for Subjects -->
-                            <div *ngIf="loading && !subjects.length" class="py-8 text-center">
-                                <div
-                                    class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="fas fa-spinner fa-spin text-blue-600"></i>
-                                </div>
-                                <p class="text-sm text-gray-500">Loading subjects...</p>
+                            <div *ngIf="generateForm.get('timetableName')?.errors?.['minlength']"
+                                class="text-red-500 text-xs">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Minimum 3 characters required
                             </div>
-
-                            <!-- Subjects List -->
-                            <div *ngIf="subjects.length > 0"
-                                class="border-2 border-blue-100 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
-                                <div *ngFor="let subject of subjects; let last = last"
-                                    class="flex items-center gap-3 p-4 hover:bg-blue-50/50 transition-colors border-b border-blue-50 last:border-0">
-                                    <div
-                                        class="w-10 h-10 bg-gradient-to-br from-blue-100 to-sky-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-book-open text-blue-600"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="font-medium text-gray-900">{{ subject.name.toUpperCase() }}</div>
-                                        <div class="text-xs text-gray-500">Subject ID: {{ subject.id?.slice(0, 8) ||
-                                            'N/A' }}</div>
-                                    </div>
-                                    <div class="text-green-600">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Empty State for Subjects -->
-                            <div *ngIf="!loading && !subjects.length && generateForm.get('classId')?.value"
-                                class="py-6 text-center">
-                                <div
-                                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="fas fa-book text-gray-400"></i>
-                                </div>
-                                <p class="text-sm text-gray-500">No subjects found for this class</p>
-                            </div>
-
-                            <div *ngIf="!generateForm.get('classId')?.value" class="py-4 text-center">
-                                <p class="text-sm text-gray-500">Select a class to view available subjects</p>
-                            </div>
-                        </div>
-
-                        <!-- Teacher Information Section -->
-                        <div *ngIf="classTeachers.length > 0"
-                            class="bg-gradient-to-b from-blue-50 to-white p-5 rounded-xl border border-blue-100">
-                            <div class="flex items-center justify-between mb-3">
-                                <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <i class="fas fa-chalkboard-teacher text-blue-500"></i>
-                                    Assigned Teachers
-                                </label>
-                                <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                                    {{ classTeachers.length }} teachers
-                                </span>
-                            </div>
-
-                            <!-- Teacher Conflicts Warning -->
-                            <div *ngIf="hasTeacherConflicts"
-                                class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-exclamation-triangle text-amber-600"></i>
-                                    <span class="text-sm font-medium text-amber-800">
-                                        {{ teacherConflicts.length }} scheduling conflict(s) detected
-                                    </span>
-                                </div>
-                                <p class="text-xs text-amber-600 mt-1">
-                                    Timetable will automatically adjust to resolve conflicts
-                                </p>
-                            </div>
-
-                            <!-- Teachers List -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div *ngFor="let teacher of classTeachers"
-                                    class="p-3 bg-white border border-blue-100 rounded-lg hover:bg-blue-50/50 transition-colors">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-user-tie text-purple-600"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="font-medium text-gray-900">{{ teacher.name }}</div>
-                                            <div class="text-xs text-gray-500 flex items-center gap-1">
-                                                <i class="fas fa-book text-blue-400"></i>
-                                                {{ teacher.subject }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div *ngIf="loadingTeachers" class="py-4 text-center">
-                            <div
-                                class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2">
-                            </div>
-                            <p class="text-xs text-gray-500">Loading teacher assignments...</p>
                         </div>
 
                         <!-- Lessons Per Day -->
@@ -200,13 +94,40 @@
                             </div>
                         </div>
 
+
+
+
+
+
+
+
+
+
+                        <!-- Multi-Class Generation Note -->
+                        <div class="bg-gradient-to-b from-amber-50 to-yellow-50 p-4 rounded-xl border border-amber-100">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-amber-100 rounded-lg">
+                                    <i class="fas fa-info-circle text-amber-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h5 class="text-sm font-semibold text-amber-800 mb-1">Note: Multi-Class Generation
+                                    </h5>
+                                    <p class="text-xs text-amber-600">
+                                        This will generate timetables for <span class="font-medium">all classes</span>
+                                        at once.
+
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Generate Button -->
                         <button type="submit" [disabled]="loading || !generateForm.valid"
                             [class]="loading || !generateForm.valid 
-                ? 'w-full px-6 py-4 bg-gray-300 text-gray-500 rounded-xl shadow cursor-not-allowed font-medium flex items-center justify-center gap-3'
-                : 'w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5 font-medium flex items-center justify-center gap-3'">
-                            <i class="fas fa-magic"></i>
-                            {{ loading ? 'Generating...' : 'Generate Timetable' }}
+                        ? 'w-full px-6 py-4 bg-gray-300 text-gray-500 rounded-xl shadow cursor-not-allowed font-medium flex items-center justify-center gap-3'
+                        : 'w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-sky-700 transition-all duration-200 transform hover:-translate-y-0.5 font-medium flex items-center justify-center gap-3'">
+                            <i class="fas fa-cogs"></i>
+                            {{ loading ? 'Generating...' : 'Generate Timetable for All Classes' }}
                         </button>
                     </form>
                 </div>
@@ -248,31 +169,24 @@
                         Preview Stats
                     </h3>
                     <div class="space-y-4">
-                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+
+                        <!-- Timetable Name -->
+                        <div class="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
                             <div class="flex items-center gap-3">
-                                <div class="p-2 bg-blue-100 rounded-lg">
-                                    <i class="fas fa-school text-blue-600"></i>
+                                <div class="p-2 bg-indigo-100 rounded-lg">
+                                    <i class="fas fa-tag text-indigo-600"></i>
                                 </div>
                                 <div>
-                                    <div class="text-sm text-gray-600">Selected Class</div>
+                                    <div class="text-sm text-gray-600">Timetable Name</div>
                                     <div class="font-semibold text-gray-800">
-                                        {{ getSelectedClassInfo().form }} {{ getSelectedClassInfo().stream }}
+                                        {{ generateForm.get('timetableName')?.value || 'Not set' }}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-green-100 rounded-lg">
-                                    <i class="fas fa-book text-green-600"></i>
-                                </div>
-                                <div>
-                                    <div class="text-sm text-gray-600">Subjects</div>
-                                    <div class="font-semibold text-gray-800">{{ subjects.length }}</div>
-                                </div>
-                            </div>
-                        </div>
+
+
 
                         <div class="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
                             <div class="flex items-center gap-3">
@@ -310,185 +224,18 @@
                         Quick Guide
                     </h4>
                     <ul class="space-y-3 text-sm text-gray-600">
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-                            <span>Select a class to see its available subjects</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-                            <span>All subjects for the selected class will be automatically included</span>
-                        </li>
+
+
                         <li class="flex items-start gap-2">
                             <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
                             <span>Adjust lessons per day based on your school's schedule</span>
                         </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
-                            <span>Review the generated timetable before saving</span>
-                        </li>
+
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Generated Timetable Section -->
-        <div *ngIf="generatedTimetable?.schedule" class="mt-8">
-            <div class="bg-white rounded-2xl border border-blue-100 shadow-lg overflow-hidden">
-                <!-- Timetable Header -->
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-100">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2.5 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg shadow">
-                                <i class="fas fa-table text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Generated Timetable</h3>
-                                <p class="text-sm text-gray-600">
-                                    Preview the automatically generated schedule
-                                </p>
-                            </div>
-                        </div>
 
-                        <!-- Save Button -->
-                        <button (click)="saveTimetable()" [disabled]="saving"
-                            [class]="saving 
-                ? 'inline-flex items-center gap-2 px-5 py-2.5 bg-gray-300 text-gray-500 rounded-xl cursor-not-allowed'
-                : 'inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl shadow hover:shadow-lg hover:from-green-700 hover:to-emerald-700 transition-all'">
-                            <i class="fas fa-save"></i>
-                            <span class="font-medium">{{ saving ? 'Saving...' : 'Save Timetable' }}</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Timetable Table -->
-                <div class="p-6 overflow-x-auto">
-                    <table
-                        class="min-w-full divide-y divide-blue-100 border border-blue-100 rounded-xl overflow-hidden">
-                        <thead>
-                            <!-- Update the timetable table header -->
-                            <tr class="bg-gradient-to-r from-blue-50 to-sky-50">
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-calendar-day text-blue-500"></i>
-                                        <span>Day</span>
-                                    </div>
-                                </th>
-                                <th *ngFor="let lesson of getLessons('MONDAY'); let i = index"
-                                    class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                                    <div class="flex flex-col items-center gap-1">
-                                        <div
-                                            class="w-8 h-8 bg-gradient-to-br from-blue-100 to-sky-100 rounded-lg flex items-center justify-center">
-                                            <span class="font-bold text-blue-600">{{ i + 1 }}</span>
-                                        </div>
-                                        <span>Period {{ i + 1 }}</span>
-                                        <span class="text-xs font-normal text-gray-500">Teacher</span>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-blue-50">
-                            <tr *ngFor="let day of weekDays; let even = even"
-                                class="hover:bg-blue-50/30 transition-colors">
-                                <!-- Day Column -->
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-12 h-12 bg-gradient-to-br from-blue-100 to-sky-100 rounded-xl flex items-center justify-center">
-                                            <i class="fas fa-calendar text-blue-600"></i>
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-gray-900">{{ day }}</div>
-                                            <div class="text-xs text-gray-500">{{ getLessons(day).length }} lessons
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <!-- Lesson Columns -->
-                                <td *ngFor="let lesson of getLessons(day); let lessonIndex = index"
-                                    class="px-6 py-4 whitespace-nowrap">
-                                    <div class="p-3 rounded-lg border transition-all duration-200" [ngClass]="{
-                            'border-green-200 bg-green-50': lesson && lesson.includes('-'),
-                            'border-purple-200 bg-purple-50': lesson && !lesson.includes('-') && lesson !== 'FREE',
-                            'border-gray-200 bg-gray-50': !lesson || lesson === 'FREE',
-                            'hover:shadow-md hover:border-blue-300': lesson
-                          }">
-                                        <div *ngIf="lesson && lesson !== 'FREE'; else emptyLesson">
-                                            <!-- Split subject and teacher if format is "Subject - Teacher" -->
-                                            <div *ngIf="lesson.includes('-'); else simpleLesson" class="space-y-1">
-                                                <div class="text-sm font-semibold text-gray-900">
-                                                    {{ lesson.split(' - ')[0] }}
-                                                </div>
-                                                <div class="text-xs text-purple-600 flex items-center gap-1">
-                                                    <i class="fas fa-chalkboard-teacher"></i>
-                                                    {{ lesson.split(' - ')[1] }}
-                                                </div>
-                                            </div>
-                                            <ng-template #simpleLesson>
-                                                <div class="text-sm font-medium text-gray-900">{{ lesson }}</div>
-                                            </ng-template>
-                                        </div>
-                                        <ng-template #emptyLesson>
-                                            <div class="text-sm text-gray-400 italic">Free period</div>
-                                        </ng-template>
-                                        <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                            <i class="fas fa-clock text-gray-400"></i>
-                                            <span>Period {{ lessonIndex + 1 }}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Timetable Summary -->
-                <div class="px-6 py-4 border-t border-blue-100 bg-blue-50/30">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
-                            <div class="p-2 bg-blue-100 rounded-lg">
-                                <i class="fas fa-calendar-week text-blue-600"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">School Days</div>
-                                <div class="text-lg font-bold text-gray-800">{{ weekDays.length }}</div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
-                            <div class="p-2 bg-green-100 rounded-lg">
-                                <i class="fas fa-book text-green-600"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">Total Lessons</div>
-                                <div class="text-lg font-bold text-gray-800">
-                                    {{ weekDays.length * getLessons('MONDAY').length }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
-                            <div class="p-2 bg-amber-100 rounded-lg">
-                                <i class="fas fa-clock text-amber-600"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">Subjects Used</div>
-                                <div class="text-lg font-bold text-gray-800">{{ subjects.length }}</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
-                            <div class="p-2 bg-purple-100 rounded-lg">
-                                <i class="fas fa-chalkboard-teacher text-purple-600"></i>
-                            </div>
-                            <div>
-                                <div class="text-sm text-gray-600">Teachers Assigned</div>
-                                <div class="text-lg font-bold text-gray-800">{{ classTeachers.length }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
