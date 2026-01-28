@@ -101,7 +101,7 @@ export class ResultService {
 
     return this.http.post<
       ApiResponse<{ created: number; updated: number; deleted: number }>
-    >(`${this.baseUrl}/upload`, formData, { withCredentials: true });
+    >(`${this.baseUrl}/upload`, formData);
   }
 
   /** Get results per exam */
@@ -112,18 +112,13 @@ export class ResultService {
     const url = classId
       ? `${this.baseUrl}/exam/${examId}/class/${classId}`
       : `${this.baseUrl}/exam/${examId}`;
-    return this.http.get<ApiResponse<ExamResultsResponse>>(url, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<ExamResultsResponse>>(url);
   }
 
   /** Get results per student */
   getByStudent(studentId: string): Observable<ApiResponse<Result[]>> {
     return this.http.get<ApiResponse<Result[]>>(
       `${this.baseUrl}/student/${studentId}`,
-      {
-        withCredentials: true,
-      },
     );
   }
 
@@ -133,7 +128,6 @@ export class ResultService {
   ): Observable<ApiResponse<StudentComparison[]>> {
     return this.http.get<ApiResponse<StudentComparison[]>>(
       `${this.baseUrl}/student/${studentId}/compare`,
-      { withCredentials: true },
     );
   }
 
@@ -143,7 +137,6 @@ export class ResultService {
   ): Observable<ApiResponse<SubjectProgression>> {
     return this.http.get<ApiResponse<SubjectProgression>>(
       `${this.baseUrl}/student/${studentId}/progression`,
-      { withCredentials: true },
     );
   }
 
@@ -153,7 +146,6 @@ export class ResultService {
   ): Observable<ApiResponse<StudentImprovement[] | null>> {
     return this.http.get<ApiResponse<StudentImprovement[] | null>>(
       `${this.baseUrl}/student/${studentId}/improvement`,
-      { withCredentials: true },
     );
   }
 
@@ -161,7 +153,6 @@ export class ResultService {
   getExamAnalytics(examId: string): Observable<ApiResponse<ExamAnalytics>> {
     return this.http.get<ApiResponse<ExamAnalytics>>(
       `${this.baseUrl}/analytics/${examId}`,
-      { withCredentials: true },
     );
   }
 
@@ -172,7 +163,6 @@ export class ResultService {
     return this.http.post<ApiResponse<Record<string, any>>>(
       `${this.baseUrl}/classes/compare`,
       { examIds },
-      { withCredentials: true },
     );
   }
 
@@ -183,7 +173,6 @@ export class ResultService {
   ): Observable<ApiResponse<SubjectAnalysis>> {
     return this.http.get<ApiResponse<SubjectAnalysis>>(
       `${this.baseUrl}/analyze/${examId}/${subject}`,
-      { withCredentials: true },
     );
   }
 
@@ -193,7 +182,6 @@ export class ResultService {
   ): Observable<ApiResponse<number | null>> {
     return this.http.get<ApiResponse<number | null>>(
       `${this.baseUrl}/subject/${subject}/difficulty`,
-      { withCredentials: true },
     );
   }
 
@@ -201,7 +189,6 @@ export class ResultService {
   generateStudentReportPDF(studentId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/students/${studentId}/report-pdf`, {
       responseType: 'blob',
-      withCredentials: true,
     });
   }
 
@@ -209,7 +196,6 @@ export class ResultService {
   generateExamSummaryPDF(examId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/exams/${examId}/summary-pdf`, {
       responseType: 'blob',
-      withCredentials: true,
     });
   }
 
@@ -219,7 +205,6 @@ export class ResultService {
       `${this.baseUrl}/exams/${examId}/subject-analysis-pdf`,
       {
         responseType: 'blob',
-        withCredentials: true,
       },
     );
   }
@@ -239,14 +224,12 @@ export class ResultService {
 
     return this.http.get(url, {
       responseType: 'blob',
-      withCredentials: true,
     });
   }
   /** Generate Comprehensive Performance PDF */
   generateComprehensivePerformancePDF(examId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/exams/${examId}/comprehensive-pdf`, {
       responseType: 'blob',
-      withCredentials: true,
     });
   }
 

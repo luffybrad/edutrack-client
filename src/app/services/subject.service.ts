@@ -22,7 +22,6 @@ export interface Class {
   year: number;
 }
 
-
 @Injectable({ providedIn: 'root' })
 export class SubjectService {
   private baseUrl = `${environment.apiUrl}/subjects`;
@@ -30,62 +29,47 @@ export class SubjectService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<ApiResponse<Subject[]>> {
-    return this.http.get<ApiResponse<Subject[]>>(this.baseUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Subject[]>>(this.baseUrl);
   }
 
   getById(id: string): Observable<ApiResponse<Subject>> {
-    return this.http.get<ApiResponse<Subject>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Subject>>(`${this.baseUrl}/${id}`);
   }
 
   create(data: Subject): Observable<ApiResponse<Subject>> {
-    return this.http.post<ApiResponse<Subject>>(this.baseUrl, data, {
-      withCredentials: true,
-    });
+    return this.http.post<ApiResponse<Subject>>(this.baseUrl, data);
   }
 
   update(id: string, data: Subject): Observable<ApiResponse<Subject>> {
-    return this.http.put<ApiResponse<Subject>>(`${this.baseUrl}/${id}`, data, {
-      withCredentials: true,
-    });
+    return this.http.put<ApiResponse<Subject>>(`${this.baseUrl}/${id}`, data);
   }
 
   delete(id: string): Observable<ApiResponse<any>> {
-    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/${id}`);
   }
-
 
   // 🔹 Sync students assigned to a subject
   updateSubjectStudents(
     subjectId: string,
-    studentIds: string[]
+    studentIds: string[],
   ): Observable<ApiResponse<any>> {
     return this.http.put<ApiResponse<any>>(
       `${this.baseUrl}/${subjectId}/students`,
       { studentIds },
-      { withCredentials: true }
     );
   }
 
   // Get subjects offered by a class
-getSubjectsByClass(classId: string): Observable<ApiResponse<Subject[]>> {
-  return this.http.get<ApiResponse<Subject[]>>(
-    `${this.baseUrl}/class/${classId}`,
-    { withCredentials: true }
-  );
-}
+  getSubjectsByClass(classId: string): Observable<ApiResponse<Subject[]>> {
+    return this.http.get<ApiResponse<Subject[]>>(
+      `${this.baseUrl}/class/${classId}`,
+    );
+  }
 
-// Get classes offering a subject
-getClassesBySubject(subjectId: string): Observable<ApiResponse<Class[]>> {
-  return this.http.get<ApiResponse<Class[]>>(
-    `${this.baseUrl}/${subjectId}/classes`,
-    { withCredentials: true }
-  );
-}
-
+  // Get classes offering a subject
+  getClassesBySubject(subjectId: string): Observable<ApiResponse<Class[]>> {
+    return this.http.get<ApiResponse<Class[]>>(
+      `${this.baseUrl}/${subjectId}/classes`,
+    );
+  }
 }

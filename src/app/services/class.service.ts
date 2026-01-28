@@ -44,32 +44,22 @@ export class ClassService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<ApiResponse<Class[]>> {
-    return this.http.get<ApiResponse<Class[]>>(this.baseUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Class[]>>(this.baseUrl);
   }
 
   getById(id: string): Observable<ApiResponse<Class>> {
-    return this.http.get<ApiResponse<Class>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Class>>(`${this.baseUrl}/${id}`);
   }
 
   create(data: Class): Observable<ApiResponse<Class>> {
-    return this.http.post<ApiResponse<Class>>(this.baseUrl, data, {
-      withCredentials: true,
-    });
+    return this.http.post<ApiResponse<Class>>(this.baseUrl, data);
   }
 
   update(id: string, data: Class): Observable<ApiResponse<Class>> {
-    return this.http.put<ApiResponse<Class>>(`${this.baseUrl}/${id}`, data, {
-      withCredentials: true,
-    });
+    return this.http.put<ApiResponse<Class>>(`${this.baseUrl}/${id}`, data);
   }
 
   delete(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`);
   }
 }

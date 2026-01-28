@@ -85,52 +85,39 @@ export class TimetableService {
   generateForAllClasses(
     data: GenerateTimetableDto,
   ): Observable<ApiResponse<Timetable>> {
-    return this.http.post<ApiResponse<Timetable>>(
-      `${this.baseUrl}/generate`,
-      {
-        ...data,
-        lessonsPerDay: Number(data.lessonsPerDay),
-      },
-      { withCredentials: true },
-    );
+    return this.http.post<ApiResponse<Timetable>>(`${this.baseUrl}/generate`, {
+      ...data,
+      lessonsPerDay: Number(data.lessonsPerDay),
+    });
   }
 
   // Get all timetables
   getAllTimetables(): Observable<ApiResponse<Timetable[]>> {
-    return this.http.get<ApiResponse<Timetable[]>>(`${this.baseUrl}/`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Timetable[]>>(`${this.baseUrl}/`);
   }
 
   // Get timetable by name
   getTimetableByName(name: string): Observable<ApiResponse<Timetable>> {
     return this.http.get<ApiResponse<Timetable>>(
       `${this.baseUrl}/name/${name}`,
-      { withCredentials: true },
     );
   }
 
   // Get timetable by ID
   getTimetableById(id: string): Observable<ApiResponse<Timetable>> {
-    return this.http.get<ApiResponse<Timetable>>(`${this.baseUrl}/id/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Timetable>>(`${this.baseUrl}/id/${id}`);
   }
 
   // Get active timetable
   getActiveTimetable(): Observable<ApiResponse<Timetable>> {
-    return this.http.get<ApiResponse<Timetable>>(`${this.baseUrl}/active`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Timetable>>(`${this.baseUrl}/active`);
   }
 
   // Set active timetable
   setActiveTimetable(timetableId: string): Observable<ApiResponse<null>> {
-    return this.http.post<ApiResponse<null>>(
-      `${this.baseUrl}/active`,
-      { timetableId },
-      { withCredentials: true },
-    );
+    return this.http.post<ApiResponse<null>>(`${this.baseUrl}/active`, {
+      timetableId,
+    });
   }
 
   // Get class schedule from a specific timetable
@@ -140,7 +127,6 @@ export class TimetableService {
   ): Observable<ApiResponse<ClassTimetableResponse>> {
     return this.http.get<ApiResponse<ClassTimetableResponse>>(
       `${this.baseUrl}/${timetableName}/classes/${classId}`,
-      { withCredentials: true },
     );
   }
 
@@ -150,31 +136,22 @@ export class TimetableService {
   ): Observable<ApiResponse<TimetableStatistics>> {
     return this.http.get<ApiResponse<TimetableStatistics>>(
       `${this.baseUrl}/${timetableId}/statistics`,
-      { withCredentials: true },
     );
   }
 
   // Save or update timetable
   saveTimetable(data: Partial<Timetable>): Observable<ApiResponse<Timetable>> {
-    return this.http.post<ApiResponse<Timetable>>(
-      `${this.baseUrl}/save`,
-      data,
-      { withCredentials: true },
-    );
+    return this.http.post<ApiResponse<Timetable>>(`${this.baseUrl}/save`, data);
   }
 
   // Delete timetable by ID
   deleteTimetable(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/id/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/id/${id}`);
   }
 
   // Delete timetable by name
   deleteTimetableByName(name: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/name/${name}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/name/${name}`);
   }
 
   // Download PDF for a specific class from a timetable
@@ -186,7 +163,6 @@ export class TimetableService {
       `${this.baseUrl}/${timetableName}/classes/${classId}/pdf`,
       {
         responseType: 'blob',
-        withCredentials: true,
       },
     );
   }
@@ -195,7 +171,6 @@ export class TimetableService {
   downloadCompleteTimetablePDF(timetableName: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${timetableName}/pdf/complete`, {
       responseType: 'blob',
-      withCredentials: true,
     });
   }
 
@@ -207,7 +182,6 @@ export class TimetableService {
     return this.http.post<ApiResponse<any>>(
       `${this.baseUrl}/generate/single`,
       data,
-      { withCredentials: true },
     );
   }
 
@@ -216,9 +190,7 @@ export class TimetableService {
     console.warn(
       'Deprecated: Use getClassTimetable with timetable name instead',
     );
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/class/${classId}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/class/${classId}`);
   }
 
   // Deprecated: Delete timetable by class (old structure)
@@ -228,7 +200,6 @@ export class TimetableService {
     );
     return this.http.delete<ApiResponse<null>>(
       `${this.baseUrl}/class/${classId}`,
-      { withCredentials: true },
     );
   }
 
@@ -239,7 +210,6 @@ export class TimetableService {
     );
     return this.http.get(`${this.baseUrl}/class/${classId}/pdf`, {
       responseType: 'blob',
-      withCredentials: true,
     });
   }
 
@@ -247,7 +217,6 @@ export class TimetableService {
   getClassTeachers(classId: string): Observable<ApiResponse<TeacherInfo[]>> {
     return this.http.get<ApiResponse<TeacherInfo[]>>(
       `${environment.apiUrl}/teacher-subjects/class/${classId}/teachers`,
-      { withCredentials: true },
     );
   }
 

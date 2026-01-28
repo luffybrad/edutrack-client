@@ -53,33 +53,23 @@ export class TeacherService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<ApiResponse<Teacher[]>> {
-    return this.http.get<ApiResponse<Teacher[]>>(this.baseUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Teacher[]>>(this.baseUrl);
   }
 
   getById(id: string): Observable<ApiResponse<Teacher>> {
-    return this.http.get<ApiResponse<Teacher>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Teacher>>(`${this.baseUrl}/${id}`);
   }
 
   create(data: Teacher): Observable<ApiResponse<Teacher>> {
-    return this.http.post<ApiResponse<Teacher>>(this.baseUrl, data, {
-      withCredentials: true,
-    });
+    return this.http.post<ApiResponse<Teacher>>(this.baseUrl, data);
   }
 
   update(id: string, data: Teacher): Observable<ApiResponse<Teacher>> {
-    return this.http.put<ApiResponse<Teacher>>(`${this.baseUrl}/${id}`, data, {
-      withCredentials: true,
-    });
+    return this.http.put<ApiResponse<Teacher>>(`${this.baseUrl}/${id}`, data);
   }
 
   delete(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`);
   }
 
   /* -------------------- SUBJECT ASSIGNMENT METHODS -------------------- */
@@ -92,7 +82,6 @@ export class TeacherService {
     return this.http.post<ApiResponse<TeacherSubject>>(
       `${this.baseUrl}/${teacherId}/subjects`,
       data,
-      { withCredentials: true },
     );
   }
 
@@ -107,9 +96,7 @@ export class TeacherService {
       url += `?classId=${classId}`;
     }
 
-    return this.http.get<ApiResponse<TeacherSubject[]>>(url, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<TeacherSubject[]>>(url);
   }
 
   // Bulk assign multiple subjects
@@ -120,7 +107,6 @@ export class TeacherService {
     return this.http.post<ApiResponse<TeacherSubject[]>>(
       `${this.baseUrl}/${teacherId}/subjects/bulk`,
       data,
-      { withCredentials: true },
     );
   }
 
@@ -128,7 +114,6 @@ export class TeacherService {
   removeSubjectAssignment(assignmentId: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(
       `${this.baseUrl}/subjects/${assignmentId}`,
-      { withCredentials: true },
     );
   }
 
@@ -139,7 +124,6 @@ export class TeacherService {
   ): Observable<ApiResponse<TeacherSubject[]>> {
     return this.http.get<ApiResponse<TeacherSubject[]>>(
       `${this.baseUrl}/subjects/teachers?subjectId=${subjectId}&classId=${classId}`,
-      { withCredentials: true },
     );
   }
 }

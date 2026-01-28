@@ -33,32 +33,22 @@ export class GuardianService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<ApiResponse<Guardian[]>> {
-    return this.http.get<ApiResponse<Guardian[]>>(this.baseUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Guardian[]>>(this.baseUrl);
   }
 
   getById(id: string): Observable<ApiResponse<Guardian>> {
-    return this.http.get<ApiResponse<Guardian>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Guardian>>(`${this.baseUrl}/${id}`);
   }
 
   create(data: Guardian): Observable<ApiResponse<Guardian>> {
-    return this.http.post<ApiResponse<Guardian>>(this.baseUrl, data, {
-      withCredentials: true,
-    });
+    return this.http.post<ApiResponse<Guardian>>(this.baseUrl, data);
   }
 
   update(id: string, data: Guardian): Observable<ApiResponse<Guardian>> {
-    return this.http.put<ApiResponse<Guardian>>(`${this.baseUrl}/${id}`, data, {
-      withCredentials: true,
-    });
+    return this.http.put<ApiResponse<Guardian>>(`${this.baseUrl}/${id}`, data);
   }
 
   delete(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`);
   }
 }

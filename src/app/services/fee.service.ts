@@ -52,38 +52,26 @@ export class FeeService {
   // CRUD
   // -------------------
   getAll(): Observable<ApiResponse<FeeArrear[]>> {
-    return this.http.get<ApiResponse<FeeArrear[]>>(this.baseUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<FeeArrear[]>>(this.baseUrl);
   }
 
   getById(id: string): Observable<ApiResponse<FeeArrear>> {
-    return this.http.get<ApiResponse<FeeArrear>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<FeeArrear>>(`${this.baseUrl}/${id}`);
   }
 
   create(data: CreateFeeArrearDTO): Observable<ApiResponse<FeeArrear>> {
-    return this.http.post<ApiResponse<FeeArrear>>(this.baseUrl, data, {
-      withCredentials: true,
-    });
+    return this.http.post<ApiResponse<FeeArrear>>(this.baseUrl, data);
   }
 
   update(
     id: string,
-    data: Partial<FeeArrear>
+    data: Partial<FeeArrear>,
   ): Observable<ApiResponse<FeeArrear>> {
-    return this.http.put<ApiResponse<FeeArrear>>(
-      `${this.baseUrl}/${id}`,
-      data,
-      { withCredentials: true }
-    );
+    return this.http.put<ApiResponse<FeeArrear>>(`${this.baseUrl}/${id}`, data);
   }
 
   delete(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`);
   }
 
   // -------------------
@@ -92,28 +80,25 @@ export class FeeService {
   addTransaction(
     feeArrearId: string,
     transactionCode: string,
-    amountPaid: number
+    amountPaid: number,
   ): Observable<ApiResponse<FeeArrear>> {
     return this.http.post<ApiResponse<FeeArrear>>(
       `${this.baseUrl}/${feeArrearId}/transactions`,
       { transactionCode, amountPaid },
-      { withCredentials: true }
     );
   }
 
   getTransactions(
-    feeArrearId: string
+    feeArrearId: string,
   ): Observable<ApiResponse<FeeTransaction[]>> {
     return this.http.get<ApiResponse<FeeTransaction[]>>(
       `${this.baseUrl}/${feeArrearId}/transactions`,
-      { withCredentials: true }
     );
   }
 
   getAuditLogs(feeArrearId: string): Observable<ApiResponse<FeeAuditLog[]>> {
     return this.http.get<ApiResponse<FeeAuditLog[]>>(
       `${this.baseUrl}/${feeArrearId}/audit-logs`,
-      { withCredentials: true }
     );
   }
 
@@ -121,10 +106,8 @@ export class FeeService {
   // Bulk delete
   // -------------------
   bulkDelete(ids: string[]): Observable<ApiResponse<null>> {
-    return this.http.post<ApiResponse<null>>(
-      `${this.baseUrl}/bulk-delete`,
-      { ids },
-      { withCredentials: true }
-    );
+    return this.http.post<ApiResponse<null>>(`${this.baseUrl}/bulk-delete`, {
+      ids,
+    });
   }
 }
