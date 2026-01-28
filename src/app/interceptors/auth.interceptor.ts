@@ -1,49 +1,39 @@
 // src/app/interceptors/auth.interceptor.ts
-import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpErrorResponse,
-} from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
+import { catchError, throwError } from 'rxjs';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  private router = inject(Router);
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  intercept(
-    req: HttpRequest<any>,
-    next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
-    // Clone request and add withCredentials
-    const cloned = req.clone({
-      withCredentials: true, // This sends cookies automatically
+  // Get token from auth service
+  const token = authService.getToken();
+
+  // Clone request and add Authorization header if token exists
+  let clonedReq = req;
+  if (token) {
+    clonedReq = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-
-    return next.handle(cloned).pipe(
-      catchError((error: HttpErrorResponse) => {
-        // Handle 401 Unauthorized errors (token expired)
-        if (error.status === 401) {
-          // Clear any local storage
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-
-          // Redirect to login
-          this.router.navigate(['/login']);
-        }
-
-        // Handle CORS errors
-        if (error.status === 0) {
-          console.error('CORS error or network issue:', error);
-        }
-
-        return throwError(() => error);
-      }),
-    );
   }
-}
+
+  return next(clonedReq).pipe(
+    catchError((error) => {
+      // Handle 401 Unauthorized errors
+      if (error.status === 401) {
+        // Clear auth data
+        authService.logout();
+
+        // Redirect to login
+        router.navigate(['/login']);
+      }
+
+      return throwError(() => error);
+    }),
+  );
+};

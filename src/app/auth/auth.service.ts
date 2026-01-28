@@ -8,11 +8,21 @@ import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../shared/utils/api-response';
 
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string; // ✅ JWT token in response
+    user: any;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentRole: RoleType | null = null;
   private loggedIn$ = new BehaviorSubject<boolean>(false);
   private profile$ = new BehaviorSubject<any>(null);
+  private tokenKey = 'auth_token'; // ✅ Token storage key
 
   constructor(
     private http: HttpClient,
@@ -21,36 +31,47 @@ export class AuthService {
     this.restoreFromStorage();
   }
 
-  // Persist profile & role to localStorage
-  private persistSession(profile: any) {
+  // ✅ Store token and profile
+  private persistSession(token: string, profile: any) {
     this.currentRole = profile.role;
+    localStorage.setItem(this.tokenKey, token); // ✅ Store JWT token
     localStorage.setItem('user_role', profile.role);
     localStorage.setItem('user_profile', JSON.stringify(profile));
     this.profile$.next(profile);
+    this.loggedIn$.next(true);
   }
 
-  // Load from localStorage
+  // ✅ Load from localStorage
   private restoreFromStorage() {
+    const token = localStorage.getItem(this.tokenKey);
     const role = localStorage.getItem('user_role') as RoleType;
     const profile = localStorage.getItem('user_profile');
-    if (role) this.currentRole = role;
-    if (profile) this.profile$.next(JSON.parse(profile));
+
+    if (token && role) {
+      this.currentRole = role;
+      if (profile) this.profile$.next(JSON.parse(profile));
+      this.loggedIn$.next(true);
+    }
   }
 
-  // Clear everything on logout
+  // ✅ Clear everything on logout
   private clearSession() {
     this.currentRole = null;
     this.loggedIn$.next(false);
     this.profile$.next(null);
+    localStorage.removeItem(this.tokenKey); // ✅ Remove token
     localStorage.removeItem('user_role');
     localStorage.removeItem('user_profile');
   }
 
-  login(role: RoleType, data: any) {
+  // ✅ Login - Store token from response
+  login(role: RoleType, data: any): Observable<LoginResponse> {
     this.currentRole = role;
-    return this.http.post(AuthEndpoints.login[role], data).pipe(
-      tap(() => {
-        this.loggedIn$.next(true); // 🔐 optimistic
+    return this.http.post<LoginResponse>(AuthEndpoints.login[role], data).pipe(
+      tap((response) => {
+        if (response.success && response.data.token) {
+          this.persistSession(response.data.token, response.data.user);
+        }
       }),
     );
   }
@@ -83,8 +104,6 @@ export class AuthService {
         tap((res) => {
           const profile = res?.data;
           this.loggedIn$.next(true);
-          this.persistSession(profile); // ✅ Save to localStorage + update BehaviorSubject!
-
           this.currentRole = profile?.role ?? null;
         }),
         catchError((err) => {
@@ -98,27 +117,30 @@ export class AuthService {
     return this.http.put(AuthEndpoints.profile, data);
   }
 
-  // In AuthService class
   changePassword(data: { currentPassword: string; newPassword: string }) {
     return this.http.post<ApiResponse<null>>(
-      AuthEndpoints.changePassword, // Use the defined endpoint
+      AuthEndpoints.changePassword,
       data,
     );
   }
 
+  // ✅ Logout - No withCredentials needed
   logout() {
-    this.http
-      .post(AuthEndpoints.logout, {}, { withCredentials: true })
-      .subscribe({
-        next: () => {
-          this.clearSession();
-          this.router.navigate(['/login']);
-        },
-        error: () => {
-          this.clearSession();
-          this.router.navigate(['/login']);
-        },
-      });
+    this.http.post(AuthEndpoints.logout, {}).subscribe({
+      next: () => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      },
+    });
+  }
+
+  // ✅ Get token for interceptor
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
   }
 
   setRole(role: RoleType) {
@@ -140,5 +162,10 @@ export class AuthService {
 
   isLoggedIn(): Observable<boolean> {
     return this.loggedIn$.asObservable();
+  }
+
+  // ✅ Check if user is authenticated
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 }
