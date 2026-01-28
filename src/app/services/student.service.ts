@@ -30,43 +30,29 @@ export class StudentService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<ApiResponse<Student[]>> {
-    return this.http.get<ApiResponse<Student[]>>(this.baseUrl, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Student[]>>(this.baseUrl);
   }
 
   getById(id: string): Observable<ApiResponse<Student>> {
-    return this.http.get<ApiResponse<Student>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<Student>>(`${this.baseUrl}/${id}`);
   }
 
   create(data: Student): Observable<ApiResponse<Student>> {
-    return this.http.post<ApiResponse<Student>>(this.baseUrl, data, {
-      withCredentials: true,
-    });
+    return this.http.post<ApiResponse<Student>>(this.baseUrl, data);
   }
 
   update(id: string, data: Student): Observable<ApiResponse<Student>> {
-    return this.http.put<ApiResponse<Student>>(`${this.baseUrl}/${id}`, data, {
-      withCredentials: true,
-    });
+    return this.http.put<ApiResponse<Student>>(`${this.baseUrl}/${id}`, data);
   }
 
   delete(id: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`, {
-      withCredentials: true,
-    });
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${id}`);
   }
 
   bulkDelete(ids: string[]): Observable<ApiResponse<null>> {
-    return this.http.post<ApiResponse<null>>(
-      `${this.baseUrl}/bulk-delete`,
-      { ids },
-      {
-        withCredentials: true,
-      },
-    );
+    return this.http.post<ApiResponse<null>>(`${this.baseUrl}/bulk-delete`, {
+      ids,
+    });
   }
 
   // getSubjects(id: string): Observable<ApiResponse<any>> {

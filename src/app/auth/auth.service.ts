@@ -48,37 +48,23 @@ export class AuthService {
 
   login(role: RoleType, data: any) {
     this.currentRole = role;
-    return this.http
-      .post(AuthEndpoints.login[role], data, {
-        withCredentials: true, // ✅ Send/receive HttpOnly cookies
-      })
-      .pipe(
-        tap(() => {
-          this.loggedIn$.next(true); // 🔐 optimistic
-        }),
-      );
+    return this.http.post(AuthEndpoints.login[role], data).pipe(
+      tap(() => {
+        this.loggedIn$.next(true); // 🔐 optimistic
+      }),
+    );
   }
 
   signup(role: RoleType, data: any) {
-    return this.http.post(AuthEndpoints.signup[role], data, {
-      withCredentials: true,
-    });
+    return this.http.post(AuthEndpoints.signup[role], data);
   }
 
   forgotPassword(email: string, role: RoleType) {
-    return this.http.post(
-      AuthEndpoints.forgotPassword,
-      { email, role },
-      { withCredentials: true },
-    );
+    return this.http.post(AuthEndpoints.forgotPassword, { email, role });
   }
 
   resetPassword(token: string, newPassword: string) {
-    return this.http.post(
-      AuthEndpoints.resetPassword,
-      { token, newPassword },
-      { withCredentials: true },
-    );
+    return this.http.post(AuthEndpoints.resetPassword, { token, newPassword });
   }
 
   getProfile() {
@@ -92,9 +78,7 @@ export class AuthService {
           phone: string;
           role: RoleType;
         };
-      }>(AuthEndpoints.profile, {
-        withCredentials: true,
-      })
+      }>(AuthEndpoints.profile)
       .pipe(
         tap((res) => {
           const profile = res?.data;
@@ -111,9 +95,7 @@ export class AuthService {
   }
 
   updateProfile(data: any) {
-    return this.http.put(AuthEndpoints.profile, data, {
-      withCredentials: true,
-    });
+    return this.http.put(AuthEndpoints.profile, data);
   }
 
   // In AuthService class
@@ -121,7 +103,6 @@ export class AuthService {
     return this.http.post<ApiResponse<null>>(
       AuthEndpoints.changePassword, // Use the defined endpoint
       data,
-      { withCredentials: true },
     );
   }
 
