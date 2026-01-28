@@ -20,10 +20,27 @@ export interface Timetable {
   schedule?: TimetableSchedule;
 }
 
+// Add these interfaces
+export interface LessonWithTeacher {
+  subjectId: string;
+  subjectName: string;
+  teacherId?: string;
+  teacherName?: string;
+  isDoubleLesson: boolean;
+}
+
+export interface TeacherInfo {
+  id: string;
+  name: string;
+  subject: string;
+}
+
+// Update GenerateTimetableDto to include teacher validation
 export interface GenerateTimetableDto {
   classId: string;
   subjectIds: string[];
   lessonsPerDay: number;
+  considerTeacherAvailability?: boolean; // Add this
 }
 
 @Injectable({ providedIn: 'root' })
@@ -32,12 +49,18 @@ export class TimetableService {
 
   constructor(private http: HttpClient) {}
 
-  // Generate or regenerate timetable for a class
+  // Update generate method to include teacher consideration
   generate(data: GenerateTimetableDto): Observable<ApiResponse<Timetable>> {
+    // Add default value for teacher consideration
+    const requestData = {
+      ...data,
+      considerTeacherAvailability: data.considerTeacherAvailability ?? true,
+    };
+
     return this.http.post<ApiResponse<Timetable>>(
       `${this.baseUrl}/generate`,
-      data,
-      { withCredentials: true }
+      requestData,
+      { withCredentials: true },
     );
   }
 
@@ -46,24 +69,22 @@ export class TimetableService {
     return this.http.post<ApiResponse<Timetable>>(
       `${this.baseUrl}/save`,
       data,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
   // Get timetable for a specific class
   getByClass(classId: string): Observable<ApiResponse<Timetable>> {
-    return this.http.get<ApiResponse<Timetable>>(
-      `${this.baseUrl}/${classId}`,
-      { withCredentials: true }
-    );
+    return this.http.get<ApiResponse<Timetable>>(`${this.baseUrl}/${classId}`, {
+      withCredentials: true,
+    });
   }
 
   // Delete timetable for a specific class
   deleteByClass(classId: string): Observable<ApiResponse<null>> {
-    return this.http.delete<ApiResponse<null>>(
-      `${this.baseUrl}/${classId}`,
-      { withCredentials: true }
-    );
+    return this.http.delete<ApiResponse<null>>(`${this.baseUrl}/${classId}`, {
+      withCredentials: true,
+    });
   }
 
   // Download timetable PDF
@@ -72,5 +93,14 @@ export class TimetableService {
       responseType: 'blob',
       withCredentials: true,
     });
+  }
+
+  // Add this method to get teacher-subject assignments
+  // In timetable.service.ts - Update getClassTeachers method
+  getClassTeachers(classId: string): Observable<ApiResponse<TeacherInfo[]>> {
+    return this.http.get<ApiResponse<TeacherInfo[]>>(
+      `${this.baseUrl}/${classId}/teachers`, // Use timetable endpoint
+      { withCredentials: true },
+    );
   }
 }

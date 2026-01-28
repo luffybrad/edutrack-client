@@ -12,6 +12,7 @@ import {
   GenerateTimetableDto,
   Timetable,
   TimetableSchedule,
+  TeacherInfo,
 } from '../../../../services/timetable.service';
 import { ClassService, Class } from '../../../../services/class.service';
 import { SubjectService, Subject } from '../../../../services/subject.service';
@@ -40,6 +41,12 @@ export class TimetableGenerateComponent implements OnInit {
 
   role$: Observable<RoleType | null>;
   RoleType = RoleType;
+
+  // Add these properties
+  classTeachers: TeacherInfo[] = [];
+  teacherConflicts: any[] = [];
+  hasTeacherConflicts = false;
+  loadingTeachers = false;
 
   readonly weekDays: (keyof TimetableSchedule)[] = [
     'MONDAY',
@@ -97,12 +104,15 @@ export class TimetableGenerateComponent implements OnInit {
 
     this.loadClasses();
 
-    // Whenever class selection changes, fetch subjects
+    // Update the classId value change subscription
     this.generateForm.get('classId')?.valueChanges.subscribe((classId) => {
       if (classId) {
         this.loadSubjectsByClass(classId);
+        this.loadClassTeachers(classId); // Add this line
       } else {
         this.subjects = [];
+        this.classTeachers = []; // Add this line
+        this.hasTeacherConflicts = false;
       }
     });
   }
@@ -190,5 +200,22 @@ export class TimetableGenerateComponent implements OnInit {
       form: selectedClass?.form || '--',
       stream: selectedClass?.stream || '',
     };
+  }
+
+  private loadClassTeachers(classId: string) {
+    this.loadingTeachers = true;
+    this.timetableService.getClassTeachers(classId).subscribe({
+      next: (res) => {
+        this.classTeachers = res.data;
+        this.loadingTeachers = false;
+        // Remove this line since the route doesn't exist
+        // this.checkTeacherConflicts(classId);
+      },
+      error: (err) => {
+        this.classTeachers = [];
+        this.loadingTeachers = false;
+        console.warn('Could not load class teachers:', err);
+      },
+    });
   }
 }

@@ -114,6 +114,61 @@
                             </div>
                         </div>
 
+                        <!-- Teacher Information Section -->
+                        <div *ngIf="classTeachers.length > 0"
+                            class="bg-gradient-to-b from-blue-50 to-white p-5 rounded-xl border border-blue-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-chalkboard-teacher text-blue-500"></i>
+                                    Assigned Teachers
+                                </label>
+                                <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                                    {{ classTeachers.length }} teachers
+                                </span>
+                            </div>
+
+                            <!-- Teacher Conflicts Warning -->
+                            <div *ngIf="hasTeacherConflicts"
+                                class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle text-amber-600"></i>
+                                    <span class="text-sm font-medium text-amber-800">
+                                        {{ teacherConflicts.length }} scheduling conflict(s) detected
+                                    </span>
+                                </div>
+                                <p class="text-xs text-amber-600 mt-1">
+                                    Timetable will automatically adjust to resolve conflicts
+                                </p>
+                            </div>
+
+                            <!-- Teachers List -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div *ngFor="let teacher of classTeachers"
+                                    class="p-3 bg-white border border-blue-100 rounded-lg hover:bg-blue-50/50 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-user-tie text-purple-600"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-900">{{ teacher.name }}</div>
+                                            <div class="text-xs text-gray-500 flex items-center gap-1">
+                                                <i class="fas fa-book text-blue-400"></i>
+                                                {{ teacher.subject }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="loadingTeachers" class="py-4 text-center">
+                            <div
+                                class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2">
+                            </div>
+                            <p class="text-xs text-gray-500">Loading teacher assignments...</p>
+                        </div>
+
                         <!-- Lessons Per Day -->
                         <div class="bg-gradient-to-b from-blue-50 to-white p-5 rounded-xl border border-blue-100">
                             <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
@@ -310,6 +365,7 @@
                     <table
                         class="min-w-full divide-y divide-blue-100 border border-blue-100 rounded-xl overflow-hidden">
                         <thead>
+                            <!-- Update the timetable table header -->
                             <tr class="bg-gradient-to-r from-blue-50 to-sky-50">
                                 <th
                                     class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
@@ -320,12 +376,13 @@
                                 </th>
                                 <th *ngFor="let lesson of getLessons('MONDAY'); let i = index"
                                     class="px-6 py-4 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex flex-col items-center gap-1">
                                         <div
                                             class="w-8 h-8 bg-gradient-to-br from-blue-100 to-sky-100 rounded-lg flex items-center justify-center">
                                             <span class="font-bold text-blue-600">{{ i + 1 }}</span>
                                         </div>
-                                        <span>Lesson {{ i + 1 }}</span>
+                                        <span>Period {{ i + 1 }}</span>
+                                        <span class="text-xs font-normal text-gray-500">Teacher</span>
                                     </div>
                                 </th>
                             </tr>
@@ -352,12 +409,25 @@
                                 <td *ngFor="let lesson of getLessons(day); let lessonIndex = index"
                                     class="px-6 py-4 whitespace-nowrap">
                                     <div class="p-3 rounded-lg border transition-all duration-200" [ngClass]="{
-                      'border-green-200 bg-green-50': lesson,
-                      'border-gray-200 bg-gray-50': !lesson,
-                      'hover:shadow-md hover:border-blue-300': lesson
-                    }">
-                                        <div class="text-sm font-medium text-gray-900" *ngIf="lesson; else emptyLesson">
-                                            {{ lesson }}
+                            'border-green-200 bg-green-50': lesson && lesson.includes('-'),
+                            'border-purple-200 bg-purple-50': lesson && !lesson.includes('-') && lesson !== 'FREE',
+                            'border-gray-200 bg-gray-50': !lesson || lesson === 'FREE',
+                            'hover:shadow-md hover:border-blue-300': lesson
+                          }">
+                                        <div *ngIf="lesson && lesson !== 'FREE'; else emptyLesson">
+                                            <!-- Split subject and teacher if format is "Subject - Teacher" -->
+                                            <div *ngIf="lesson.includes('-'); else simpleLesson" class="space-y-1">
+                                                <div class="text-sm font-semibold text-gray-900">
+                                                    {{ lesson.split(' - ')[0] }}
+                                                </div>
+                                                <div class="text-xs text-purple-600 flex items-center gap-1">
+                                                    <i class="fas fa-chalkboard-teacher"></i>
+                                                    {{ lesson.split(' - ')[1] }}
+                                                </div>
+                                            </div>
+                                            <ng-template #simpleLesson>
+                                                <div class="text-sm font-medium text-gray-900">{{ lesson }}</div>
+                                            </ng-template>
                                         </div>
                                         <ng-template #emptyLesson>
                                             <div class="text-sm text-gray-400 italic">Free period</div>
@@ -405,6 +475,15 @@
                             <div>
                                 <div class="text-sm text-gray-600">Subjects Used</div>
                                 <div class="text-lg font-bold text-gray-800">{{ subjects.length }}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-chalkboard-teacher text-purple-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">Teachers Assigned</div>
+                                <div class="text-lg font-bold text-gray-800">{{ classTeachers.length }}</div>
                             </div>
                         </div>
                     </div>

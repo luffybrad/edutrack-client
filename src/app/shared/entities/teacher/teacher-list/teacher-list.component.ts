@@ -10,6 +10,7 @@ import { RouterModule } from '@angular/router';
 import { LoadingOverlayComponent } from '../../../components/loading-overlay/loading-overlay.component';
 import { map, Observable, Subject, debounceTime } from 'rxjs';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { SubjectService } from '../../../../services/subject.service';
 
 @Component({
   standalone: true,
@@ -37,13 +38,23 @@ export class TeacherListComponent implements OnInit {
   role$!: Observable<RoleType | null>;
   RoleType = RoleType;
 
+  // Add these properties after existing properties
+  subjectsModalOpen = false;
+  selectedTeacherForSubjects: Teacher | null = null;
+  teacherSubjects: any[] = [];
+  availableSubjects: any[] = [];
+  selectedSubjectIds: string[] = [];
+  assigningSubjects = false;
+  selectedClassForSubjects: string = '';
+
   private searchSubject = new Subject<string>();
 
   constructor(
     private teacherService: TeacherService,
     private classService: ClassService,
     private toast: ToastService,
-    private authService: AuthService
+    private authService: AuthService,
+    private subjectService: SubjectService,
   ) {}
 
   ngOnInit(): void {
@@ -94,7 +105,7 @@ export class TeacherListComponent implements OnInit {
     this.filteredTeachers = this.teachers.filter(
       (t) =>
         t.name.toLowerCase().includes(term) ||
-        t.email.toLowerCase().includes(term)
+        t.email.toLowerCase().includes(term),
     );
   }
 
@@ -153,5 +164,99 @@ export class TeacherListComponent implements OnInit {
     return this.teachers.length > 0
       ? Math.round((this.assignedTeachersCount / this.teachers.length) * 100)
       : 0;
+  }
+
+  openSubjectsModal(teacher: Teacher): void {
+    this.selectedTeacherForSubjects = teacher;
+    this.subjectsModalOpen = true;
+    this.loadTeacherSubjects(teacher.id!);
+    this.loadAvailableSubjects();
+  }
+
+  closeSubjectsModal(): void {
+    this.subjectsModalOpen = false;
+    this.selectedTeacherForSubjects = null;
+    this.teacherSubjects = [];
+    this.selectedSubjectIds = [];
+    this.selectedClassForSubjects = ''; // Reset class selection
+  }
+
+  loadTeacherSubjects(teacherId: string): void {
+    // Remove the classId parameter to get all subjects across all classes
+    this.teacherService
+      .getTeacherSubjects(teacherId) // No second parameter
+      .subscribe({
+        next: (res) => {
+          this.teacherSubjects = res.data;
+        },
+        error: (err) =>
+          this.toast.apiError('Failed to load teacher subjects', err),
+      });
+  }
+
+  loadAvailableSubjects(): void {
+    this.subjectService.getAll().subscribe({
+      next: (res) => {
+        this.availableSubjects = res.data;
+      },
+      error: (err) => this.toast.apiError('Failed to load subjects', err),
+    });
+  }
+
+  toggleSubjectSelection(subjectId: string): void {
+    const index = this.selectedSubjectIds.indexOf(subjectId);
+    if (index > -1) {
+      this.selectedSubjectIds.splice(index, 1);
+    } else {
+      this.selectedSubjectIds.push(subjectId);
+    }
+  }
+
+  bulkAssignSubjects(): void {
+    if (
+      !this.selectedTeacherForSubjects?.id ||
+      this.selectedSubjectIds.length === 0 ||
+      !this.selectedClassForSubjects
+    )
+      return;
+
+    this.assigningSubjects = true;
+
+    const data = {
+      subjectIds: this.selectedSubjectIds,
+      classId: this.selectedClassForSubjects, // Use selected class, not teacher's class
+    };
+
+    this.teacherService
+      .bulkAssignSubjects(this.selectedTeacherForSubjects.id, data)
+      .subscribe({
+        next: (res) => {
+          this.toast.success(
+            `${res.data.length} subjects assigned successfully`,
+          );
+          this.loadTeacherSubjects(this.selectedTeacherForSubjects!.id!);
+          this.selectedSubjectIds = [];
+          this.selectedClassForSubjects = '';
+          this.assigningSubjects = false;
+        },
+        error: (err) => {
+          this.toast.apiError('Failed to assign subjects', err);
+          this.assigningSubjects = false;
+        },
+      });
+  }
+
+  removeSubjectAssignment(assignmentId: string): void {
+    if (!confirm('Remove this subject assignment?')) return;
+
+    this.teacherService.removeSubjectAssignment(assignmentId).subscribe({
+      next: () => {
+        this.toast.success('Subject assignment removed');
+        if (this.selectedTeacherForSubjects) {
+          this.loadTeacherSubjects(this.selectedTeacherForSubjects.id!);
+        }
+      },
+      error: (err) => this.toast.apiError('Failed to remove assignment', err),
+    });
   }
 }

@@ -197,6 +197,7 @@ export class TimetableListComponent implements OnInit {
         this.selectedTimetable = null;
         this.loading = false;
         this.toast.success('Timetable deleted successfully!');
+        (this, this.ngOnInit());
       },
       error: () => {
         this.error = 'Failed to delete timetable';

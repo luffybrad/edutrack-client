@@ -37,13 +37,13 @@ export class TeacherAddComponent implements OnInit {
     private teacherService: TeacherService,
     private classService: ClassService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
   ) {
     this.teacherForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
-      classId: ['', Validators.required],
+      classId: [''],
     });
   }
 
@@ -64,16 +64,32 @@ export class TeacherAddComponent implements OnInit {
     this.router.navigate(['/dashboard/admin/teachers']);
   }
 
+  // Update the submit method to handle optional classId
   submit(): void {
     if (this.teacherForm.invalid) {
       this.teacherForm.markAllAsTouched();
-      this.toast.error('Please fill in all required fields');
+
+      // Only check name, email, phone for required validation
+      const hasRequiredErrors =
+        this.teacherForm.get('name')?.invalid ||
+        this.teacherForm.get('email')?.invalid ||
+        this.teacherForm.get('phone')?.invalid;
+
+      if (hasRequiredErrors) {
+        this.toast.error('Please fill in all required fields');
+      }
       return;
     }
 
     this.loading = true;
 
-    this.teacherService.create(this.teacherForm.value).subscribe({
+    // Prepare data - if classId is empty string, send null
+    const formData = {
+      ...this.teacherForm.value,
+      classId: this.teacherForm.get('classId')?.value || null,
+    };
+
+    this.teacherService.create(formData).subscribe({
       next: () => {
         this.toast.success('Teacher created successfully!');
         this.router.navigate(['/dashboard/admin/teachers']);
