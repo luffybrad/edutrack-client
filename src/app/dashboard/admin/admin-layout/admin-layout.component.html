@@ -173,7 +173,7 @@
           <span class="font-medium">Logout</span>
         </button>
         <p class="text-xs text-blue-400 text-center mt-3">
-          © {{ currentYear }} KBHS Admin Portal
+          © {{ currentYear }} Edutrack Admin Portal
         </p>
       </div>
     </aside>
@@ -215,7 +215,16 @@
                     Online
                   </div>
                 </div>
+
+                <!-- Notification Bell -->
+                <a routerLink="/dashboard/admin/notifications" routerLinkActive="text-blue-600"
+                  class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors relative">
+                  <i class="fas fa-bell"></i>
+                  <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                </a>
               </div>
+
+
 
               <!-- User Profile -->
               <a routerLink="/dashboard/admin/profile">
@@ -252,7 +261,7 @@
           <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
               <div class="text-center md:text-left">
-                <p class="text-gray-700 font-medium">KBHS School Management System</p>
+                <p class="text-gray-700 font-medium">Edutrack School Management System</p>
                 <p class="text-sm text-gray-500 mt-1">© {{ currentYear }} All rights reserved</p>
               </div>
               <div class="flex items-center gap-4">

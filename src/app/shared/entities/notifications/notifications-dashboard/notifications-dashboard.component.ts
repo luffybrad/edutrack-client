@@ -283,13 +283,18 @@ export class NotificationsDashboardComponent implements OnInit, OnDestroy {
     });
 
     // Load admins
-    this.adminService.getAll().subscribe({
-      next: (res) => {
-        this.admins = res.data || [];
-        this.buildAllRecipients();
-      },
-      error: () => this.showToast('error', 'Failed to load admins'),
-    });
+    if (
+      this.currentUserRole === UserRole.ADMIN ||
+      this.currentUserRole === UserRole.TEACHER
+    ) {
+      this.adminService.getAll().subscribe({
+        next: (res) => {
+          this.admins = res.data || [];
+          this.buildAllRecipients();
+        },
+        error: () => this.showToast('error', 'Failed to load admins'),
+      });
+    }
   }
 
   private buildAllRecipients(): void {
