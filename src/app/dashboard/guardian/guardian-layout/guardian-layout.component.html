@@ -74,14 +74,7 @@
           <span class="font-medium">Academic Performance</span>
         </a>
 
-        <!-- Attendance -->
-        <!-- <a routerLink="/dashboard/guardian/attendance" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
-          <div class="p-2 rounded-lg bg-amber-600/30 group-hover:bg-amber-500">
-            <i class="fas fa-calendar-check w-4"></i>
-          </div>
-          <span class="font-medium">Attendance</span>
-        </a> -->
+
 
         <!-- Fee Status -->
         <a routerLink="/dashboard/guardian/fees" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
@@ -93,33 +86,16 @@
           <!-- <span class="ml-auto px-2 py-1 text-xs bg-cyan-600 rounded-full">1 Due</span> -->
         </a>
 
-        <!-- Timetable -->
-        <!-- <a routerLink="/dashboard/guardian/timetable" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
+        <!-- Notifications -->
+        <a routerLink="/dashboard/guardian/notifications" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
-          <div class="p-2 rounded-lg bg-rose-600/30 group-hover:bg-rose-500">
-            <i class="fas fa-calendar-alt w-4"></i>
+          <div class="p-2 rounded-lg bg-orange-600/30 group-hover:bg-orange-500">
+            <i class="fas fa-bell w-4"></i>
           </div>
-          <span class="font-medium">School Timetable</span>
-        </a> -->
+          <span class="font-medium">Notifications</span>
 
-        <!-- Messages -->
-        <!-- <a routerLink="/dashboard/guardian/messages" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
-          <div class="p-2 rounded-lg bg-indigo-600/30 group-hover:bg-indigo-500">
-            <i class="fas fa-comments w-4"></i>
-          </div>
-          <span class="font-medium">Messages</span>
-          <span class="ml-auto px-2 py-1 text-xs bg-red-600 rounded-full">3</span>
-        </a> -->
+        </a>
 
-        <!-- Reports -->
-        <!-- <a routerLink="/dashboard/guardian/reports" routerLinkActive="bg-blue-700/50 border-l-4 border-blue-400"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700/30 transition-all duration-200 group">
-          <div class="p-2 rounded-lg bg-green-600/30 group-hover:bg-green-500">
-            <i class="fas fa-file-download w-4"></i>
-          </div>
-          <span class="font-medium">Reports & Downloads</span>
-        </a> -->
 
         <!-- Divider -->
         <div class="my-4 border-t border-blue-700/50"></div>
@@ -206,21 +182,25 @@
               </div>
 
               <!-- User Profile -->
-              <div class="flex items-center gap-3">
-                <div class="text-right hidden md:block">
-                  <div class="font-medium text-gray-800">
-                    {{ guardianName$ | async }}
-                  </div>
-                  <div class="text-xs text-gray-500">
-                    {{ guardianEmail$ | async }}
-                  </div>
 
+
+              <a routerLink="/dashboard/guardian/profile">
+                <div class="flex items-center gap-3">
+                  <div class="text-right hidden md:block">
+                    <div class="font-medium text-gray-800">
+                      {{ guardianName$ | async }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ guardianEmail$ | async }}
+                    </div>
+
+                  </div>
+                  <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
+                    {{ guardianInitials$ | async }}
+                  </div>
                 </div>
-                <div
-                  class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-lg">
-                  {{ guardianInitials$ | async }}
-                </div>
-              </div>
+              </a>
             </div>
           </div>
         </div>

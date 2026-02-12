@@ -19,6 +19,7 @@ import { TimetableListComponent } from '../../shared/entities/timetable/timetabl
 import { TimetableGenerateComponent } from '../../shared/entities/timetable/timetable-generate/timetable-generate.component';
 import { FeeDashboardComponent } from '../../shared/entities/fee/fee-dashboard/fee-dashboard.component';
 import { ProfileManagementComponent } from '../../shared/entities/profile/profile-management/profile-management.component';
+import { NotificationsDashboardComponent } from '../../shared/entities/notifications/notifications-dashboard/notifications-dashboard.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -60,6 +61,10 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'profile',
         component: ProfileManagementComponent,
+      },
+      {
+        path: 'notifications',
+        component: NotificationsDashboardComponent,
       },
     ],
   },
