@@ -214,22 +214,16 @@
                                             <!-- Progress Bar -->
                                             <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
                                                 <div class="h-full transition-all duration-500" [ngClass]="{
-                            'bg-green-500': arrear.balancePercentage >= 70,
+                            'bg-red-500': arrear.balancePercentage >= 70,
                             'bg-yellow-500': arrear.balancePercentage >= 30 && arrear.balancePercentage < 70,
-                            'bg-red-500': arrear.balancePercentage < 30
+                            'bg-green-500': arrear.balancePercentage < 30
                           }" [style.width.%]="100 - arrear.balancePercentage"></div>
                                             </div>
                                             <!-- Percentage -->
                                             <div class="flex items-center justify-between text-sm">
                                                 <span class="text-gray-600">{{ (100 -
                                                     arrear.balancePercentage).toFixed(1) }}% paid</span>
-                                                <span class="font-medium" [ngClass]="{
-                          'text-green-600': arrear.status === 'paid',
-                          'text-yellow-600': arrear.status === 'partial',
-                          'text-red-600': arrear.status === 'pending'
-                        }">
-                                                    {{ arrear.status || 'pending' | titlecase }}
-                                                </span>
+
                                             </div>
                                         </div>
                                     </td>
