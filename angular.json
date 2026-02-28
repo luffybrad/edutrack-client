@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "edutack-client": {
+    "edutrack-client": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/edutack-client",
+            "outputPath": "dist/edutrack-client",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -42,7 +42,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "800kB",
                   "maximumError": "1MB"
                 },
                 {
@@ -65,10 +65,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "edutack-client:build:production"
+              "buildTarget": "edutrack-client:build:production"
             },
             "development": {
-              "buildTarget": "edutack-client:build:development"
+              "buildTarget": "edutrack-client:build:development"
             }
           },
           "defaultConfiguration": "development"
